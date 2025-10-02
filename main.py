@@ -4,11 +4,16 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
+from utils.adminPosts import insert_project, insert_task
 from utils.clientPost import add_new_client
 from utils.clientGets import check_existing_user, check_password, get_username
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails
 from schemas.loginSchemas import LoginSchema
+from schemas.adminProjectSchemas import Project
+from schemas.adminTasksSchemas import Task
+
+
 
 templates_clients = Jinja2Templates(directory="templates/clients")
 templates_admin = Jinja2Templates(directory="templates/admin")
@@ -28,6 +33,10 @@ app.add_middleware(
 @app.get("/login")
 async def home(request:Request):
     return templates_clients.TemplateResponse("login.html", {"request":request})
+
+@app.get("/admin-dashboard")
+async def load_admin(request:Request):
+    return templates_admin.TemplateResponse("index.html", {"request":request})
 
 @app.get("/dashboard")
 async def get_dashboard(request: Request):
@@ -75,3 +84,11 @@ async def trendy_login(request: Request, data: LoginSchema = Body(...)):
             return 1
     else:
         return 0
+
+@app.post("/add-project")
+async def admin_add_projects(request: Request, project: Project):
+    await insert_project(project=project)
+
+@app.post("/add-task")
+async def admin_add_tasks(request: Request, task: Task):
+    await insert_task(task=task)

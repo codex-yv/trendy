@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen"> <!-- Header -->
+    <div class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold">Admin Dashboard</h1>
+        <div class="space-x-3"> <button onclick="openProjectModal()"
+                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100">+ Add Project</button>
+            <button onclick="openTaskModal()"
+                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100">+ Assign Task</button>
+        </div>
+    </div> <!-- Main -->
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h2 class="text-lg font-semibold mb-4">Projects Overview</h2>
+            <div id="projectList" class="space-y-3"></div>
+        </div>
+        <div>
+            <h2 class="text-lg font-semibold mb-4">Tasks Overview</h2>
+            <div id="taskList" class="space-y-3"></div>
+        </div>
+    </div> <!-- Project Modal -->
+    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="projectModalTitle" class="text-xl font-bold">Add New Project</h3> <input type="hidden"
+                id="editProjectIndex">
+            <div> <label class="block">Project Name</label> <input type="text" id="projectName"
+                    class="w-full border p-2 rounded"> </div>
+            <div> <label class="block">Due Date</label> <input type="date" id="projectDueDate"
+                    class="w-full border p-2 rounded"> </div>
+            <div> <label class="block">Team</label> <select id="projectTeam" class="w-full border p-2 rounded">
+                    <option value="">Select Team</option>
+                    <option>Dev Team</option>
+                    <option>Design Team</option>
+                    <option>Marketing Team</option>
+                </select> </div>
+            <div> <label class="block">Assign Members</label> <select id="projectMembers" multiple
+                    onchange="updateAssigned('project')" class="w-full border p-2 rounded">
+                    <option>Alice - Dev</option>
+                    <option>Bob - Design</option>
+                    <option>Charlie - Marketing</option>
+                </select>
+                <div id="projectAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
+            </div>
+            <div> <label class="block">Assign Project Manager</label> <select id="projectManager"
+                    class="w-full border p-2 rounded">
+                    <option value="">Select Manager</option>
+                    <option>Alice - Dev</option>
+                    <option>Bob - Design</option>
+                    <option>Charlie - Marketing</option>
+                </select> </div>
+            <div> <button onclick="openComponentModal()" class="bg-blue-600 text-white px-3 py-2 rounded">+ Add
+                    Components</button>
+                <div id="componentsList" class="mt-3 space-y-2"></div>
+            </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2"> <button onclick="closeProjectModal()"
+                    class="px-4 py-2 border rounded">Cancel</button> <button id="saveProjectBtn" onclick="addProject()"
+                    class="px-4 py-2 bg-green-600 text-white rounded">Add Project</button> <button id="updateProjectBtn"
+                    onclick="updateProject()" class="px-4 py-2 bg-yellow-600 text-white rounded hidden">Update
+                    Project</button> </div>
+        </div>
+    </div> <!-- Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="taskModalTitle" class="text-xl font-bold">Assign Task</h3> <input type="hidden" id="editTaskIndex">
+            <div> <label class="block">Task Name</label> <input type="text" id="taskName"
+                    class="w-full border p-2 rounded"> </div>
+            <div> <label class="block">Task Description</label> <textarea id="taskDescription"
+                    class="w-full border p-2 rounded"></textarea> </div>
+            <div> <label class="block">Due Date</label> <input type="date" id="taskDueDate"
+                    class="w-full border p-2 rounded"> </div>
+            <div> <label class="block">Assign Members</label> <select id="taskMembers" multiple
+                    onchange="updateAssigned('task')" class="w-full border p-2 rounded">
+                    <option>Alice - Dev</option>
+                    <option>Bob - Design</option>
+                    <option>Charlie - Marketing</option>
+                </select>
+                <div id="taskAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
+            </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2"> <button onclick="closeTaskModal()"
+                    class="px-4 py-2 border rounded">Cancel</button> <button id="saveTaskBtn" onclick="addTask()"
+                    class="px-4 py-2 bg-green-600 text-white rounded">Add Task</button> <button id="updateTaskBtn"
+                    onclick="updateTask()" class="px-4 py-2 bg-yellow-600 text-white rounded hidden">Update
+                    Task</button> </div>
+        </div>
+    </div> <!-- Component Modal -->
+    <div id="componentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/3 max-h-[70vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 class="text-lg font-bold">Add Component</h3>
+            <div> <label class="block">Component</label> <input type="text" id="componentName"
+                    class="w-full border p-2 rounded"> </div>
+            <div> <label class="block">Feature</label> <input type="text" id="featureName"
+                    class="w-full border p-2 rounded"> </div>
+            <div class="flex justify-end gap-3"> <button onclick="closeComponentModal()"
+                    class="px-4 py-2 border rounded">Cancel</button> <button onclick="addComponent()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded">Add</button> </div>
+        </div>
+    </div>
+    <script>
+        // ====== Data Stores ======
+        let assigned = { project: [], task: [] };
+        let components = [];
+        let projects = [];
+        let tasks = [];
+
+        // ====== Modal Utilities ======
+        function toggleModal(id, show = true) {
+            const modal = document.getElementById(id);
+            modal.classList.replace(show ? "hidden" : "flex", show ? "flex" : "hidden");
+        }
+
+        // ====== Project Modals ======
+        function openProjectModal(editIndex = null) {
+            toggleModal("projectModal", true);
+
+            const isEdit = editIndex !== null;
+            const title = isEdit ? "Edit Project" : "Add New Project";
+
+            document.getElementById("projectModalTitle").innerText = title;
+            document.getElementById("saveProjectBtn").classList.toggle("hidden", isEdit);
+            document.getElementById("updateProjectBtn").classList.toggle("hidden", !isEdit);
+            document.getElementById("editProjectIndex").value = isEdit ? editIndex : "";
+
+            if (isEdit) {
+            const p = projects[editIndex];
+            document.getElementById("projectName").value = p.name;
+            document.getElementById("projectDueDate").value = p.due;
+            document.getElementById("projectTeam").value = p.team;
+            document.getElementById("projectManager").value = p.manager;
+
+            assigned.project = [...p.members];
+            components = [...p.components];
+
+            renderComponents();
+            updateAssigned("project");
+            }
+        }
+
+        function closeProjectModal() {
+            toggleModal("projectModal", false);
+        }
+
+        // ====== Task Modals ======
+        function openTaskModal(editIndex = null) {
+            toggleModal("taskModal", true);
+
+            const isEdit = editIndex !== null;
+            const title = isEdit ? "Edit Task" : "Assign Task";
+
+            document.getElementById("taskModalTitle").innerText = title;
+            document.getElementById("saveTaskBtn").classList.toggle("hidden", isEdit);
+            document.getElementById("updateTaskBtn").classList.toggle("hidden", !isEdit);
+            document.getElementById("editTaskIndex").value = isEdit ? editIndex : "";
+
+            if (isEdit) {
+            const t = tasks[editIndex];
+            document.getElementById("taskName").value = t.name;
+            document.getElementById("taskDescription").value = t.desc;
+            document.getElementById("taskDueDate").value = t.due;
+
+            assigned.task = [...t.members];
+            updateAssigned("task");
+            }
+        }
+
+        function closeTaskModal() {
+            toggleModal("taskModal", false);
+        }
+
+        // ====== Component Modals ======
+        function openComponentModal() {
+            toggleModal("componentModal", true);
+        }
+
+        function closeComponentModal() {
+            toggleModal("componentModal", false);
+        }
+
+        // ====== Assigned Members ======
+        function updateAssigned(type) {
+            const select = document.getElementById(`${type}Members`);
+            assigned[type] = [...select.selectedOptions].map(opt => opt.value);
+
+            const display = document.getElementById(`${type}AssignedDisplay`);
+            display.innerHTML = "";
+
+            assigned[type].forEach(member => {
+            const span = document.createElement("span");
+            span.className = "bg-gray-200 px-2 py-1 rounded text-sm";
+            span.innerText = member;
+            display.appendChild(span);
+            });
+        }
+
+        // ====== Components ======
+        function addComponent() {
+            const name = document.getElementById("componentName").value.trim();
+            const feature = document.getElementById("featureName").value.trim();
+
+            if (!name || !feature) return;
+
+            components.push({ name, feature });
+            renderComponents();
+            closeComponentModal();
+
+            document.getElementById("componentName").value = "";
+            document.getElementById("featureName").value = "";
+        }
+
+        function renderComponents() {
+            const list = document.getElementById("componentsList");
+            list.innerHTML = "";
+
+            components.forEach(c => {
+            const div = document.createElement("div");
+            div.className = "border p-2 rounded";
+            div.innerHTML = `
+                <div class="flex justify-between">
+                <span class="font-semibold">${c.name}</span>
+                <button onclick="this.parentElement.nextElementSibling.classList.toggle('hidden')" class="text-blue-600">▼</button>
+                </div>
+                <div class="hidden mt-2 text-sm text-gray-700">${c.feature}</div>
+            `;
+            list.appendChild(div);
+            });
+        }
+
+        // ====== API: Add Project ======
+        async function addProject() {
+            const name = document.getElementById("projectName").value;
+            const due = document.getElementById("projectDueDate").value;
+            const team = document.getElementById("projectTeam").value;
+            const manager = document.getElementById("projectManager").value;
+
+            if (!name || !due || !team || !manager) {
+            alert("Please fill all fields!");
+            return;
+            }
+
+            const compDict = Object.fromEntries(components.map(c => [c.name, c.feature]));
+
+            const payload = {
+            project_name: name,
+            due_date: due,
+            team,
+            assigned_members: [...assigned.project],
+            project_manager: manager,
+            components: compDict
+            };
+
+            try {
+            const res = await fetch("/add-project", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Project added successfully!");
+                projects.push({ name, due, team, manager, members: [...assigned.project], components: [...components] });
+                renderProjects();
+                assigned.project = [];
+                components = [];
+                closeProjectModal();
+            } else {
+                alert("Error adding project!");
+            }
+            } catch (err) {
+            console.error(err);
+            alert("Failed to connect to backend!");
+            }
+        }
+
+        // ====== API: Add Task ======
+        async function addTask() {
+            const name = document.getElementById("taskName").value;
+            const desc = document.getElementById("taskDescription").value;
+            const due = document.getElementById("taskDueDate").value;
+
+            if (!name || !desc || !due) {
+            alert("Fill all task fields!");
+            return;
+            }
+
+            const payload = {
+            task_name: name,
+            desc,
+            due_date: due,
+            assigned_members: [...assigned.task]
+            };
+
+            try {
+            const res = await fetch("/add-task", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Task added successfully!");
+                tasks.push({ name, desc, due, members: [...assigned.task] });
+                renderTasks();
+                assigned.task = [];
+                closeTaskModal();
+            } else {
+                alert("Error adding task!");
+            }
+            } catch (err) {
+            console.error(err);
+            alert("Failed to connect to backend!");
+            }
+        }
+
+        // ====== Update Project/Task ======
+        function updateProject() {
+            const idx = +document.getElementById("editProjectIndex").value;
+
+            projects[idx] = {
+            name: document.getElementById("projectName").value,
+            due: document.getElementById("projectDueDate").value,
+            team: document.getElementById("projectTeam").value,
+            manager: document.getElementById("projectManager").value,
+            members: [...assigned.project],
+            components: [...components]
+            };
+
+            renderProjects();
+            closeProjectModal();
+        }
+
+        function updateTask() {
+            const idx = +document.getElementById("editTaskIndex").value;
+
+            tasks[idx] = {
+            name: document.getElementById("taskName").value,
+            desc: document.getElementById("taskDescription").value,
+            due: document.getElementById("taskDueDate").value,
+            members: [...assigned.task]
+            };
+
+            renderTasks();
+            closeTaskModal();
+        }
+
+        // ====== Render UI ======
+        function renderProjects() {
+            const list = document.getElementById("projectList");
+            list.innerHTML = "";
+
+            projects.forEach((p, i) => {
+            const div = document.createElement("div");
+            div.className = "bg-white shadow p-4 rounded";
+            div.innerHTML = `
+                <div class="flex justify-between">
+                <h4 class="font-bold">${p.name}</h4>
+                <button onclick="openProjectModal(${i})" class="text-blue-600 text-sm">Edit</button>
+                </div>
+                <p class="text-sm text-gray-600">Due: ${p.due}</p>
+                <p class="text-sm">Team: ${p.team}</p>
+                <p class="text-sm">Manager: ${p.manager}</p>
+                <p class="text-sm">Members: ${p.members.join(", ")}</p>
+                <div class="mt-2">
+                <h5 class="font-semibold">Components</h5>
+                ${p.components.map(c => `<div class="ml-3">- ${c.name} (${c.feature})</div>`).join("")}
+                </div>
+            `;
+            list.appendChild(div);
+            });
+        }
+
+        function renderTasks() {
+            const list = document.getElementById("taskList");
+            list.innerHTML = "";
+
+            tasks.forEach((t, i) => {
+            const div = document.createElement("div");
+            div.className = "bg-white shadow p-4 rounded";
+            div.innerHTML = `
+                <div class="flex justify-between">
+                <h4 class="font-bold">${t.name}</h4>
+                <button onclick="openTaskModal(${i})" class="text-blue-600 text-sm">Edit</button>
+                </div>
+                <p class="text-sm text-gray-600">Due: ${t.due}</p>
+                <p class="text-sm">Description: ${t.desc}</p>
+                <p class="text-sm">Members: ${t.members.join(", ")}</p>
+            `;
+            list.appendChild(div);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
