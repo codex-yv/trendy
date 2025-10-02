@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Client Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .auth-container {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        .auth-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: white;
+        }
+        
+        .auth-left h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .auth-left p {
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .auth-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border-radius: 20px 0 0 20px;
+            padding: 40px;
+        }
+        
+        .auth-form {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .auth-form h2 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        .auth-btn:hover {
+            background-color: var(--secondary);
+        }
+        
+        .auth-btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .auth-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .auth-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--gray);
+        }
+        
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .form-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .form-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            color: var(--gray);
+            border-bottom: 2px solid transparent;
+        }
+        
+        .form-tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .form-content {
+            display: none;
+        }
+        
+        .form-content.active {
+            display: block;
+        }
+        
+        .otp-section {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .otp-section.active {
+            display: block;
+        }
+        
+        .email-input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .email-input-group .form-control {
+            flex: 1;
+        }
+        
+        .send-otp-btn {
+            padding: 12px 15px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .send-otp-btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-error {
+            background-color: rgba(230, 57, 70, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+            }
+            
+            .auth-right {
+                border-radius: 20px 20px 0 0;
+            }
+            
+            .email-input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <h1>Client Portal</h1>
+            <p>Welcome to our Startup Management System. Access your projects, track progress, and communicate with our team all in one place.</p>
+        </div>
+        <div class="auth-right">
+            <div class="auth-form">
+                <div class="form-tabs">
+                    <div class="form-tab active" id="loginTab">Login</div>
+                    <div class="form-tab" id="signupTab">Sign Up</div>
+                </div>
+                
+                <!-- Alert Messages -->
+                <div class="alert alert-error" id="errorAlert"></div>
+                <div class="alert alert-success" id="successAlert"></div>
+                
+                <!-- Login Form -->
+                <div class="form-content active" id="loginForm">
+                    <h2>Client Login</h2>
+                    <form id="loginFormData">
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                        <div class="form-group">
+                            <div class="auth-links">
+                                <a href="#" id="forgotPassword">Forgot Password?</a>
+                            </div>
+                        </div>
+                        <button type="submit" class="auth-btn" id="loginBtn">Login</button>
+                    </form>
+                </div>
+                
+                <!-- Signup Form -->
+                <div class="form-content" id="signupForm">
+                    <h2>Create Account</h2>
+                    <form id="signupFormData">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" class="form-control" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupEmail">Email Address</label>
+                            <div class="email-input-group">
+                                <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email" required>
+                                <button type="button" class="send-otp-btn" id="sendOtpBtn">Send OTP</button>
+                            </div>
+                        </div>
+                        <div class="form-group otp-section" id="otpSection">
+                            <label for="otp">OTP</label>
+                            <input type="text" id="otp" class="form-control" placeholder="Enter OTP" maxlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" class="form-control" placeholder="Enter your phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Role</label>
+                            <select id="role" class="form-control" required>
+                                <option value="">Select your role</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Employee">Employee</option>
+                                <option value="Intern">Intern</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="signupPassword">Password</label>
+                            <input type="password" id="signupPassword" class="form-control" placeholder="Create a password" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                        </div>
+                        <button type="submit" class="auth-btn" id="createAccountBtn">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.getElementById('loginTab').addEventListener('click', function() {
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('signupTab').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').classList.remove('active');
+            hideAlerts();
+        });
+        
+        document.getElementById('signupTab').addEventListener('click', function() {
+            document.getElementById('signupTab').classList.add('active');
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('signupForm').classList.add('active');
+            document.getElementById('loginForm').classList.remove('active');
+            hideAlerts();
+        });
+        
+        // Show alert message
+        function showAlert(message, type) {
+            hideAlerts();
+            if (type === 'error') {
+                const alert = document.getElementById('errorAlert');
+                alert.textContent = message;
+                alert.style.display = 'block';
+            } else if (type === 'success') {
+                const alert = document.getElementById('successAlert');
+                alert.textContent = message;
+                alert.style.display = 'block';
+            }
+        }
+        
+        // Hide all alerts
+        function hideAlerts() {
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('successAlert').style.display = 'none';
+        }
+        
+        // Send OTP functionality
+        document.getElementById('sendOtpBtn').addEventListener('click', async function() {
+            const email = document.getElementById('signupEmail').value;
+            const sendOtpBtn = document.getElementById('sendOtpBtn');
+            
+            if (!email) {
+                showAlert('Please enter your email address', 'error');
+                return;
+            }
+            
+            // Disable button and show loading state
+            sendOtpBtn.disabled = true;
+            sendOtpBtn.textContent = 'Sending...';
+            
+            try {
+                // Send POST request to /send-otp endpoint
+                const response = await fetch('/send-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (result === 1) {
+                    // Show OTP input field
+                    document.getElementById('otpSection').classList.add('active');
+                    showAlert('OTP sent successfully to your email', 'success');
+                } else {
+                    showAlert('Failed to send OTP. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                showAlert('Failed to send OTP. Please try again.', 'error');
+            } finally {
+                // Re-enable button after 30 seconds
+                setTimeout(() => {
+                    sendOtpBtn.disabled = false;
+                    sendOtpBtn.textContent = 'Send OTP';
+                }, 1000);
+            }
+        });
+        
+        // Login functionality
+        document.getElementById('loginFormData').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (!email || !password) {
+                showAlert('Please enter both email and password', 'error');
+                return;
+            }
+            
+            // Disable button and show loading state
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            
+            try {
+                const response = await fetch('/make-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        password: password 
+                    })
+                });
+
+                const contentType = response.headers.get('content-type');
+
+                if (contentType && contentType.includes('application/json')) {
+                    const result = await response.json();
+
+                    if (result === 0) {
+                        showAlert('Email does not exist', 'error');
+                    } else if (result === 1) {
+                        showAlert('Invalid password', 'error');
+                    }
+                } else if (response.redirected) {
+                    // Server responded with a redirect
+                    window.location.href = response.url;
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                showAlert('Login failed. Please try again.', 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+
+        });
+        
+        // Signup functionality
+        document.getElementById('signupFormData').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('signupEmail').value;
+            const otp = document.getElementById('otp').value;
+            const phone = document.getElementById('phone').value;
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('signupPassword').value;
+            const terms = document.getElementById('terms').checked;
+            const createAccountBtn = document.getElementById('createAccountBtn');
+            
+            // Simple validation
+            if (!fullName || !email || !phone || !role || !password) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (!terms) {
+                showAlert('Please agree to the Terms of Service and Privacy Policy', 'error');
+                return;
+            }
+            
+            // Disable button and show loading state
+            createAccountBtn.disabled = true;
+            createAccountBtn.textContent = 'Creating Account...';
+            
+            try {
+                const response = await fetch('/create-acc', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        fullName: fullName,
+                        email: email,
+                        otp: otp,
+                        phone: phone,
+                        role: role,
+                        password: password
+                    })
+                });
+
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const result = await response.json();
+                    
+                    if (result === 0) {
+                        showAlert('Email already exists', 'error');
+                    } else if (result === 1) {
+                        showAlert('Invalid OTP', 'error');
+                    }
+                } else if (response.redirected) {
+                    // Server responded with a redirect
+                    window.location.href = response.url;
+                }
+            } catch (error) {
+                console.error('Error during signup:', error);
+                showAlert('Account creation failed. Please try again.', 'error');
+            } finally {
+                createAccountBtn.disabled = false;
+                createAccountBtn.textContent = 'Create Account';
+            }
+        });
+        
+        // Forgot password link
+        document.getElementById('forgotPassword').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Password reset link has been sent to your email.');
+        });
+    </script>
+</body>
+</html>

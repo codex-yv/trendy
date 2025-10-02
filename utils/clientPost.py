@@ -1,0 +1,23 @@
+from configs.trendyDB import client
+from security.encryptPass import encryptt
+
+async def add_new_client(client_add:dict):
+    db = client["Clients"]
+    collection = db[client_add.email]
+    key, token = encryptt(password=client_add.password)
+    format_data = {
+        "fullname":client_add.fullName,
+        "email":client_add.email,
+        "phone":client_add.phone,
+        "password":token,
+        "key":key,
+        "status":"ACTIVE",
+        "profileImg":"",
+        "role":client_add.role,
+        "tpd":0,  # total projects done
+        "pp":0,    # pending projects
+        "op":0,     # ongoing projects
+        "techstack":{}
+    }
+
+    await collection.insert_one(format_data)
