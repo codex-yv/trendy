@@ -4,14 +4,20 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
+
 from utils.adminPosts import insert_project, insert_task
+from utils.adminGets import get_users
+
 from utils.clientPost import add_new_client
 from utils.clientGets import check_existing_user, check_password, get_username
+from utils.clientPuts import update_assign_member, update_task_member, update_project_manager
+
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails
 from schemas.loginSchemas import LoginSchema
 from schemas.adminProjectSchemas import Project
 from schemas.adminTasksSchemas import Task
+from schemas.useless import Useless
 
 
 
@@ -87,8 +93,26 @@ async def trendy_login(request: Request, data: LoginSchema = Body(...)):
 
 @app.post("/add-project")
 async def admin_add_projects(request: Request, project: Project):
-    await insert_project(project=project)
+
+    # print(project)
+    Inserted_id = await insert_project(project=project)
+    await update_assign_member(collecation_name=project.assigned_members, pid=Inserted_id)
+    await update_project_manager(collecation_name=project.project_manager, pid=Inserted_id)
+
 
 @app.post("/add-task")
 async def admin_add_tasks(request: Request, task: Task):
-    await insert_task(task=task)
+    Inserted_id = await insert_task(task=task)
+    await update_task_member(collecation_name=task.assigned_members, pid=Inserted_id)
+    
+
+
+@app.post("/load-add-project") # FOR ADMIN PAGE.
+async def load_add_projects(data:Useless):
+    val = await get_users()
+    return val
+    
+@app.post("/load-add-task") # FOR ADMIN PAGE.
+async def load_add_projects(data:Useless):
+    val = await get_users()
+    return val

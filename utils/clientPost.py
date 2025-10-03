@@ -13,10 +13,12 @@ async def add_new_client(client_add:dict):
         "key":key,
         "status":"ACTIVE",
         "profileImg":"",
+        "team":"",
         "role":client_add.role,
-        "tpd":0,  # total projects done
-        "pp":0,    # pending projects
-        "op":0,     # ongoing projects
+        "assigned_projects":[],  # total projects done
+        "assigned_task":[],    # pending projects
+        "project_manager":[],
+        "notifications":[],     # ongoing projects
         "techstack":{}
     }
 

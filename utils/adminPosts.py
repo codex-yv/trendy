@@ -10,10 +10,12 @@ async def insert_project(project):
         "team":project.team,
         "assigned_members":project.assigned_members,
         "project_manager":project.project_manager,
-        "components":project.components
+        "components":project.components,
+        "status":0
     }
 
-    await collection.insert_one(format_data)
+    result = await collection.insert_one(format_data)
+    return result.inserted_id
 
 
 async def insert_task(task):
@@ -24,8 +26,9 @@ async def insert_task(task):
         "task_name": task.task_name,
         "desc": task.desc,
         "due_date": task.due_date,
-        "assigned_members": task.assigned_members
+        "assigned_members": task.assigned_members,
+        "status":0
     }
 
-    await collection.insert_one(format_data)
-    
+    result = await collection.insert_one(format_data)
+    return result.inserted_id
