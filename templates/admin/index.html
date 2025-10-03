@@ -259,6 +259,10 @@
                     <button id="completedProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
                 </div>
             </div>
+            <div id="projectStatusLoading" class="text-center py-8 hidden">
+                <div class="loading-spinner mx-auto mb-2"></div>
+                <p class="text-gray-600">Loading projects...</p>
+            </div>
             <div id="projectStatusList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Project status cards will be populated here -->
             </div>
@@ -276,6 +280,62 @@
             </div>
             <div id="taskStatusList" class="space-y-4">
                 <!-- Task status cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="projectDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 id="projectDetailsTitle" class="text-xl font-bold text-gray-800">Project Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Project Information</h4>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Project Name:</span>
+                            <p id="detailProjectName" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Initiated Date:</span>
+                            <p id="detailInitiatedDate"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Due Date:</span>
+                            <p id="detailDueDate"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Team:</span>
+                            <p id="detailTeam"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Status:</span>
+                            <span id="detailStatus" class="status-tag"></span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Team Members</h4>
+                    <div class="mb-4">
+                        <span class="text-sm font-medium text-gray-600">Project Manager:</span>
+                        <p id="detailProjectManager" class="font-medium"></p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Assigned Members:</span>
+                        <ul id="detailAssignedMembers" class="mt-1 space-y-1">
+                            <!-- Assigned members will be populated here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Components</h4>
+                <div id="detailComponents" class="space-y-3">
+                    <!-- Components will be populated here -->
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
+                <button onclick="closeProjectDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
             </div>
         </div>
     </div>
@@ -395,19 +455,13 @@
         let tasks = [];
         let projectUsersDict = {}; // Store users from project API
         let taskUsersDict = {}; // Store users from task API
+        let projectStatusData = []; // Store projects from API
         
         // Sample data for demonstration
         let signUpRequests = [
             { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "+1-234-567-8901", role: "manager", status: "pending" },
             { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "+1-234-567-8902", role: "intern", status: "pending" },
             { id: 3, name: "Robert Johnson", email: "robert.j@example.com", phone: "+1-234-567-8903", role: "employee", status: "pending" }
-        ];
-        
-        let projectStatusData = [
-            { id: 1, name: "Website Redesign", status: "ongoing", initiatedDate: "15/09/2023", dueDate: "2023-12-15", team: "Design Team", progress: 65 },
-            { id: 2, name: "Mobile App Development", status: "ongoing", initiatedDate: "01/10/2023", dueDate: "2024-02-20", team: "Dev Team", progress: 30 },
-            { id: 3, name: "Marketing Campaign", status: "completed", initiatedDate: "01/08/2023", dueDate: "2023-10-10", team: "Marketing Team", progress: 100 },
-            { id: 4, name: "Database Migration", status: "ongoing", initiatedDate: "20/09/2023", dueDate: "2023-11-30", team: "Dev Team", progress: 45 }
         ];
         
         let taskStatusData = [
@@ -450,6 +504,163 @@
                 ]
             }
         ];
+
+        // ====== FastAPI Integration for Project Status ======
+        async function fetchProjectStatusFromAPI() {
+            try {
+                // Show loading state
+                document.getElementById('projectStatusLoading').classList.remove('hidden');
+                document.getElementById('projectStatusList').innerHTML = '';
+                
+                // Send POST request to FastAPI endpoint
+                const response = await fetch('/show-project-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value" // You can customize this value as needed
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Store the projects data
+                projectStatusData = data;
+                
+                // Render the projects
+                renderProjectStatus();
+                
+                // Hide loading
+                document.getElementById('projectStatusLoading').classList.add('hidden');
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching project status from API:', error);
+                
+                // Hide loading and show error
+                document.getElementById('projectStatusLoading').classList.add('hidden');
+                
+                // Fallback to sample data if API fails
+                projectStatusData = [
+                    {
+                        "project_name": "Website Redesign",
+                        "initiated_date": "15/09/2023",
+                        "due_date": "2023-12-15",
+                        "team": "Design Team",
+                        "Status": 0,
+                        "assigned_member": [
+                            ["alice@example.com", "Alice"],
+                            ["bob@example.com", "Bob"]
+                        ],
+                        "project_manager": [
+                            ["charlie@example.com", "Charlie"]
+                        ],
+                        "components": {
+                            "UI Design": "Create new user interface design",
+                            "Frontend Development": "Implement responsive design"
+                        }
+                    },
+                    {
+                        "project_name": "Mobile App Development",
+                        "initiated_date": "01/10/2023",
+                        "due_date": "2024-02-20",
+                        "team": "Dev Team",
+                        "Status": 0,
+                        "assigned_member": [
+                            ["diana@example.com", "Diana"],
+                            ["ethan@example.com", "Ethan"]
+                        ],
+                        "project_manager": [
+                            ["alice@example.com", "Alice"]
+                        ],
+                        "components": {
+                            "Backend API": "Develop RESTful API endpoints",
+                            "Mobile UI": "Create mobile user interface"
+                        }
+                    },
+                    {
+                        "project_name": "Marketing Campaign",
+                        "initiated_date": "01/08/2023",
+                        "due_date": "2023-10-10",
+                        "team": "Marketing Team",
+                        "Status": 1,
+                        "assigned_member": [
+                            ["bob@example.com", "Bob"],
+                            ["charlie@example.com", "Charlie"]
+                        ],
+                        "project_manager": [
+                            ["diana@example.com", "Diana"]
+                        ],
+                        "components": {
+                            "Social Media": "Plan and execute social media strategy",
+                            "Content Creation": "Create marketing content and copy"
+                        }
+                    }
+                ];
+                
+                renderProjectStatus();
+                
+                // Show error message to user
+                alert('Failed to load projects from server. Using sample data instead.');
+                
+                return projectStatusData;
+            }
+        }
+
+        // ====== Project Details Modal ======
+        function openProjectDetailsModal(projectIndex) {
+            const project = projectStatusData[projectIndex];
+            
+            // Set project details
+            document.getElementById('projectDetailsTitle').textContent = `Project Details: ${project.project_name}`;
+            document.getElementById('detailProjectName').textContent = project.project_name;
+            document.getElementById('detailInitiatedDate').textContent = project.initiated_date;
+            document.getElementById('detailDueDate').textContent = new Date(project.due_date).toLocaleDateString();
+            document.getElementById('detailTeam').textContent = project.team;
+            
+            // Set status
+            const statusElement = document.getElementById('detailStatus');
+            statusElement.textContent = project.Status === 0 ? 'ongoing' : 'completed';
+            statusElement.className = `status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}`;
+            
+            // Set project manager
+            document.getElementById('detailProjectManager').textContent = project.project_manager[0][1]; // Get username from first index
+            
+            // Set assigned members
+            const assignedMembersList = document.getElementById('detailAssignedMembers');
+            assignedMembersList.innerHTML = '';
+            project.assigned_member.forEach(member => {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-gray-700';
+                li.textContent = member[1]; // Get username from first index
+                assignedMembersList.appendChild(li);
+            });
+            
+            // Set components
+            const componentsContainer = document.getElementById('detailComponents');
+            componentsContainer.innerHTML = '';
+            Object.entries(project.components).forEach(([heading, details]) => {
+                const componentDiv = document.createElement('div');
+                componentDiv.className = 'border p-3 rounded';
+                componentDiv.innerHTML = `
+                    <h5 class="font-semibold text-gray-800">${heading}</h5>
+                    <p class="text-sm text-gray-600 mt-1">${details}</p>
+                `;
+                componentsContainer.appendChild(componentDiv);
+            });
+            
+            // Show modal
+            toggleModal('projectDetailsModal', true);
+        }
+
+        function closeProjectDetailsModal() {
+            toggleModal('projectDetailsModal', false);
+        }
 
         // ====== FastAPI Integration for Projects ======
         async function fetchProjectUsersFromAPI() {
@@ -623,7 +834,7 @@
 
         document.getElementById('showProjectStatusBtn').addEventListener('click', function() {
             showSection('projectStatusSection');
-            renderProjectStatus();
+            fetchProjectStatusFromAPI();
         });
 
         document.getElementById('showTaskStatusBtn').addEventListener('click', function() {
@@ -739,7 +950,7 @@
         function updateDashboardStats() {
             // Calculate stats
             const totalProjects = projects.length + projectStatusData.length;
-            const completedProjects = projectStatusData.filter(p => p.status === 'completed').length;
+            const completedProjects = projectStatusData.filter(p => p.Status === 1).length;
             const totalTasks = tasks.length + taskStatusData.length;
             const completedTasks = taskStatusData.filter(t => t.status === 'completed').length;
             
@@ -760,18 +971,16 @@
             
             // Combine sample data with user-added projects
             const allProjects = [...projectStatusData, ...projects.map(p => ({
-                id: p.id || Math.random(),
-                name: p.name,
-                status: p.status || 'ongoing',
-                initiatedDate: p.initiatedDate || getCurrentDateFormatted(),
-                dueDate: p.due,
-                team: p.team,
-                progress: p.progress || 0
+                project_name: p.name,
+                Status: p.status === 'completed' ? 1 : 0,
+                initiated_date: p.initiatedDate || getCurrentDateFormatted(),
+                due_date: p.due,
+                team: p.team
             }))];
             
             // Sort by date (most recent first) and take first 3
             const recentProjects = allProjects
-                .sort((a, b) => new Date(b.initiatedDate) - new Date(a.initiatedDate))
+                .sort((a, b) => new Date(b.initiated_date) - new Date(a.initiated_date))
                 .slice(0, 3);
             
             recentProjects.forEach(project => {
@@ -780,11 +989,11 @@
                 
                 projectEl.innerHTML = `
                     <div>
-                        <h4 class="font-medium text-gray-800">${project.name}</h4>
-                        <p class="text-sm text-gray-600">${project.team} • Started: ${project.initiatedDate}</p>
+                        <h4 class="font-medium text-gray-800">${project.project_name}</h4>
+                        <p class="text-sm text-gray-600">${project.team} • Started: ${project.initiated_date}</p>
                     </div>
-                    <span class="status-tag ${project.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
-                        ${project.status}
+                    <span class="status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}">
+                        ${project.Status === 0 ? 'ongoing' : 'completed'}
                     </span>
                 `;
                 
@@ -798,7 +1007,6 @@
             
             // Combine sample data with user-added tasks
             const allTasks = [...taskStatusData, ...tasks.map(t => ({
-                id: t.id || Math.random(),
                 name: t.name,
                 status: 'ongoing',
                 initiatedDate: t.initiatedDate || getCurrentDateFormatted(),
@@ -899,53 +1107,33 @@
             const list = document.getElementById('projectStatusList');
             list.innerHTML = '';
             
-            // Combine sample data with user-added projects
-            const allProjects = [...projectStatusData, ...projects.map(p => ({
-                id: p.id || Math.random(),
-                name: p.name,
-                status: 'ongoing',
-                initiatedDate: getCurrentDateFormatted(),
-                dueDate: p.due,
-                team: p.team,
-                progress: 0
-            }))];
-            
             // Filter projects based on active filter
-            let filteredProjects = allProjects;
+            let filteredProjects = projectStatusData;
             if (window.projectFilter === 'ongoing') {
-                filteredProjects = allProjects.filter(p => p.status === 'ongoing');
+                filteredProjects = projectStatusData.filter(p => p.Status === 0);
             } else if (window.projectFilter === 'completed') {
-                filteredProjects = allProjects.filter(p => p.status === 'completed');
+                filteredProjects = projectStatusData.filter(p => p.Status === 1);
             }
             
-            filteredProjects.forEach(project => {
+            filteredProjects.forEach((project, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
-                        <h3 class="font-bold text-gray-800">${project.name}</h3>
-                        <span class="status-tag ${project.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
-                            ${project.status}
+                        <h3 class="font-bold text-gray-800">${project.project_name}</h3>
+                        <span class="status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}">
+                            ${project.Status === 0 ? 'ongoing' : 'completed'}
                         </span>
-                    </div>
-                    <div class="mb-4">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Progress</span>
-                            <span>${project.progress}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="h-2 rounded-full ${project.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'}" style="width: ${project.progress}%"></div>
-                        </div>
                     </div>
                     <div class="text-sm text-gray-600 space-y-1">
                         <div class="flex justify-between">
                             <span>Initiated Date:</span>
-                            <span class="font-medium">${project.initiatedDate}</span>
+                            <span class="font-medium">${project.initiated_date}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Due Date:</span>
-                            <span class="font-medium">${new Date(project.dueDate).toLocaleDateString()}</span>
+                            <span class="font-medium">${new Date(project.due_date).toLocaleDateString()}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Team:</span>
@@ -953,7 +1141,7 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                        <button onclick="openProjectDetailsModal(${index})" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
                     </div>
                 `;
                 

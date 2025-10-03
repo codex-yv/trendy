@@ -6,7 +6,7 @@ from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
 
 from utils.adminPosts import insert_project, insert_task
-from utils.adminGets import get_users
+from utils.adminGets import get_users, get_projects
 
 from utils.clientPost import add_new_client
 from utils.clientGets import check_existing_user, check_password, get_username
@@ -115,4 +115,10 @@ async def load_add_projects(data:Useless):
 @app.post("/load-add-task") # FOR ADMIN PAGE.
 async def load_add_projects(data:Useless):
     val = await get_users()
+    return val
+
+
+@app.post("/show-project-status")
+async def show_projects(data:Useless):
+    val = await get_projects()
     return val
