@@ -68,6 +68,7 @@
         .sidebar-menu li {
             padding: 12px 20px;
             transition: all 0.3s;
+            cursor: pointer;
         }
         
         .sidebar-menu li:hover {
@@ -344,6 +345,222 @@
             background-color: var(--warning);
         }
         
+        /* Projects Section */
+        .project-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .project-header h3 {
+            color: var(--primary);
+        }
+        
+        .project-meta {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        
+        .phase {
+            margin: 10px 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .sub-phases {
+            margin-left: 20px;
+            display: none;
+        }
+        
+        .sub-phases li {
+            margin: 5px 0;
+            color: var(--gray);
+        }
+        
+        /* Tasks Section */
+        .tasks-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .task-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .task-title {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .task-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .task-meta-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+        
+        .task-description {
+            color: var(--dark);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .task-team {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .team-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .team-dev {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .team-design {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--warning);
+        }
+        
+        .team-marketing {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+        }
+        
+        .assigned-members {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .member-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 5px;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--light-gray);
+        }
+        
+        /* Checkbox Styles */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            cursor: pointer;
+        }
+        
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .custom-checkbox.checked {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+        
+        .custom-checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .project-checkbox {
+            margin-top: 10px;
+        }
+        
+        /* Notifications List */
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-icon-container {
+            background-color: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .notification-success {
+            background-color: var(--success);
+        }
+        
+        .notification-warning {
+            background-color: var(--warning);
+        }
+        
         /* Responsive Styles */
         @media (max-width: 992px) {
             .sidebar {
@@ -388,6 +605,10 @@
             .dashboard-cards {
                 grid-template-columns: 1fr;
             }
+            
+            .tasks-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -397,23 +618,23 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Client Portal</h2>
-                <p id="welcomeMessage">Welcome, {{fullname}}</p>
+                <p id="welcomeMessage">Welcome,{{fullname}} </p>
             </div>
             <div class="sidebar-menu">
                 <ul>
-                    <li class="active">
+                    <li class="active" id="dashboardBtn">
                         <a href="#">
                             <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li>
+                    <li id="projectsBtn">
                         <a href="#">
                             <i class="fas fa-project-diagram"></i>
                             <span>Projects</span>
                         </a>
                     </li>
-                    <li>
+                    <li id="tasksBtn">
                         <a href="#">
                             <i class="fas fa-tasks"></i>
                             <span>Tasks</span>
@@ -464,7 +685,7 @@
             <!-- Header -->
             <div class="header">
                 <div class="header-left">
-                    <h1>Dashboard</h1>
+                    <h1 id="pageTitle">Dashboard</h1>
                 </div>
                 <div class="header-right">
                     <div class="notification-icon">
@@ -479,166 +700,461 @@
 
             <!-- Content -->
             <div class="content">
-                <!-- Dashboard Cards -->
-                <div class="dashboard-cards">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-value">5</div>
-                                <div class="card-title">Active Projects</div>
-                            </div>
-                            <div class="card-icon primary">
-                                <i class="fas fa-project-diagram"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-value">12</div>
-                                <div class="card-title">Completed Tasks</div>
-                            </div>
-                            <div class="card-icon success">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-value">3</div>
-                                <div class="card-title">Pending Approvals</div>
-                            </div>
-                            <div class="card-icon warning">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <div class="card-value">2</div>
-                                <div class="card-title">Upcoming Deadlines</div>
-                            </div>
-                            <div class="card-icon danger">
-                                <i class="fas fa-calendar-alt"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Projects Section -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Recent Projects</h2>
-                        <button class="btn btn-outline">View All</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Project Name</th>
-                                    <th>Status</th>
-                                    <th>Progress</th>
-                                    <th>Due Date</th>
-                                    <th>Team</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Website Redesign</td>
-                                    <td><span class="status status-ongoing">Ongoing</span></td>
-                                    <td>
-                                        <div class="progress-bar">
-                                            <div class="progress progress-primary" style="width: 75%"></div>
-                                        </div>
-                                        <small>75%</small>
-                                    </td>
-                                    <td>Oct 15, 2023</td>
-                                    <td>Design Team</td>
-                                </tr>
-                                <tr>
-                                    <td>Mobile App Development</td>
-                                    <td><span class="status status-completed">Completed</span></td>
-                                    <td>
-                                        <div class="progress-bar">
-                                            <div class="progress progress-success" style="width: 100%"></div>
-                                        </div>
-                                        <small>100%</small>
-                                    </td>
-                                    <td>Sep 30, 2023</td>
-                                    <td>Dev Team</td>
-                                </tr>
-                                <tr>
-                                    <td>Marketing Campaign</td>
-                                    <td><span class="status status-pending">Pending</span></td>
-                                    <td>
-                                        <div class="progress-bar">
-                                            <div class="progress progress-warning" style="width: 30%"></div>
-                                        </div>
-                                        <small>30%</small>
-                                    </td>
-                                    <td>Nov 10, 2023</td>
-                                    <td>Marketing Team</td>
-                                </tr>
-                                <tr>
-                                    <td>E-commerce Platform</td>
-                                    <td><span class="status status-ongoing">Ongoing</span></td>
-                                    <td>
-                                        <div class="progress-bar">
-                                            <div class="progress progress-primary" style="width: 60%"></div>
-                                        </div>
-                                        <small>60%</small>
-                                    </td>
-                                    <td>Dec 05, 2023</td>
-                                    <td>Dev Team</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Notifications Section -->
-                <div class="section">
-                    <div class="section-header">
-                        <h2 class="section-title">Notifications</h2>
-                        <button class="btn btn-outline">Mark All as Read</button>
-                    </div>
-                    <div class="notifications-list">
-                        <div class="notification-item" style="padding: 15px; border-bottom: 1px solid var(--light-gray);">
-                            <div style="display: flex; align-items: center;">
-                                <div style="background-color: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                                    <i class="fas fa-file-upload"></i>
-                                </div>
+                <!-- Dashboard Content -->
+                <div id="dashboardContent">
+                    <!-- Dashboard Cards -->
+                    <div class="dashboard-cards">
+                        <div class="card">
+                            <div class="card-header">
                                 <div>
-                                    <h4 style="margin-bottom: 5px;">New document uploaded</h4>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Project proposal for Website Redesign has been shared with you.</p>
-                                    <small style="color: var(--gray);">2 hours ago</small>
+                                    <div class="card-value">5</div>
+                                    <div class="card-title">Active Projects</div>
+                                </div>
+                                <div class="card-icon primary">
+                                    <i class="fas fa-project-diagram"></i>
                                 </div>
                             </div>
                         </div>
-                        <div class="notification-item" style="padding: 15px; border-bottom: 1px solid var(--light-gray);">
-                            <div style="display: flex; align-items: center;">
-                                <div style="background-color: var(--success); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-value">12</div>
+                                    <div class="card-title">Completed Tasks</div>
+                                </div>
+                                <div class="card-icon success">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
                                 <div>
-                                    <h4 style="margin-bottom: 5px;">Task completed</h4>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Phase 1 of Mobile App Development has been completed.</p>
-                                    <small style="color: var(--gray);">1 day ago</small>
+                                    <div class="card-value">3</div>
+                                    <div class="card-title">Pending Approvals</div>
+                                </div>
+                                <div class="card-icon warning">
+                                    <i class="fas fa-clock"></i>
                                 </div>
                             </div>
                         </div>
-                        <div class="notification-item" style="padding: 15px;">
-                            <div style="display: flex; align-items: center;">
-                                <div style="background-color: var(--warning); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-value">2</div>
+                                    <div class="card-title">Upcoming Deadlines</div>
+                                </div>
+                                <div class="card-icon danger">
                                     <i class="fas fa-calendar-alt"></i>
                                 </div>
-                                <div>
-                                    <h4 style="margin-bottom: 5px;">Upcoming deadline</h4>
-                                    <p style="color: var(--gray); font-size: 0.9rem;">Review for Marketing Campaign is due in 3 days.</p>
-                                    <small style="color: var(--gray);">2 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Projects Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Recent Projects</h2>
+                            <button class="btn btn-outline">View All</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Project Name</th>
+                                        <th>Status</th>
+                                        <th>Progress</th>
+                                        <th>Due Date</th>
+                                        <th>Team</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Website Redesign</td>
+                                        <td><span class="status status-ongoing">Ongoing</span></td>
+                                        <td>
+                                            <div class="progress-bar">
+                                                <div class="progress progress-primary" style="width: 75%"></div>
+                                            </div>
+                                            <small>75%</small>
+                                        </td>
+                                        <td>Oct 15, 2023</td>
+                                        <td>Design Team</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mobile App Development</td>
+                                        <td><span class="status status-completed">Completed</span></td>
+                                        <td>
+                                            <div class="progress-bar">
+                                                <div class="progress progress-success" style="width: 100%"></div>
+                                            </div>
+                                            <small>100%</small>
+                                        </td>
+                                        <td>Sep 30, 2023</td>
+                                        <td>Dev Team</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Marketing Campaign</td>
+                                        <td><span class="status status-pending">Pending</span></td>
+                                        <td>
+                                            <div class="progress-bar">
+                                                <div class="progress progress-warning" style="width: 30%"></div>
+                                            </div>
+                                            <small>30%</small>
+                                        </td>
+                                        <td>Nov 10, 2023</td>
+                                        <td>Marketing Team</td>
+                                    </tr>
+                                    <tr>
+                                        <td>E-commerce Platform</td>
+                                        <td><span class="status status-ongoing">Ongoing</span></td>
+                                        <td>
+                                            <div class="progress-bar">
+                                                <div class="progress progress-primary" style="width: 60%"></div>
+                                            </div>
+                                            <small>60%</small>
+                                        </td>
+                                        <td>Dec 05, 2023</td>
+                                        <td>Dev Team</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">Notifications</h2>
+                            <button class="btn btn-outline">Mark All as Read</button>
+                        </div>
+                        <div class="notifications-list">
+                            <div class="notification-item">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="notification-icon-container">
+                                        <i class="fas fa-file-upload"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin-bottom: 5px;">New document uploaded</h4>
+                                        <p style="color: var(--gray); font-size: 0.9rem;">Project proposal for Website Redesign has been shared with you.</p>
+                                        <small style="color: var(--gray);">2 hours ago</small>
+                                    </div>
                                 </div>
+                            </div>
+                            <div class="notification-item">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="notification-icon-container notification-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin-bottom: 5px;">Task completed</h4>
+                                        <p style="color: var(--gray); font-size: 0.9rem;">Phase 1 of Mobile App Development has been completed.</p>
+                                        <small style="color: var(--gray);">1 day ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="notification-item">
+                                <div style="display: flex; align-items: center;">
+                                    <div class="notification-icon-container notification-warning">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin-bottom: 5px;">Upcoming deadline</h4>
+                                        <p style="color: var(--gray); font-size: 0.9rem;">Review for Marketing Campaign is due in 3 days.</p>
+                                        <small style="color: var(--gray);">2 days ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Section -->
+                <div id="projectsSection" style="display: none;">
+                    <h2 style="color: var(--primary); margin-bottom: 20px;">Projects</h2>
+
+                    <div class="project-card">
+                        <div class="project-header"><h3>Website Redesign</h3><span>Due: Oct 15, 2023</span></div>
+                        <div class="project-meta">Initiated: Aug 10, 2023 | Team: Design Team | Manager: Sarah Johnson</div>
+                        <div class="project-meta">Assigned Members: Alex, Emma, John</div>
+                        <div class="phase" onclick="toggleSubPhases(this)">Login & Sign Up</div>
+                        <ul class="sub-phases">
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">UI Design</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Backend Integration</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Testing</span>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="phase" onclick="toggleSubPhases(this)">Dashboard Module</div>
+                        <ul class="sub-phases">
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Analytics</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">User Management</span>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="checkbox-container project-checkbox">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                            <span class="checkbox-label">Mark project as completed</span>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-header"><h3>Mobile App Development</h3><span>Due: Dec 05, 2023</span></div>
+                        <div class="project-meta">Initiated: Sep 01, 2023 | Team: Dev Team | Manager: Mark Lee</div>
+                        <div class="project-meta">Assigned Members: Tom, Lisa, Kevin</div>
+                        <div class="phase" onclick="toggleSubPhases(this)">Authentication Module</div>
+                        <ul class="sub-phases">
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Google OAuth</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Two Factor Auth</span>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="phase" onclick="toggleSubPhases(this)">Payment Gateway</div>
+                        <ul class="sub-phases">
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Stripe Integration</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Testing Refund Flow</span>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="checkbox-container project-checkbox">
+                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                            <span class="checkbox-label">Mark project as completed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Section -->
+                <div id="tasksSection" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">All Tasks</h2>
+                    </div>
+                    
+                    <div class="tasks-container">
+                        <!-- Task 1 -->
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3 class="task-title">UI Design for Login Page</h3>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Completed</span>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Initiated: Sep 10, 2023</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Due: Oct 05, 2023</span>
+                                </div>
+                            </div>
+                            <div class="task-description">
+                                Create modern and responsive UI design for the login and signup pages, ensuring accessibility standards are met.
+                            </div>
+                            <div class="task-team">
+                                <span class="team-badge team-design">Design Team</span>
+                            </div>
+                            <div class="assigned-members">
+                                <img src="https://i.pravatar.cc/150?img=5" class="member-avatar" alt="Alex">
+                                <img src="https://i.pravatar.cc/150?img=6" class="member-avatar" alt="Emma">
+                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Alex, Emma</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Task 2 -->
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3 class="task-title">Backend API Development</h3>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Completed</span>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Initiated: Aug 15, 2023</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Due: Sep 25, 2023</span>
+                                </div>
+                            </div>
+                            <div class="task-description">
+                                Develop RESTful APIs for user authentication, profile management, and data retrieval with proper documentation.
+                            </div>
+                            <div class="task-team">
+                                <span class="team-badge team-dev">Dev Team</span>
+                            </div>
+                            <div class="assigned-members">
+                                <img src="https://i.pravatar.cc/150?img=7" class="member-avatar" alt="Tom">
+                                <img src="https://i.pravatar.cc/150?img=8" class="member-avatar" alt="Kevin">
+                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Tom, Kevin</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Task 3 -->
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3 class="task-title">Marketing Campaign Strategy</h3>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Completed</span>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Initiated: Sep 20, 2023</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Due: Nov 10, 2023</span>
+                                </div>
+                            </div>
+                            <div class="task-description">
+                                Develop comprehensive marketing strategy for product launch including social media, email campaigns, and influencer partnerships.
+                            </div>
+                            <div class="task-team">
+                                <span class="team-badge team-marketing">Marketing Team</span>
+                            </div>
+                            <div class="assigned-members">
+                                <img src="https://i.pravatar.cc/150?img=9" class="member-avatar" alt="Lisa">
+                                <img src="https://i.pravatar.cc/150?img=10" class="member-avatar" alt="John">
+                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Lisa, John</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Task 4 -->
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3 class="task-title">Database Optimization</h3>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Completed</span>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Initiated: Sep 05, 2023</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Due: Oct 20, 2023</span>
+                                </div>
+                            </div>
+                            <div class="task-description">
+                                Optimize database queries, implement indexing strategies, and improve overall database performance for better application responsiveness.
+                            </div>
+                            <div class="task-team">
+                                <span class="team-badge team-dev">Dev Team</span>
+                            </div>
+                            <div class="assigned-members">
+                                <img src="https://i.pravatar.cc/150?img=11" class="member-avatar" alt="Sarah">
+                                <img src="https://i.pravatar.cc/150?img=12" class="member-avatar" alt="Mike">
+                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Sarah, Mike</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Task 5 -->
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3 class="task-title">User Testing Sessions</h3>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Completed</span>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Initiated: Sep 25, 2023</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Due: Oct 30, 2023</span>
+                                </div>
+                            </div>
+                            <div class="task-description">
+                                Organize and conduct user testing sessions for the new application features, gather feedback, and compile reports for the development team.
+                            </div>
+                            <div class="task-team">
+                                <span class="team-badge team-design">Design Team</span>
+                            </div>
+                            <div class="assigned-members">
+                                <img src="https://i.pravatar.cc/150?img=13" class="member-avatar" alt="Emma">
+                                <img src="https://i.pravatar.cc/150?img=14" class="member-avatar" alt="David">
+                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Emma, David</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Task 6 -->
+                        <div class="task-card">
+                            <div class="task-header">
+                                <h3 class="task-title">Content Creation for Blog</h3>
+                                <div class="checkbox-container">
+                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                    <span class="checkbox-label">Completed</span>
+                                </div>
+                            </div>
+                            <div class="task-meta">
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    <span>Initiated: Aug 20, 2023</span>
+                                </div>
+                                <div class="task-meta-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Due: Sep 15, 2023</span>
+                                </div>
+                            </div>
+                            <div class="task-description">
+                                Create engaging blog content about industry trends, product features, and user guides to drive organic traffic and user engagement.
+                            </div>
+                            <div class="task-team">
+                                <span class="team-badge team-marketing">Marketing Team</span>
+                            </div>
+                            <div class="assigned-members">
+                                <img src="https://i.pravatar.cc/150?img=15" class="member-avatar" alt="Anna">
+                                <img src="https://i.pravatar.cc/150?img=16" class="member-avatar" alt="Robert">
+                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Anna, Robert</span>
                             </div>
                         </div>
                     </div>
@@ -648,6 +1164,7 @@
     </div>
 
     <script>
+        
         // Logout functionality
         document.getElementById('logoutBtn').addEventListener('click', function(e) {
             e.preventDefault();
@@ -661,6 +1178,63 @@
             // Redirect to login page
             window.location.href = 'auth.html';
         });
+
+        // Sidebar navigation
+        function showSection(sectionId, title) {
+            // Hide all sections
+            document.getElementById("dashboardContent").style.display = "none";
+            document.getElementById("projectsSection").style.display = "none";
+            document.getElementById("tasksSection").style.display = "none";
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = "block";
+            document.getElementById("pageTitle").textContent = title;
+            
+            // Update active menu item
+            document.querySelectorAll('.sidebar-menu li').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Activate the corresponding menu item
+            if (sectionId === "dashboardContent") {
+                document.getElementById("dashboardBtn").classList.add('active');
+            } else if (sectionId === "projectsSection") {
+                document.getElementById("projectsBtn").classList.add('active');
+            } else if (sectionId === "tasksSection") {
+                document.getElementById("tasksBtn").classList.add('active');
+            }
+        }
+
+        // Set up event listeners for sidebar navigation
+        document.getElementById("dashboardBtn").addEventListener("click", function(e){
+            e.preventDefault();
+            showSection("dashboardContent", "Dashboard");
+        });
+
+        document.getElementById("projectsBtn").addEventListener("click", function(e){
+            e.preventDefault();
+            showSection("projectsSection", "Projects");
+        });
+
+        document.getElementById("tasksBtn").addEventListener("click", function(e){
+            e.preventDefault();
+            showSection("tasksSection", "Tasks");
+        });
+
+        // Toggle sub-phases
+        function toggleSubPhases(el) {
+            const subPhases = el.nextElementSibling;
+            if(subPhases.style.display === "block"){
+                subPhases.style.display = "none";
+            } else {
+                subPhases.style.display = "block";
+            }
+        }
+
+        // Toggle checkbox
+        function toggleCheckbox(checkbox) {
+            checkbox.classList.toggle('checked');
+        }
     </script>
 </body>
 </html>

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .no-scrollbar::-webkit-scrollbar {
             display: none;
@@ -15,110 +16,863 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        .status-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-ongoing {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .profile-pic {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .active-tab {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen"> <!-- Header -->
-    <div class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Admin Dashboard</h1>
-        <div class="space-x-3"> <button onclick="openProjectModal()"
-                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100">+ Add Project</button>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+            <div class="flex space-x-2">
+                <button id="dashboardBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2 active-tab">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button id="approveSignUpsBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
+                    <i class="fas fa-user-check"></i>
+                    <span>Approve Sign Ups</span>
+                </button>
+                <button id="showProjectStatusBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Show Project Status</span>
+                </button>
+                <button id="showTaskStatusBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
+                    <i class="fas fa-tasks"></i>
+                    <span>Show Task Status</span>
+                </button>
+            </div>
+        </div>
+        <div class="space-x-3">
+            <button onclick="openProjectModal()"
+                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
+                <i class="fas fa-plus mr-2"></i>Add Project
+            </button>
             <button onclick="openTaskModal()"
-                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100">+ Assign Task</button>
+                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
+                <i class="fas fa-tasks mr-2"></i>Assign Task
+            </button>
         </div>
-    </div> <!-- Main -->
-    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-            <h2 class="text-lg font-semibold mb-4">Projects Overview</h2>
-            <div id="projectList" class="space-y-3"></div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="p-6">
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Projects</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalProjects">0</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-sm text-green-600 font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>5.2% from last month
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Completed Projects</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedProjects">0</h3>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-sm text-green-600 font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>12.4% from last month
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total Tasks</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalTasks">0</h3>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-tasks text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-sm text-green-600 font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>8.7% from last month
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Completed Tasks</p>
+                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedTasks">0</h3>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-full">
+                            <i class="fas fa-clipboard-check text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-sm text-green-600 font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i>3.1% from last month
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Projects</h3>
+                    <div id="recentProjects" class="space-y-4">
+                        <!-- Recent projects will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Tasks</h3>
+                    <div id="recentTasks" class="space-y-4">
+                        <!-- Recent tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            <h2 class="text-lg font-semibold mb-4">Tasks Overview</h2>
-            <div id="taskList" class="space-y-3"></div>
+
+        <!-- Sign Up Requests Section -->
+        <div id="signUpRequestsSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Sign Up Requests</h2>
+                <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    <span id="pendingRequestsCount">3</span> Pending Requests
+                </span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signUpRequestsList" class="bg-white divide-y divide-gray-200">
+                        <!-- Sign up requests will be populated here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div> <!-- Project Modal -->
-    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
-            <h3 id="projectModalTitle" class="text-xl font-bold">Add New Project</h3> <input type="hidden"
-                id="editProjectIndex">
-            <div> <label class="block">Project Name</label> <input type="text" id="projectName"
-                    class="w-full border p-2 rounded"> </div>
-            <div> <label class="block">Due Date</label> <input type="date" id="projectDueDate"
-                    class="w-full border p-2 rounded"> </div>
-            <div> <label class="block">Team</label> <select id="projectTeam" class="w-full border p-2 rounded">
+
+        <!-- Project Status Section -->
+        <div id="projectStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Project Status</h2>
+                <div class="flex space-x-2">
+                    <button id="allProjectsBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
+                    <button id="ongoingProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
+                    <button id="completedProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+                </div>
+            </div>
+            <div id="projectStatusList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Project status cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Task Status Section -->
+        <div id="taskStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Task Status</h2>
+                <div class="flex space-x-2">
+                    <button id="allTasksBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
+                    <button id="ongoingTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
+                    <button id="completedTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+                </div>
+            </div>
+            <div id="taskStatusList" class="space-y-4">
+                <!-- Task status cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 id="projectModalTitle" class="text-xl font-bold text-gray-800">Add New Project</h3>
+            <input type="hidden" id="editProjectIndex">
+            <div>
+                <label class="block text-gray-700 mb-1">Project Name</label>
+                <input type="text" id="projectName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Due Date</label>
+                <input type="date" id="projectDueDate" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Team</label>
+                <select id="projectTeam" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Select Team</option>
                     <option>Dev Team</option>
                     <option>Design Team</option>
                     <option>Marketing Team</option>
-                </select> </div>
-            <div> <label class="block">Assign Members</label> <select id="projectMembers" multiple
-                    onchange="updateAssigned('project')" class="w-full border p-2 rounded">
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Assign Members</label>
+                <select id="projectMembers" multiple onchange="updateAssigned('project')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option>Alice - Dev</option>
                     <option>Bob - Design</option>
                     <option>Charlie - Marketing</option>
                 </select>
                 <div id="projectAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
-            <div> <label class="block">Assign Project Manager</label> <select id="projectManager"
-                    class="w-full border p-2 rounded">
+            <div>
+                <label class="block text-gray-700 mb-1">Assign Project Manager</label>
+                <select id="projectManager" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Select Manager</option>
                     <option>Alice - Dev</option>
                     <option>Bob - Design</option>
                     <option>Charlie - Marketing</option>
-                </select> </div>
-            <div> <button onclick="openComponentModal()" class="bg-blue-600 text-white px-3 py-2 rounded">+ Add
-                    Components</button>
+                </select>
+            </div>
+            <div>
+                <button onclick="openComponentModal()" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Add Components
+                </button>
                 <div id="componentsList" class="mt-3 space-y-2"></div>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2"> <button onclick="closeProjectModal()"
-                    class="px-4 py-2 border rounded">Cancel</button> <button id="saveProjectBtn" onclick="addProject()"
-                    class="px-4 py-2 bg-green-600 text-white rounded">Add Project</button> <button id="updateProjectBtn"
-                    onclick="updateProject()" class="px-4 py-2 bg-yellow-600 text-white rounded hidden">Update
-                    Project</button> </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
+                <button onclick="closeProjectModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Cancel</button>
+                <button id="saveProjectBtn" onclick="addProject()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">Add Project</button>
+                <button id="updateProjectBtn" onclick="updateProject()" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors hidden">Update Project</button>
+            </div>
         </div>
-    </div> <!-- Task Modal -->
-    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
-            <h3 id="taskModalTitle" class="text-xl font-bold">Assign Task</h3> <input type="hidden" id="editTaskIndex">
-            <div> <label class="block">Task Name</label> <input type="text" id="taskName"
-                    class="w-full border p-2 rounded"> </div>
-            <div> <label class="block">Task Description</label> <textarea id="taskDescription"
-                    class="w-full border p-2 rounded"></textarea> </div>
-            <div> <label class="block">Due Date</label> <input type="date" id="taskDueDate"
-                    class="w-full border p-2 rounded"> </div>
-            <div> <label class="block">Assign Members</label> <select id="taskMembers" multiple
-                    onchange="updateAssigned('task')" class="w-full border p-2 rounded">
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 id="taskModalTitle" class="text-xl font-bold text-gray-800">Assign Task</h3>
+            <input type="hidden" id="editTaskIndex">
+            <div>
+                <label class="block text-gray-700 mb-1">Task Name</label>
+                <input type="text" id="taskName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Task Description</label>
+                <textarea id="taskDescription" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Due Date</label>
+                <input type="date" id="taskDueDate" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Assign Members</label>
+                <select id="taskMembers" multiple onchange="updateAssigned('task')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option>Alice - Dev</option>
                     <option>Bob - Design</option>
                     <option>Charlie - Marketing</option>
                 </select>
                 <div id="taskAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2"> <button onclick="closeTaskModal()"
-                    class="px-4 py-2 border rounded">Cancel</button> <button id="saveTaskBtn" onclick="addTask()"
-                    class="px-4 py-2 bg-green-600 text-white rounded">Add Task</button> <button id="updateTaskBtn"
-                    onclick="updateTask()" class="px-4 py-2 bg-yellow-600 text-white rounded hidden">Update
-                    Task</button> </div>
-        </div>
-    </div> <!-- Component Modal -->
-    <div id="componentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/3 max-h-[70vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
-            <h3 class="text-lg font-bold">Add Component</h3>
-            <div> <label class="block">Component</label> <input type="text" id="componentName"
-                    class="w-full border p-2 rounded"> </div>
-            <div> <label class="block">Feature</label> <input type="text" id="featureName"
-                    class="w-full border p-2 rounded"> </div>
-            <div class="flex justify-end gap-3"> <button onclick="closeComponentModal()"
-                    class="px-4 py-2 border rounded">Cancel</button> <button onclick="addComponent()"
-                    class="px-4 py-2 bg-blue-600 text-white rounded">Add</button> </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
+                <button onclick="closeTaskModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Cancel</button>
+                <button id="saveTaskBtn" onclick="addTask()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">Add Task</button>
+                <button id="updateTaskBtn" onclick="updateTask()" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors hidden">Update Task</button>
+            </div>
         </div>
     </div>
+
+    <!-- Component Modal -->
+    <div id="componentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/3 max-h-[70vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 class="text-lg font-bold text-gray-800">Add Component</h3>
+            <div>
+                <label class="block text-gray-700 mb-1">Component</label>
+                <input type="text" id="componentName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Feature</label>
+                <input type="text" id="featureName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeComponentModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Cancel</button>
+                <button onclick="addComponent()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">Add</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ====== Data Stores ======
         let assigned = { project: [], task: [] };
         let components = [];
         let projects = [];
         let tasks = [];
+        
+        // Sample data for demonstration
+        let signUpRequests = [
+            { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "+1-234-567-8901", role: "manager", status: "pending" },
+            { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "+1-234-567-8902", role: "intern", status: "pending" },
+            { id: 3, name: "Robert Johnson", email: "robert.j@example.com", phone: "+1-234-567-8903", role: "employee", status: "pending" }
+        ];
+        
+        let projectStatusData = [
+            { id: 1, name: "Website Redesign", status: "ongoing", initiatedDate: "15/09/2023", dueDate: "2023-12-15", team: "Design Team", progress: 65 },
+            { id: 2, name: "Mobile App Development", status: "ongoing", initiatedDate: "01/10/2023", dueDate: "2024-02-20", team: "Dev Team", progress: 30 },
+            { id: 3, name: "Marketing Campaign", status: "completed", initiatedDate: "01/08/2023", dueDate: "2023-10-10", team: "Marketing Team", progress: 100 },
+            { id: 4, name: "Database Migration", status: "ongoing", initiatedDate: "20/09/2023", dueDate: "2023-11-30", team: "Dev Team", progress: 45 }
+        ];
+        
+        let taskStatusData = [
+            { 
+                id: 1, 
+                name: "Implement User Authentication", 
+                status: "ongoing", 
+                initiatedDate: "2023-09-15", 
+                dueDate: "2023-11-10", 
+                project: "Mobile App Development", 
+                team: "Dev Team", 
+                assignedTo: [
+                    { name: "Alice", role: "Developer", profilePic: "https://randomuser.me/api/portraits/women/44.jpg" },
+                    { name: "Bob", role: "Backend", profilePic: "https://randomuser.me/api/portraits/men/32.jpg" }
+                ]
+            },
+            { 
+                id: 2, 
+                name: "Design Landing Page", 
+                status: "completed", 
+                initiatedDate: "2023-08-20", 
+                dueDate: "2023-10-05", 
+                project: "Website Redesign", 
+                team: "Design Team", 
+                assignedTo: [
+                    { name: "Charlie", role: "Designer", profilePic: "https://randomuser.me/api/portraits/men/22.jpg" }
+                ]
+            },
+            { 
+                id: 3, 
+                name: "Social Media Strategy", 
+                status: "ongoing", 
+                initiatedDate: "2023-10-01", 
+                dueDate: "2023-11-15", 
+                project: "Marketing Campaign", 
+                team: "Marketing Team", 
+                assignedTo: [
+                    { name: "Diana", role: "Marketer", profilePic: "https://randomuser.me/api/portraits/women/68.jpg" },
+                    { name: "Ethan", role: "Content Writer", profilePic: "https://randomuser.me/api/portraits/men/36.jpg" }
+                ]
+            }
+        ];
+
+        // ====== Tab Navigation ======
+        document.getElementById('dashboardBtn').addEventListener('click', function() {
+            showSection('dashboardSection');
+            updateDashboardStats();
+        });
+
+        document.getElementById('approveSignUpsBtn').addEventListener('click', function() {
+            showSection('signUpRequestsSection');
+            renderSignUpRequests();
+        });
+
+        document.getElementById('showProjectStatusBtn').addEventListener('click', function() {
+            showSection('projectStatusSection');
+            renderProjectStatus();
+        });
+
+        document.getElementById('showTaskStatusBtn').addEventListener('click', function() {
+            showSection('taskStatusSection');
+            renderTaskStatus();
+        });
+
+        // Project filter buttons
+        document.getElementById('allProjectsBtn').addEventListener('click', function() {
+            setActiveProjectFilter('all');
+            renderProjectStatus();
+        });
+
+        document.getElementById('ongoingProjectsBtn').addEventListener('click', function() {
+            setActiveProjectFilter('ongoing');
+            renderProjectStatus();
+        });
+
+        document.getElementById('completedProjectsBtn').addEventListener('click', function() {
+            setActiveProjectFilter('completed');
+            renderProjectStatus();
+        });
+
+        // Task filter buttons
+        document.getElementById('allTasksBtn').addEventListener('click', function() {
+            setActiveTaskFilter('all');
+            renderTaskStatus();
+        });
+
+        document.getElementById('ongoingTasksBtn').addEventListener('click', function() {
+            setActiveTaskFilter('ongoing');
+            renderTaskStatus();
+        });
+
+        document.getElementById('completedTasksBtn').addEventListener('click', function() {
+            setActiveTaskFilter('completed');
+            renderTaskStatus();
+        });
+
+        function setActiveProjectFilter(filter) {
+            document.getElementById('allProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('ongoingProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('completedProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            
+            document.getElementById('allProjectsBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('ongoingProjectsBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('completedProjectsBtn').classList.add('bg-gray-100', 'text-gray-700');
+            
+            if (filter === 'all') {
+                document.getElementById('allProjectsBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('allProjectsBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'ongoing') {
+                document.getElementById('ongoingProjectsBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('ongoingProjectsBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'completed') {
+                document.getElementById('completedProjectsBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('completedProjectsBtn').classList.add('bg-blue-100', 'text-blue-700');
+            }
+            
+            window.projectFilter = filter;
+        }
+
+        function setActiveTaskFilter(filter) {
+            document.getElementById('allTasksBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('ongoingTasksBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('completedTasksBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            
+            document.getElementById('allTasksBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('ongoingTasksBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('completedTasksBtn').classList.add('bg-gray-100', 'text-gray-700');
+            
+            if (filter === 'all') {
+                document.getElementById('allTasksBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('allTasksBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'ongoing') {
+                document.getElementById('ongoingTasksBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('ongoingTasksBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'completed') {
+                document.getElementById('completedTasksBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('completedTasksBtn').classList.add('bg-blue-100', 'text-blue-700');
+            }
+            
+            window.taskFilter = filter;
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('signUpRequestsSection').classList.add('hidden');
+            document.getElementById('projectStatusSection').classList.add('hidden');
+            document.getElementById('taskStatusSection').classList.add('hidden');
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update active button state
+            document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn').forEach(btn => {
+                btn.classList.remove('active-tab');
+            });
+            
+            if (sectionId === 'dashboardSection') {
+                document.getElementById('dashboardBtn').classList.add('active-tab');
+            } else if (sectionId === 'signUpRequestsSection') {
+                document.getElementById('approveSignUpsBtn').classList.add('active-tab');
+            } else if (sectionId === 'projectStatusSection') {
+                document.getElementById('showProjectStatusBtn').classList.add('active-tab');
+            } else if (sectionId === 'taskStatusSection') {
+                document.getElementById('showTaskStatusBtn').classList.add('active-tab');
+            }
+        }
+
+        // ====== Dashboard Functions ======
+        function updateDashboardStats() {
+            // Calculate stats
+            const totalProjects = projects.length + projectStatusData.length;
+            const completedProjects = projectStatusData.filter(p => p.status === 'completed').length;
+            const totalTasks = tasks.length + taskStatusData.length;
+            const completedTasks = taskStatusData.filter(t => t.status === 'completed').length;
+            
+            // Update dashboard numbers
+            document.getElementById('totalProjects').textContent = totalProjects;
+            document.getElementById('completedProjects').textContent = completedProjects;
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            
+            // Render recent projects and tasks
+            renderRecentProjects();
+            renderRecentTasks();
+        }
+
+        function renderRecentProjects() {
+            const container = document.getElementById('recentProjects');
+            container.innerHTML = '';
+            
+            // Combine sample data with user-added projects
+            const allProjects = [...projectStatusData, ...projects.map(p => ({
+                id: p.id || Math.random(),
+                name: p.name,
+                status: p.status || 'ongoing',
+                initiatedDate: p.initiatedDate || getCurrentDateFormatted(),
+                dueDate: p.due,
+                team: p.team,
+                progress: p.progress || 0
+            }))];
+            
+            // Sort by date (most recent first) and take first 3
+            const recentProjects = allProjects
+                .sort((a, b) => new Date(b.initiatedDate) - new Date(a.initiatedDate))
+                .slice(0, 3);
+            
+            recentProjects.forEach(project => {
+                const projectEl = document.createElement('div');
+                projectEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                
+                projectEl.innerHTML = `
+                    <div>
+                        <h4 class="font-medium text-gray-800">${project.name}</h4>
+                        <p class="text-sm text-gray-600">${project.team} • Started: ${project.initiatedDate}</p>
+                    </div>
+                    <span class="status-tag ${project.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
+                        ${project.status}
+                    </span>
+                `;
+                
+                container.appendChild(projectEl);
+            });
+        }
+
+        function renderRecentTasks() {
+            const container = document.getElementById('recentTasks');
+            container.innerHTML = '';
+            
+            // Combine sample data with user-added tasks
+            const allTasks = [...taskStatusData, ...tasks.map(t => ({
+                id: t.id || Math.random(),
+                name: t.name,
+                status: 'ongoing',
+                initiatedDate: t.initiatedDate || getCurrentDateFormatted(),
+                dueDate: t.due,
+                project: 'General',
+                team: 'Various'
+            }))];
+            
+            // Sort by date (most recent first) and take first 3
+            const recentTasks = allTasks
+                .sort((a, b) => new Date(b.initiatedDate) - new Date(a.initiatedDate))
+                .slice(0, 3);
+            
+            recentTasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                
+                taskEl.innerHTML = `
+                    <div>
+                        <h4 class="font-medium text-gray-800">${task.name}</h4>
+                        <p class="text-sm text-gray-600">${task.team} • Due: ${new Date(task.dueDate).toLocaleDateString()}</p>
+                    </div>
+                    <span class="status-tag ${task.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
+                        ${task.status}
+                    </span>
+                `;
+                
+                container.appendChild(taskEl);
+            });
+        }
+
+        // ====== Render Sign Up Requests ======
+        function renderSignUpRequests() {
+            const list = document.getElementById('signUpRequestsList');
+            list.innerHTML = '';
+            
+            document.getElementById('pendingRequestsCount').textContent = signUpRequests.filter(req => req.status === 'pending').length;
+            
+            signUpRequests.forEach(request => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${request.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${request.email}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${request.phone}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${request.role === 'manager' ? 'bg-purple-100 text-purple-800' : 
+                              request.role === 'intern' ? 'bg-blue-100 text-blue-800' : 
+                              'bg-green-100 text-green-800'}">
+                            ${request.role}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        ${request.status === 'pending' ? 
+                            `<button onclick="approveSignUp(${request.id})" class="text-green-600 hover:text-green-900 mr-3">Approve</button>
+                             <button onclick="rejectSignUp(${request.id})" class="text-red-600 hover:text-red-900">Reject</button>` :
+                            `<span class="text-gray-500">${request.status === 'approved' ? 'Approved' : 'Rejected'}</span>`
+                        }
+                    </td>
+                `;
+                
+                list.appendChild(row);
+            });
+        }
+
+        function approveSignUp(id) {
+            const request = signUpRequests.find(req => req.id === id);
+            if (request) {
+                request.status = 'approved';
+                renderSignUpRequests();
+                alert(`Approved sign up request for ${request.name}`);
+            }
+        }
+
+        function rejectSignUp(id) {
+            const request = signUpRequests.find(req => req.id === id);
+            if (request) {
+                request.status = 'rejected';
+                renderSignUpRequests();
+                alert(`Rejected sign up request for ${request.name}`);
+            }
+        }
+
+        // ====== Render Project Status ======
+        function renderProjectStatus() {
+            const list = document.getElementById('projectStatusList');
+            list.innerHTML = '';
+            
+            // Combine sample data with user-added projects
+            const allProjects = [...projectStatusData, ...projects.map(p => ({
+                id: p.id || Math.random(),
+                name: p.name,
+                status: 'ongoing',
+                initiatedDate: getCurrentDateFormatted(),
+                dueDate: p.due,
+                team: p.team,
+                progress: 0
+            }))];
+            
+            // Filter projects based on active filter
+            let filteredProjects = allProjects;
+            if (window.projectFilter === 'ongoing') {
+                filteredProjects = allProjects.filter(p => p.status === 'ongoing');
+            } else if (window.projectFilter === 'completed') {
+                filteredProjects = allProjects.filter(p => p.status === 'completed');
+            }
+            
+            filteredProjects.forEach(project => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-gray-800">${project.name}</h3>
+                        <span class="status-tag ${project.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
+                            ${project.status}
+                        </span>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full ${project.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'}" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <div class="flex justify-between">
+                            <span>Initiated Date:</span>
+                            <span class="font-medium">${project.initiatedDate}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Due Date:</span>
+                            <span class="font-medium">${new Date(project.dueDate).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Team:</span>
+                            <span class="font-medium">${project.team}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                    </div>
+                `;
+                
+                list.appendChild(card);
+            });
+        }
+
+        // ====== Render Task Status ======
+        function renderTaskStatus() {
+            const list = document.getElementById('taskStatusList');
+            list.innerHTML = '';
+            
+            // Combine sample data with user-added tasks
+            const allTasks = [...taskStatusData, ...tasks.map(t => ({
+                id: t.id || Math.random(),
+                name: t.name,
+                status: 'ongoing',
+                initiatedDate: t.initiatedDate || getCurrentDateFormatted(),
+                dueDate: t.due,
+                project: 'General',
+                team: 'Various',
+                assignedTo: t.members ? t.members.map(m => ({ 
+                    name: m.split(' - ')[0], 
+                    role: m.split(' - ')[1],
+                    profilePic: 'https://randomuser.me/api/portraits/lego/1.jpg'
+                })) : []
+            }))];
+            
+            // Filter tasks based on active filter
+            let filteredTasks = allTasks;
+            if (window.taskFilter === 'ongoing') {
+                filteredTasks = allTasks.filter(t => t.status === 'ongoing');
+            } else if (window.taskFilter === 'completed') {
+                filteredTasks = allTasks.filter(t => t.status === 'completed');
+            }
+            
+            filteredTasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-gray-800">${task.name}</h3>
+                        <span class="status-tag ${task.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
+                            ${task.status}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-2 mb-4">
+                        <div class="flex justify-between">
+                            <span>Initiated Date:</span>
+                            <span class="font-medium">${new Date(task.initiatedDate).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Due Date:</span>
+                            <span class="font-medium">${new Date(task.dueDate).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Project:</span>
+                            <span class="font-medium">${task.project}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Team:</span>
+                            <span class="font-medium">${task.team}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-600 mb-2">Assigned To:</div>
+                        <div class="flex -space-x-2">
+                            ${task.assignedTo.map(member => `
+                                <div class="relative group">
+                                    <img src="${member.profilePic}" alt="${member.name}" class="profile-pic">
+                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                        ${member.name} - ${member.role}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                    </div>
+                `;
+                
+                list.appendChild(card);
+            });
+        }
+
+        // ====== Helper Functions ======
+        function getCurrentDateFormatted() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            
+            return `${day}/${month}/${year}`;
+        }
 
         // ====== Modal Utilities ======
         function toggleModal(id, show = true) {
@@ -275,7 +1029,7 @@
             if (res.ok) {
                 alert("Project added successfully!");
                 projects.push({ name, due, team, manager, members: [...assigned.project], components: [...components] });
-                renderProjects();
+                updateDashboardStats();
                 assigned.project = [];
                 components = [];
                 closeProjectModal();
@@ -316,7 +1070,7 @@
             if (res.ok) {
                 alert("Task added successfully!");
                 tasks.push({ name, desc, due, members: [...assigned.task] });
-                renderTasks();
+                updateDashboardStats();
                 assigned.task = [];
                 closeTaskModal();
             } else {
@@ -341,7 +1095,7 @@
             components: [...components]
             };
 
-            renderProjects();
+            updateDashboardStats();
             closeProjectModal();
         }
 
@@ -355,55 +1109,24 @@
             members: [...assigned.task]
             };
 
-            renderTasks();
+            updateDashboardStats();
             closeTaskModal();
         }
 
-        // ====== Render UI ======
-        function renderProjects() {
-            const list = document.getElementById("projectList");
-            list.innerHTML = "";
-
-            projects.forEach((p, i) => {
-            const div = document.createElement("div");
-            div.className = "bg-white shadow p-4 rounded";
-            div.innerHTML = `
-                <div class="flex justify-between">
-                <h4 class="font-bold">${p.name}</h4>
-                <button onclick="openProjectModal(${i})" class="text-blue-600 text-sm">Edit</button>
-                </div>
-                <p class="text-sm text-gray-600">Due: ${p.due}</p>
-                <p class="text-sm">Team: ${p.team}</p>
-                <p class="text-sm">Manager: ${p.manager}</p>
-                <p class="text-sm">Members: ${p.members.join(", ")}</p>
-                <div class="mt-2">
-                <h5 class="font-semibold">Components</h5>
-                ${p.components.map(c => `<div class="ml-3">- ${c.name} (${c.feature})</div>`).join("")}
-                </div>
-            `;
-            list.appendChild(div);
-            });
-        }
-
-        function renderTasks() {
-            const list = document.getElementById("taskList");
-            list.innerHTML = "";
-
-            tasks.forEach((t, i) => {
-            const div = document.createElement("div");
-            div.className = "bg-white shadow p-4 rounded";
-            div.innerHTML = `
-                <div class="flex justify-between">
-                <h4 class="font-bold">${t.name}</h4>
-                <button onclick="openTaskModal(${i})" class="text-blue-600 text-sm">Edit</button>
-                </div>
-                <p class="text-sm text-gray-600">Due: ${t.due}</p>
-                <p class="text-sm">Description: ${t.desc}</p>
-                <p class="text-sm">Members: ${t.members.join(", ")}</p>
-            `;
-            list.appendChild(div);
-            });
-        }
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default filters
+            window.projectFilter = 'all';
+            window.taskFilter = 'all';
+            
+            // Set active filter buttons
+            setActiveProjectFilter('all');
+            setActiveTaskFilter('all');
+            
+            // Show dashboard by default
+            showSection('dashboardSection');
+            updateDashboardStats();
+        });
     </script>
 
 </body>
