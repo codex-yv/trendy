@@ -35,3 +35,4 @@ async def insert_task(task):
 
     result = await collection.insert_one(format_data)
     return result.inserted_id
+

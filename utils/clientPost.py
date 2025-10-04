@@ -19,7 +19,10 @@ async def add_new_client(client_add:dict):
         "assigned_task":[],    # pending projects
         "project_manager":[],
         "notifications":[],     # ongoing projects
-        "techstack":{}
+        "techstack":{},
+        "action":-1
     }
 
     await collection.insert_one(format_data)
+
+

@@ -6,7 +6,8 @@ from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
 
 from utils.adminPosts import insert_project, insert_task
-from utils.adminGets import get_users, get_projects
+from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve
+from utils.adminPuts import update_user_action
 
 from utils.clientPost import add_new_client
 from utils.clientGets import check_existing_user, check_password, get_username
@@ -18,7 +19,7 @@ from schemas.loginSchemas import LoginSchema
 from schemas.adminProjectSchemas import Project
 from schemas.adminTasksSchemas import Task
 from schemas.useless import Useless
-
+from schemas.adminActionSchemas import AdminAction
 
 
 templates_clients = Jinja2Templates(directory="templates/clients")
@@ -42,7 +43,15 @@ async def home(request:Request):
 
 @app.get("/admin-dashboard")
 async def load_admin(request:Request):
-    return templates_admin.TemplateResponse("index.html", {"request":request})
+    pd, total_projects = await get_projet_info()
+    projects = await get_projects()
+    recent_projects = projects[0:3]
+
+    td, total_tasks = await get_task_info()
+    tasks = await get_tasks()
+    recent_tasks = tasks[0:3]
+
+    return templates_admin.TemplateResponse("index.html", {"request":request, "tp":total_projects, "pd":pd, "tt":total_tasks, "td":td, "rp":recent_projects, "rt":recent_tasks})
 
 @app.get("/dashboard")
 async def get_dashboard(request: Request):
@@ -122,3 +131,18 @@ async def load_add_projects(data:Useless):
 async def show_projects(data:Useless):
     val = await get_projects()
     return val
+
+@app.post("/show-task-status")
+async def show_task(data:Useless):
+    val = await get_tasks()
+    return val
+
+@app.post("/approve-signups")
+async def show_signup_request(data:Useless):
+    user_list = await get_users_for_approve()
+    return user_list
+
+@app.post("/action-admin")
+async def admin_action(data:AdminAction):
+
+    await update_user_action(email=data.email, action=data.action)
