@@ -37,11 +37,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/login")
+@app.get("/login") # FOR Client PAGE.
 async def home(request:Request):
     return templates_clients.TemplateResponse("login.html", {"request":request})
 
-@app.get("/admin-dashboard")
+@app.get("/admin-dashboard") # FOR ADMIN PAGE.
 async def load_admin(request:Request):
     pd, total_projects = await get_projet_info()
     projects = await get_projects()
@@ -53,7 +53,7 @@ async def load_admin(request:Request):
 
     return templates_admin.TemplateResponse("index.html", {"request":request, "tp":total_projects, "pd":pd, "tt":total_tasks, "td":td, "rp":recent_projects, "rt":recent_tasks})
 
-@app.get("/dashboard")
+@app.get("/dashboard") # FOR Client PAGE.
 async def get_dashboard(request: Request):
     try:
         fullname = await get_username(collection_name=request.session.get("email"))
@@ -63,7 +63,7 @@ async def get_dashboard(request: Request):
         return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
 
 
-@app.post("/create-acc")
+@app.post("/create-acc") # FOR Client PAGE.
 async def add_new_user(request: Request, data: NewUser = Body(...)):
     request.session["email"] = data.email
     request.session["password"] = data.password
@@ -80,12 +80,12 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
 
 
 
-@app.post("/send-otp")
+@app.post("/send-otp") # FOR Client PAGE.
 async def validate_otp(request: Request, data: OTPDetails = Body(...)):
     return 1
 
 
-@app.post("/make-login")
+@app.post("/make-login") # FOR Client PAGE.
 async def trendy_login(request: Request, data: LoginSchema = Body(...)):
 
     request.session["email"] = data.email
@@ -100,7 +100,7 @@ async def trendy_login(request: Request, data: LoginSchema = Body(...)):
     else:
         return 0
 
-@app.post("/add-project")
+@app.post("/add-project") # FOR ADMIN PAGE.
 async def admin_add_projects(request: Request, project: Project):
 
     # print(project)
@@ -109,7 +109,7 @@ async def admin_add_projects(request: Request, project: Project):
     await update_project_manager(collecation_name=project.project_manager, pid=Inserted_id)
 
 
-@app.post("/add-task")
+@app.post("/add-task") # FOR ADMIN PAGE.
 async def admin_add_tasks(request: Request, task: Task):
     Inserted_id = await insert_task(task=task)
     await update_task_member(collecation_name=task.assigned_members, pid=Inserted_id)
@@ -127,22 +127,22 @@ async def load_add_projects(data:Useless):
     return val
 
 
-@app.post("/show-project-status")
+@app.post("/show-project-status") # FOR ADMIN PAGE.
 async def show_projects(data:Useless):
     val = await get_projects()
     return val
 
-@app.post("/show-task-status")
+@app.post("/show-task-status") # FOR ADMIN PAGE.
 async def show_task(data:Useless):
     val = await get_tasks()
     return val
 
-@app.post("/approve-signups")
+@app.post("/approve-signups") # FOR ADMIN PAGE.
 async def show_signup_request(data:Useless):
     user_list = await get_users_for_approve()
     return user_list
 
-@app.post("/action-admin")
+@app.post("/action-admin") # FOR ADMIN PAGE.
 async def admin_action(data:AdminAction):
 
     await update_user_action(email=data.email, action=data.action)
