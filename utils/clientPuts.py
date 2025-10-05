@@ -33,3 +33,28 @@ async def update_task_member(collecation_name, pid):
             {"email": email[0]},
             {"$push": {"assigned_task":{str(ObjectId(pid)): 0}}}
         )
+
+
+async def update_project_status_bid(project_id, status, collection_name):
+    db = client["Clients"]
+    collection = db[collection_name]
+    document_filter={"email": collection_name}
+
+    key = f"assigned_projects.$.{project_id}"
+
+    await collection.update_one(
+        {**document_filter, f"assigned_projects.{project_id}": {"$exists": True}},
+        {"$set": {key: status}}
+    )
+
+async def update_task_status_bid(task_id, status, collection_name):
+    db = client["Clients"]
+    collection = db[collection_name]
+    document_filter={"email": collection_name}
+
+    key = f"assigned_task.$.{task_id}"
+
+    await collection.update_one(
+        {**document_filter, f"assigned_task.{task_id}": {"$exists": True}},
+        {"$set": {key: status}}
+    )

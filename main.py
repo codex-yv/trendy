@@ -7,20 +7,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from utils.adminPosts import insert_project, insert_task
 from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve
-from utils.adminPuts import update_user_action
+from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act
 
 from utils.clientPost import add_new_client
-from utils.clientGets import check_existing_user, check_password, get_username
-from utils.clientPuts import update_assign_member, update_task_member, update_project_manager
+from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks
+from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid
 
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails
 from schemas.loginSchemas import LoginSchema
 from schemas.adminProjectSchemas import Project
 from schemas.adminTasksSchemas import Task
-from schemas.useless import Useless
+from schemas.useless import Useless, UselessClient
 from schemas.adminActionSchemas import AdminAction
-
+from schemas.updatePjtSchemas import UpdateProjets
+from schemas.updateTskSchema import UpdateTask
 
 templates_clients = Jinja2Templates(directory="templates/clients")
 templates_admin = Jinja2Templates(directory="templates/admin")
@@ -52,6 +53,18 @@ async def load_admin(request:Request):
     recent_tasks = tasks[0:3]
 
     return templates_admin.TemplateResponse("index.html", {"request":request, "tp":total_projects, "pd":pd, "tt":total_tasks, "td":td, "rp":recent_projects, "rt":recent_tasks})
+
+@app.get("/rejected")
+async def display_rejected_page(request: Request):
+    fullname = await get_username(collection_name=request.session.get("email"))
+    return templates_clients.TemplateResponse("rejected.html", {"request": request, "fullname": fullname})
+
+@app.get("/pending")
+async def display_pending_page(request: Request):
+
+    fullname = await get_username(collection_name=request.session.get("email"))
+    return templates_clients.TemplateResponse("pending.html", {"request": request, "fullname": fullname})
+
 
 @app.get("/dashboard") # FOR Client PAGE.
 async def get_dashboard(request: Request):
@@ -93,8 +106,14 @@ async def trendy_login(request: Request, data: LoginSchema = Body(...)):
 
     if not await check_existing_user(collection_name=data.email):
         if await check_password(collection_name=data.email, password=data.password):
-                 
-            return RedirectResponse(url="/dashboard", status_code=HTTP_303_SEE_OTHER)
+            action = await get_user_action(collection_name=data.email)
+
+            if action == 0:
+                return RedirectResponse(url="/rejected", status_code=HTTP_303_SEE_OTHER)
+            elif action == -1:
+                return RedirectResponse(url="/pending", status_code=HTTP_303_SEE_OTHER)
+            else:        
+                return RedirectResponse(url="/dashboard", status_code=HTTP_303_SEE_OTHER)
         else:
             return 1
     else:
@@ -146,3 +165,28 @@ async def show_signup_request(data:Useless):
 async def admin_action(data:AdminAction):
 
     await update_user_action(email=data.email, action=data.action)
+
+
+@app.post("/client-projects")
+async def show_client_projects(request: Request, x:UselessClient):
+    val = await get_user_projects(collection_name=request.session.get("email"))
+    return val
+
+@app.post("/project-checkbox")
+async def update_project_status(request: Request,data: UpdateProjets):
+
+    await update_project_status_act(pid=data.project_id, status=data.status)
+    await update_project_status_bid(project_id=data.project_id, status=data.status, collection_name=request.session.get("email"))
+
+@app.post("/client-tasks")
+async def show_client_task(request: Request, x:UselessClient):
+    val = await get_user_tasks(collection_name=request.session.get("email"))
+    print(val)
+    return val
+
+
+@app.post("/task-checkbox")
+async def update_task_status(request: Request, data:UpdateTask):
+
+    await update_task_status_act(pid = data.task_id, status=data.status)
+    await update_task_status_bid(task_id = data.task_id, status = data.status, collection_name= request.session.get("email"))

@@ -1,5 +1,6 @@
 from configs.trendyDB import client
 from security.decryptPass import decryptt
+from bson import ObjectId
 
 async def check_existing_user(collection_name):
     db = client["Clients"]
@@ -33,3 +34,106 @@ async def get_username(collection_name):
     documents = await collection.find({}, {"_id": 0}).to_list(None)
     fullname = documents[0]['fullname']
     return fullname
+
+async def get_user_action(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+
+    documents = await collection.find({}, {"_id": 0}).to_list(None)
+    action = documents[0]['action']
+    return action
+
+
+async def get_project_by_id(project_id):
+    db = client["Activity"]
+    collection = db["Projects"]
+
+    try:
+        # Ensure the ID is a valid ObjectId
+        obj_id = ObjectId(project_id)
+    except Exception as e:
+        return {"error": "Invalid project ID format."}
+
+    doc = await collection.find_one({"_id": obj_id})
+
+    if not doc:
+        return {"error": "Project not found."}
+
+    project = {
+        "_id":"",
+        "project_name": doc['project_name'],
+        "initiated_date": doc['initiated_date'],
+        "due_date": doc['due_date'],
+        "team": doc['team'],
+        "Status": doc['status'],
+        "assigned_member": doc['assigned_members'],
+        "project_manager": doc['project_manager'],
+        "components": doc['components']
+    }
+
+    return project
+
+async def get_task_by_id(task_id):
+    db = client["Activity"]
+    collection = db["Tasks"]
+
+    try:
+        # Ensure the ID is a valid ObjectId
+        obj_id = ObjectId(task_id)
+    except Exception as e:
+        return {"error": "Invalid project ID format."}
+
+    doc = await collection.find_one({"_id": obj_id})
+
+    if not doc:
+        return {"error": "Project not found."}
+
+# {"_id":"", "task_name":"", "initiated_date":"", "due_date":"", "Status":0 or 1, "assigned_member":[["email", "username"], ["email", "username"]], "desc":"describe of task"}
+
+    project = {
+        "_id":"",
+        "task_name": doc['task_name'],
+        "initiated_date": doc['initiated_date'],
+        "due_date": doc['due_date'],
+        "Status": doc['status'],
+        "assigned_member": doc['assigned_members'],
+        "desc":"describe of task"
+    }
+
+    return project
+
+async def get_user_projects(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+    documents = await collection.find({}, {"_id": 0}).to_list(None)
+    all_projects = documents[0]['assigned_projects']
+
+    project_list = []
+
+    for project in all_projects:
+        project_id = list(project.keys())[0]
+        project_status = list(project.values())[0]
+        project_org = await get_project_by_id(project_id=project_id)
+        project_org["_id"] = project_id
+        project_org['Status'] = project_status
+        project_list.append(project_org)
+    
+    return project_list
+
+async def get_user_tasks(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+    documents = await collection.find({}, {"_id": 0}).to_list(None)
+    all_task = documents[0]['assigned_task']
+
+    tasks_list = []
+
+    for task in all_task:
+        task_id = list(task.keys())[0]
+        task_status = list(task.values())[0]
+        task_org = await get_task_by_id(task_id=task_id)
+        task_org["_id"] = task_id
+        task_org['Status'] = task_status
+        tasks_list.append(task_org)
+    
+    return tasks_list
