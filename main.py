@@ -70,10 +70,25 @@ async def display_pending_page(request: Request):
 async def get_dashboard(request: Request):
     try:
         fullname = await get_username(collection_name=request.session.get("email"))
-        return templates_clients.TemplateResponse("index.html", {"request": request, "fullname": fullname})
+        tasks, total_task, done_task = await get_user_tasks(collection_name=request.session.get("email"))
+        projects, total_projects, done_projects = await get_user_projects(collection_name=request.session.get("email"))
+        details = {
+            "total assigned projects": total_projects,          
+            "completed projects": done_projects,               
+            "total assigned tasks": total_task,             
+            "completed tasks": done_task,                  
+            "recent projects": projects,                
+            "recent tasks": tasks                    
+        }
+        print(details)
+        return templates_clients.TemplateResponse("index.html", {"request": request, "fullname": fullname, "details":details})
 
     except TypeError:
         return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
+
+@app.get("/success")
+async def sign_up_success(request: Request):
+    return templates_clients.TemplateResponse("success.html", {"request": request})
 
 
 @app.post("/create-acc") # FOR Client PAGE.
@@ -89,7 +104,7 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
         return JSONResponse(content=1) 
 
     await add_new_client(client_add=data)
-    return RedirectResponse(url="/dashboard", status_code=303)
+    return RedirectResponse(url="/success", status_code=303)
 
 
 
@@ -169,7 +184,7 @@ async def admin_action(data:AdminAction):
 
 @app.post("/client-projects")
 async def show_client_projects(request: Request, x:UselessClient):
-    val = await get_user_projects(collection_name=request.session.get("email"))
+    val, total_projects, done_projects = await get_user_projects(collection_name=request.session.get("email"))
     return val
 
 @app.post("/project-checkbox")
@@ -180,7 +195,7 @@ async def update_project_status(request: Request,data: UpdateProjets):
 
 @app.post("/client-tasks")
 async def show_client_task(request: Request, x:UselessClient):
-    val = await get_user_tasks(collection_name=request.session.get("email"))
+    val, total_task, done_task = await get_user_tasks(collection_name=request.session.get("email"))
     print(val)
     return val
 
@@ -190,3 +205,17 @@ async def update_task_status(request: Request, data:UpdateTask):
 
     await update_task_status_act(pid = data.task_id, status=data.status)
     await update_task_status_bid(task_id = data.task_id, status = data.status, collection_name= request.session.get("email"))
+
+@app.post("/client-dashboard")
+async def update_dashboard_fapi(request: Request, x:UselessClient):
+    tasks, total_task, done_task = await get_user_tasks(collection_name=request.session.get("email"))
+    projects, total_projects, done_projects = await get_user_projects(collection_name=request.session.get("email"))
+    details = {
+        "total assigned projects": total_projects,          
+        "completed projects": done_projects,               
+        "total assigned tasks": total_task,             
+        "completed tasks": done_task,                  
+        "recent projects": projects,                
+        "recent tasks": tasks                    
+    }
+    return details

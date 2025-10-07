@@ -107,7 +107,8 @@ async def get_user_projects(collection_name:str):
     collection = db[collection_name]
     documents = await collection.find({}, {"_id": 0}).to_list(None)
     all_projects = documents[0]['assigned_projects']
-
+    total_projects = len(all_projects)
+    done_projects = 0
     project_list = []
 
     for project in all_projects:
@@ -116,16 +117,19 @@ async def get_user_projects(collection_name:str):
         project_org = await get_project_by_id(project_id=project_id)
         project_org["_id"] = project_id
         project_org['Status'] = project_status
+        if project_org['Status'] == 1:
+            done_projects+=1
         project_list.append(project_org)
     
-    return project_list
+    return project_list, total_projects, done_projects
 
 async def get_user_tasks(collection_name:str):
     db = client["Clients"]
     collection = db[collection_name]
     documents = await collection.find({}, {"_id": 0}).to_list(None)
     all_task = documents[0]['assigned_task']
-
+    total_task = len(all_task)
+    done_task = 0
     tasks_list = []
 
     for task in all_task:
@@ -134,6 +138,9 @@ async def get_user_tasks(collection_name:str):
         task_org = await get_task_by_id(task_id=task_id)
         task_org["_id"] = task_id
         task_org['Status'] = task_status
+        if task_org['Status'] == 1:
+            done_task+=1
+
         tasks_list.append(task_org)
     
-    return tasks_list
+    return tasks_list, total_task, done_task

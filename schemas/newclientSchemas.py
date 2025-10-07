@@ -6,4 +6,5 @@ class NewUser(BaseModel):
     otp: str
     phone: str
     role: str
+    team: str
     password: str

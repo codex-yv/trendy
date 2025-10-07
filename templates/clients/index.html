@@ -271,6 +271,11 @@
             color: white;
         }
         
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
@@ -553,6 +558,144 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Profile Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+        
+        .profile-modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 2001;
+        }
+        
+        .profile-modal.active {
+            transform: translateX(0);
+        }
+        
+        .profile-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            border: 4px solid var(--primary);
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .profile-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .profile-section-title {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .tag-dev {
+            background-color: var(--primary);
+        }
+        
+        .tag-design {
+            background-color: var(--warning);
+        }
+        
+        .tag-marketing {
+            background-color: var(--success);
+        }
+        
+        .tag-language {
+            background-color: #6c5ce7;
+        }
+        
+        .tag-database {
+            background-color: #00b894;
+        }
+        
+        .tag-tools {
+            background-color: #fd79a8;
+        }
+        
+        .tag-framework {
+            background-color: #fdcb6e;
+            color: var(--dark);
+        }
+        
+        .editable-field {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .editable-input {
+            padding: 6px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        
+        .add-tag-btn {
+            background: none;
+            border: 1px dashed var(--gray);
+            color: var(--gray);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
         /* Notifications List */
         .notification-item {
             padding: 15px;
@@ -602,6 +745,10 @@
                 text-align: center;
                 padding: 15px 0;
             }
+            
+            .profile-modal {
+                width: 100%;
+            }
         }
         
         @media (max-width: 768px) {
@@ -631,6 +778,16 @@
             .tasks-container {
                 grid-template-columns: 1fr;
             }
+            
+            .dashboard-sections {
+                flex-direction: column;
+            }
+            
+            .dashboard-sections .section {
+                width: 100% !important;
+                margin-right: 0 !important;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -640,7 +797,7 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Client Portal</h2>
-                <p id="welcomeMessage">Welcome, {{fullname}} </p>
+                <p id="welcomeMessage">Welcome, {{ fullname if fullname else 'User' }}</p>
             </div>
             <div class="sidebar-menu">
                 <ul>
@@ -714,7 +871,7 @@
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">3</span>
                     </div>
-                    <div class="user-profile">
+                    <div class="user-profile" id="userProfileBtn">
                         <img src="https://i.pravatar.cc/150?img=12" alt="User Profile">
                     </div>
                 </div>
@@ -729,8 +886,8 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">5</div>
-                                    <div class="card-title">Active Projects</div>
+                                    <div class="card-value" id="totalProjects">0</div>
+                                    <div class="card-title">Total Assigned Projects</div>
                                 </div>
                                 <div class="card-icon primary">
                                     <i class="fas fa-project-diagram"></i>
@@ -740,8 +897,8 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">12</div>
-                                    <div class="card-title">Completed Tasks</div>
+                                    <div class="card-value" id="completedProjects">0</div>
+                                    <div class="card-title">Completed Projects</div>
                                 </div>
                                 <div class="card-icon success">
                                     <i class="fas fa-check-circle"></i>
@@ -751,19 +908,19 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">3</div>
-                                    <div class="card-title">Pending Approvals</div>
+                                    <div class="card-value" id="totalTasks">0</div>
+                                    <div class="card-title">Total Assigned Tasks</div>
                                 </div>
                                 <div class="card-icon warning">
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-tasks"></i>
                                 </div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">2</div>
-                                    <div class="card-title">Upcoming Deadlines</div>
+                                    <div class="card-value" id="completedTasks">0</div>
+                                    <div class="card-title">Tasks Completed</div>
                                 </div>
                                 <div class="card-icon danger">
                                     <i class="fas fa-calendar-alt"></i>
@@ -772,121 +929,49 @@
                         </div>
                     </div>
 
-                    <!-- Recent Projects Section -->
-                    <div class="section">
-                        <div class="section-header">
-                            <h2 class="section-title">Recent Projects</h2>
-                            <button class="btn btn-outline">View All</button>
+                    <div class="dashboard-sections">
+                        <div class="section" style="width: 48%; float: left; margin-right: 4%;">
+                            <div class="section-header">
+                                <h2 class="section-title">Recent Projects</h2>
+                                <button class="btn btn-outline" onclick="showSection('projectsSection', 'Projects')">View All</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Project Name</th>
+                                            <th>Status</th>
+                                            <th>Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentProjectsTable">
+                                        <!-- Recent projects will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Project Name</th>
-                                        <th>Status</th>
-                                        <th>Progress</th>
-                                        <th>Due Date</th>
-                                        <th>Team</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Website Redesign</td>
-                                        <td><span class="status status-ongoing">Ongoing</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-primary" style="width: 75%"></div>
-                                            </div>
-                                            <small>75%</small>
-                                        </td>
-                                        <td>Oct 15, 2023</td>
-                                        <td>Design Team</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Mobile App Development</td>
-                                        <td><span class="status status-completed">Completed</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-success" style="width: 100%"></div>
-                                            </div>
-                                            <small>100%</small>
-                                        </td>
-                                        <td>Sep 30, 2023</td>
-                                        <td>Dev Team</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Marketing Campaign</td>
-                                        <td><span class="status status-pending">Pending</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-warning" style="width: 30%"></div>
-                                            </div>
-                                            <small>30%</small>
-                                        </td>
-                                        <td>Nov 10, 2023</td>
-                                        <td>Marketing Team</td>
-                                    </tr>
-                                    <tr>
-                                        <td>E-commerce Platform</td>
-                                        <td><span class="status status-ongoing">Ongoing</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-primary" style="width: 60%"></div>
-                                            </div>
-                                            <small>60%</small>
-                                        </td>
-                                        <td>Dec 05, 2023</td>
-                                        <td>Dev Team</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
 
-                    <!-- Notifications Section -->
-                    <div class="section">
-                        <div class="section-header">
-                            <h2 class="section-title">Notifications</h2>
-                            <button class="btn btn-outline">Mark All as Read</button>
-                        </div>
-                        <div class="notifications-list">
-                            <div class="notification-item">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="notification-icon-container">
-                                        <i class="fas fa-file-upload"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin-bottom: 5px;">New document uploaded</h4>
-                                        <p style="color: var(--gray); font-size: 0.9rem;">Project proposal for Website Redesign has been shared with you.</p>
-                                        <small style="color: var(--gray);">2 hours ago</small>
-                                    </div>
-                                </div>
+                        <div class="section" style="width: 48%; float: left;">
+                            <div class="section-header">
+                                <h2 class="section-title">Recent Tasks</h2>
+                                <button class="btn btn-outline" onclick="showSection('tasksSection', 'Tasks')">View All</button>
                             </div>
-                            <div class="notification-item">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="notification-icon-container notification-success">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin-bottom: 5px;">Task completed</h4>
-                                        <p style="color: var(--gray); font-size: 0.9rem;">Phase 1 of Mobile App Development has been completed.</p>
-                                        <small style="color: var(--gray);">1 day ago</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="notification-item">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="notification-icon-container notification-warning">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin-bottom: 5px;">Upcoming deadline</h4>
-                                        <p style="color: var(--gray); font-size: 0.9rem;">Review for Marketing Campaign is due in 3 days.</p>
-                                        <small style="color: var(--gray);">2 days ago</small>
-                                    </div>
-                                </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Task Name</th>
+                                            <th>Status</th>
+                                            <th>Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentTasksTable">
+                                        <!-- Recent tasks will be populated here -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                        <div style="clear: both;"></div>
                     </div>
                 </div>
 
@@ -927,8 +1012,122 @@
         </div>
     </div>
 
-    <script>
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModalOverlay"></div>
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-header">
+            <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar" class="profile-avatar">
+            <h2 class="profile-name">{{ fullname if fullname else 'User' }}</h2>
+            <p class="profile-email">{{ user_email if user_email else 'user@example.com' }}</p>
+        </div>
+        
+        <div class="profile-section">
+            <h3 class="profile-section-title">Team Assigned</h3>
+            <div class="tags-container">
+                <span class="tag tag-dev">Dev Team</span>
+                <span class="tag tag-design">Design Team</span>
+                <span class="tag tag-marketing">Marketing Team</span>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Languages</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('languages')">Edit</button>
+            </div>
+            <div class="tags-container" id="languagesDisplay">
+                <span class="tag tag-language">JavaScript</span>
+                <span class="tag tag-language">Python</span>
+                <span class="tag tag-language">Java</span>
+                <span class="tag tag-language">C++</span>
+            </div>
+            <div class="editable-field" id="languagesEdit" style="display: none;">
+                <input type="text" class="editable-input" value="JavaScript" placeholder="Add language">
+                <input type="text" class="editable-input" value="Python" placeholder="Add language">
+                <input type="text" class="editable-input" value="Java" placeholder="Add language">
+                <input type="text" class="editable-input" value="C++" placeholder="Add language">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Database</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('database')">Edit</button>
+            </div>
+            <div class="tags-container" id="databaseDisplay">
+                <span class="tag tag-database">MySQL</span>
+                <span class="tag tag-database">MongoDB</span>
+                <span class="tag tag-database">PostgreSQL</span>
+            </div>
+            <div class="editable-field" id="databaseEdit" style="display: none;">
+                <input type="text" class="editable-input" value="MySQL" placeholder="Add database">
+                <input type="text" class="editable-input" value="MongoDB" placeholder="Add database">
+                <input type="text" class="editable-input" value="PostgreSQL" placeholder="Add database">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Tools & Platform</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('tools')">Edit</button>
+            </div>
+            <div class="tags-container" id="toolsDisplay">
+                <span class="tag tag-tools">VS Code</span>
+                <span class="tag tag-tools">Git</span>
+                <span class="tag tag-tools">Docker</span>
+                <span class="tag tag-tools">AWS</span>
+            </div>
+            <div class="editable-field" id="toolsEdit" style="display: none;">
+                <input type="text" class="editable-input" value="VS Code" placeholder="Add tool">
+                <input type="text" class="editable-input" value="Git" placeholder="Add tool">
+                <input type="text" class="editable-input" value="Docker" placeholder="Add tool">
+                <input type="text" class="editable-input" value="AWS" placeholder="Add tool">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Libraries & Framework</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('frameworks')">Edit</button>
+            </div>
+            <div class="tags-container" id="frameworksDisplay">
+                <span class="tag tag-framework">React</span>
+                <span class="tag tag-framework">Node.js</span>
+                <span class="tag tag-framework">Express</span>
+                <span class="tag tag-framework">Django</span>
+            </div>
+            <div class="editable-field" id="frameworksEdit" style="display: none;">
+                <input type="text" class="editable-input" value="React" placeholder="Add framework">
+                <input type="text" class="editable-input" value="Node.js" placeholder="Add framework">
+                <input type="text" class="editable-input" value="Express" placeholder="Add framework">
+                <input type="text" class="editable-input" value="Django" placeholder="Add framework">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // Global variable to store dashboard data from template
+        let dashboardData = {% if details %}{{ details | tojson }}{% else %}{}{% endif %};
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+    
+            
+            // Load dashboard data
+            if (Object.keys(dashboardData).length === 0) {
+                // If no initial data, fetch from server
+                loadDashboardData();
+            } else {
+                // Use the data passed from template
+                updateDashboardUI(dashboardData);
+            }
+        });
+        
         // Logout functionality
         document.getElementById('logoutBtn').addEventListener('click', function(e) {
             e.preventDefault();
@@ -942,6 +1141,31 @@
             // Redirect to login page
             window.location.href = 'auth.html';
         });
+
+        // Profile modal functionality
+        document.getElementById('userProfileBtn').addEventListener('click', function() {
+            document.getElementById('profileModalOverlay').style.display = 'block';
+            document.getElementById('profileModal').classList.add('active');
+        });
+
+        document.getElementById('profileModalOverlay').addEventListener('click', function() {
+            document.getElementById('profileModalOverlay').style.display = 'none';
+            document.getElementById('profileModal').classList.remove('active');
+        });
+
+        // Toggle edit mode for profile sections
+        function toggleEdit(section) {
+            const display = document.getElementById(`${section}Display`);
+            const edit = document.getElementById(`${section}Edit`);
+            
+            if (display.style.display === 'none') {
+                display.style.display = 'flex';
+                edit.style.display = 'none';
+            } else {
+                display.style.display = 'none';
+                edit.style.display = 'flex';
+            }
+        }
 
         // Sidebar navigation
         function showSection(sectionId, title) {
@@ -962,6 +1186,8 @@
             // Activate the corresponding menu item
             if (sectionId === "dashboardContent") {
                 document.getElementById("dashboardBtn").classList.add('active');
+                // Load dashboard data when Dashboard section is opened
+                loadDashboardData();
             } else if (sectionId === "projectsSection") {
                 document.getElementById("projectsBtn").classList.add('active');
                 // Load projects when Projects section is opened
@@ -1000,6 +1226,91 @@
             e.preventDefault();
             loadTasks();
         });
+
+        // Load dashboard data from FastAPI server
+        async function loadDashboardData() {
+            try {
+                // Send POST request to FastAPI server
+                const response = await fetch('/client-dashboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received dashboard data:', data);
+                
+                // Update the dashboard UI with received data
+                updateDashboardUI(data);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // Keep the existing data or show error message
+            }
+        }
+
+        // Update dashboard UI with data
+        function updateDashboardUI(data) {
+            // Update card values - handle both template and API response formats
+            document.getElementById('totalProjects').textContent = data['total assigned projects'] || 0;
+            document.getElementById('completedProjects').textContent = data['completed projects'] || 0;
+            document.getElementById('totalTasks').textContent = data['total assigned tasks'] || data['total assigned task'] || 0;
+            document.getElementById('completedTasks').textContent = data['completed tasks'] || data['completed task'] || 0;
+            
+            // Update recent projects table
+            const recentProjects = data['recent projects'] || [];
+            const projectsTable = document.getElementById('recentProjectsTable');
+            
+            if (recentProjects.length > 0) {
+                projectsTable.innerHTML = recentProjects.slice(0, 3).map(project => `
+                    <tr>
+                        <td>${project.project_name || 'N/A'}</td>
+                        <td><span class="status ${getStatusClass(project.Status)}">${getStatusText(project.Status)}</span></td>
+                        <td>${project.due_date || 'N/A'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                projectsTable.innerHTML = '<tr><td colspan="3" style="text-align: center;">No recent projects</td></tr>';
+            }
+            
+            // Update recent tasks table
+            const recentTasks = data['recent tasks'] || data['recent task'] || [];
+            const tasksTable = document.getElementById('recentTasksTable');
+            
+            if (recentTasks.length > 0) {
+                tasksTable.innerHTML = recentTasks.slice(0, 3).map(task => `
+                    <tr>
+                        <td>${task.task_name || 'N/A'}</td>
+                        <td><span class="status ${getStatusClass(task.Status)}">${getStatusText(task.Status)}</span></td>
+                        <td>${task.due_date || 'N/A'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tasksTable.innerHTML = '<tr><td colspan="3" style="text-align: center;">No recent tasks</td></tr>';
+            }
+        }
+        
+        function getStatusClass(status) {
+            switch(status) {
+                case 1: return 'status-completed';
+                case 0: return 'status-ongoing';
+                default: return 'status-ongoing';
+            }
+        }
+        
+        function getStatusText(status) {
+            switch(status) {
+                case 1: return 'Completed';
+                case 0: return 'Ongoing';
+                default: return 'Ongoing';
+            }
+        }
 
         // Toggle checkbox
         function toggleCheckbox(checkbox) {
