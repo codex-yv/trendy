@@ -80,7 +80,6 @@ async def get_dashboard(request: Request):
             "recent projects": projects,                
             "recent tasks": tasks                    
         }
-        print(details)
         return templates_clients.TemplateResponse("index.html", {"request": request, "fullname": fullname, "details":details})
 
     except TypeError:
