@@ -271,6 +271,11 @@
             color: white;
         }
         
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
@@ -531,6 +536,166 @@
             margin-top: 10px;
         }
         
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid var(--light-gray);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Profile Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+        
+        .profile-modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 2001;
+        }
+        
+        .profile-modal.active {
+            transform: translateX(0);
+        }
+        
+        .profile-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            border: 4px solid var(--primary);
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .profile-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .profile-section-title {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+        
+        .tag-dev {
+            background-color: var(--primary);
+        }
+        
+        .tag-design {
+            background-color: var(--warning);
+        }
+        
+        .tag-marketing {
+            background-color: var(--success);
+        }
+        
+        .tag-language {
+            background-color: #6c5ce7;
+        }
+        
+        .tag-database {
+            background-color: #00b894;
+        }
+        
+        .tag-tools {
+            background-color: #fd79a8;
+        }
+        
+        .tag-framework {
+            background-color: #fdcb6e;
+            color: var(--dark);
+        }
+        
+        .editable-field {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .editable-input {
+            padding: 6px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        
+        .add-tag-btn {
+            background: none;
+            border: 1px dashed var(--gray);
+            color: var(--gray);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
         /* Notifications List */
         .notification-item {
             padding: 15px;
@@ -580,6 +745,10 @@
                 text-align: center;
                 padding: 15px 0;
             }
+            
+            .profile-modal {
+                width: 100%;
+            }
         }
         
         @media (max-width: 768px) {
@@ -609,6 +778,16 @@
             .tasks-container {
                 grid-template-columns: 1fr;
             }
+            
+            .dashboard-sections {
+                flex-direction: column;
+            }
+            
+            .dashboard-sections .section {
+                width: 100% !important;
+                margin-right: 0 !important;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -618,7 +797,7 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Client Portal</h2>
-                <p id="welcomeMessage">Welcome,{{fullname}} </p>
+                <p id="welcomeMessage">Welcome, {{ fullname if fullname else 'User' }}</p>
             </div>
             <div class="sidebar-menu">
                 <ul>
@@ -692,7 +871,7 @@
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge">3</span>
                     </div>
-                    <div class="user-profile">
+                    <div class="user-profile" id="userProfileBtn">
                         <img src="https://i.pravatar.cc/150?img=12" alt="User Profile">
                     </div>
                 </div>
@@ -707,8 +886,8 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">5</div>
-                                    <div class="card-title">Active Projects</div>
+                                    <div class="card-value" id="totalProjects">0</div>
+                                    <div class="card-title">Total Assigned Projects</div>
                                 </div>
                                 <div class="card-icon primary">
                                     <i class="fas fa-project-diagram"></i>
@@ -718,8 +897,8 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">12</div>
-                                    <div class="card-title">Completed Tasks</div>
+                                    <div class="card-value" id="completedProjects">0</div>
+                                    <div class="card-title">Completed Projects</div>
                                 </div>
                                 <div class="card-icon success">
                                     <i class="fas fa-check-circle"></i>
@@ -729,19 +908,19 @@
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">3</div>
-                                    <div class="card-title">Pending Approvals</div>
+                                    <div class="card-value" id="totalTasks">0</div>
+                                    <div class="card-title">Total Assigned Tasks</div>
                                 </div>
                                 <div class="card-icon warning">
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-tasks"></i>
                                 </div>
                             </div>
                         </div>
                         <div class="card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-value">2</div>
-                                    <div class="card-title">Upcoming Deadlines</div>
+                                    <div class="card-value" id="completedTasks">0</div>
+                                    <div class="card-title">Tasks Completed</div>
                                 </div>
                                 <div class="card-icon danger">
                                     <i class="fas fa-calendar-alt"></i>
@@ -750,212 +929,66 @@
                         </div>
                     </div>
 
-                    <!-- Recent Projects Section -->
-                    <div class="section">
-                        <div class="section-header">
-                            <h2 class="section-title">Recent Projects</h2>
-                            <button class="btn btn-outline">View All</button>
+                    <div class="dashboard-sections">
+                        <div class="section" style="width: 48%; float: left; margin-right: 4%;">
+                            <div class="section-header">
+                                <h2 class="section-title">Recent Projects</h2>
+                                <button class="btn btn-outline" onclick="showSection('projectsSection', 'Projects')">View All</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Project Name</th>
+                                            <th>Status</th>
+                                            <th>Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentProjectsTable">
+                                        <!-- Recent projects will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Project Name</th>
-                                        <th>Status</th>
-                                        <th>Progress</th>
-                                        <th>Due Date</th>
-                                        <th>Team</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Website Redesign</td>
-                                        <td><span class="status status-ongoing">Ongoing</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-primary" style="width: 75%"></div>
-                                            </div>
-                                            <small>75%</small>
-                                        </td>
-                                        <td>Oct 15, 2023</td>
-                                        <td>Design Team</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Mobile App Development</td>
-                                        <td><span class="status status-completed">Completed</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-success" style="width: 100%"></div>
-                                            </div>
-                                            <small>100%</small>
-                                        </td>
-                                        <td>Sep 30, 2023</td>
-                                        <td>Dev Team</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Marketing Campaign</td>
-                                        <td><span class="status status-pending">Pending</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-warning" style="width: 30%"></div>
-                                            </div>
-                                            <small>30%</small>
-                                        </td>
-                                        <td>Nov 10, 2023</td>
-                                        <td>Marketing Team</td>
-                                    </tr>
-                                    <tr>
-                                        <td>E-commerce Platform</td>
-                                        <td><span class="status status-ongoing">Ongoing</span></td>
-                                        <td>
-                                            <div class="progress-bar">
-                                                <div class="progress progress-primary" style="width: 60%"></div>
-                                            </div>
-                                            <small>60%</small>
-                                        </td>
-                                        <td>Dec 05, 2023</td>
-                                        <td>Dev Team</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
 
-                    <!-- Notifications Section -->
-                    <div class="section">
-                        <div class="section-header">
-                            <h2 class="section-title">Notifications</h2>
-                            <button class="btn btn-outline">Mark All as Read</button>
-                        </div>
-                        <div class="notifications-list">
-                            <div class="notification-item">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="notification-icon-container">
-                                        <i class="fas fa-file-upload"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin-bottom: 5px;">New document uploaded</h4>
-                                        <p style="color: var(--gray); font-size: 0.9rem;">Project proposal for Website Redesign has been shared with you.</p>
-                                        <small style="color: var(--gray);">2 hours ago</small>
-                                    </div>
-                                </div>
+                        <div class="section" style="width: 48%; float: left;">
+                            <div class="section-header">
+                                <h2 class="section-title">Recent Tasks</h2>
+                                <button class="btn btn-outline" onclick="showSection('tasksSection', 'Tasks')">View All</button>
                             </div>
-                            <div class="notification-item">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="notification-icon-container notification-success">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin-bottom: 5px;">Task completed</h4>
-                                        <p style="color: var(--gray); font-size: 0.9rem;">Phase 1 of Mobile App Development has been completed.</p>
-                                        <small style="color: var(--gray);">1 day ago</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="notification-item">
-                                <div style="display: flex; align-items: center;">
-                                    <div class="notification-icon-container notification-warning">
-                                        <i class="fas fa-calendar-alt"></i>
-                                    </div>
-                                    <div>
-                                        <h4 style="margin-bottom: 5px;">Upcoming deadline</h4>
-                                        <p style="color: var(--gray); font-size: 0.9rem;">Review for Marketing Campaign is due in 3 days.</p>
-                                        <small style="color: var(--gray);">2 days ago</small>
-                                    </div>
-                                </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Task Name</th>
+                                            <th>Status</th>
+                                            <th>Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentTasksTable">
+                                        <!-- Recent tasks will be populated here -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                        <div style="clear: both;"></div>
                     </div>
                 </div>
 
                 <!-- Projects Section -->
                 <div id="projectsSection" style="display: none;">
-                    <h2 style="color: var(--primary); margin-bottom: 20px;">Projects</h2>
-
-                    <div class="project-card">
-                        <div class="project-header"><h3>Website Redesign</h3><span>Due: Oct 15, 2023</span></div>
-                        <div class="project-meta">Initiated: Aug 10, 2023 | Team: Design Team | Manager: Sarah Johnson</div>
-                        <div class="project-meta">Assigned Members: Alex, Emma, John</div>
-                        <div class="phase" onclick="toggleSubPhases(this)">Login & Sign Up</div>
-                        <ul class="sub-phases">
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">UI Design</span>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Backend Integration</span>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Testing</span>
-                                </div>
-                            </li>
-                        </ul>
-                        <div class="phase" onclick="toggleSubPhases(this)">Dashboard Module</div>
-                        <ul class="sub-phases">
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Analytics</span>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">User Management</span>
-                                </div>
-                            </li>
-                        </ul>
-                        <div class="checkbox-container project-checkbox">
-                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                            <span class="checkbox-label">Mark project as completed</span>
-                        </div>
+                    <div class="section-header">
+                        <h2 class="section-title">Projects</h2>
+                        <button class="btn btn-outline" id="refreshProjects">Refresh</button>
                     </div>
-
-                    <div class="project-card">
-                        <div class="project-header"><h3>Mobile App Development</h3><span>Due: Dec 05, 2023</span></div>
-                        <div class="project-meta">Initiated: Sep 01, 2023 | Team: Dev Team | Manager: Mark Lee</div>
-                        <div class="project-meta">Assigned Members: Tom, Lisa, Kevin</div>
-                        <div class="phase" onclick="toggleSubPhases(this)">Authentication Module</div>
-                        <ul class="sub-phases">
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Google OAuth</span>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Two Factor Auth</span>
-                                </div>
-                            </li>
-                        </ul>
-                        <div class="phase" onclick="toggleSubPhases(this)">Payment Gateway</div>
-                        <ul class="sub-phases">
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Stripe Integration</span>
-                                </div>
-                            </li>
-                            <li>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Testing Refund Flow</span>
-                                </div>
-                            </li>
-                        </ul>
-                        <div class="checkbox-container project-checkbox">
-                            <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                            <span class="checkbox-label">Mark project as completed</span>
-                        </div>
+                    
+                    <div class="loading-spinner" id="projectsLoading">
+                        <div class="spinner"></div>
+                        <p>Loading projects...</p>
+                    </div>
+                    
+                    <div id="projectsContainer">
+                        <!-- Projects will be dynamically loaded here -->
                     </div>
                 </div>
 
@@ -963,207 +996,137 @@
                 <div id="tasksSection" style="display: none;">
                     <div class="section-header">
                         <h2 class="section-title">All Tasks</h2>
+                        <button class="btn btn-outline" id="refreshTasks">Refresh</button>
                     </div>
                     
-                    <div class="tasks-container">
-                        <!-- Task 1 -->
-                        <div class="task-card">
-                            <div class="task-header">
-                                <h3 class="task-title">UI Design for Login Page</h3>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Completed</span>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Initiated: Sep 10, 2023</span>
-                                </div>
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Due: Oct 05, 2023</span>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Create modern and responsive UI design for the login and signup pages, ensuring accessibility standards are met.
-                            </div>
-                            <div class="task-team">
-                                <span class="team-badge team-design">Design Team</span>
-                            </div>
-                            <div class="assigned-members">
-                                <img src="https://i.pravatar.cc/150?img=5" class="member-avatar" alt="Alex">
-                                <img src="https://i.pravatar.cc/150?img=6" class="member-avatar" alt="Emma">
-                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Alex, Emma</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Task 2 -->
-                        <div class="task-card">
-                            <div class="task-header">
-                                <h3 class="task-title">Backend API Development</h3>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox checked" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Completed</span>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Initiated: Aug 15, 2023</span>
-                                </div>
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Due: Sep 25, 2023</span>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Develop RESTful APIs for user authentication, profile management, and data retrieval with proper documentation.
-                            </div>
-                            <div class="task-team">
-                                <span class="team-badge team-dev">Dev Team</span>
-                            </div>
-                            <div class="assigned-members">
-                                <img src="https://i.pravatar.cc/150?img=7" class="member-avatar" alt="Tom">
-                                <img src="https://i.pravatar.cc/150?img=8" class="member-avatar" alt="Kevin">
-                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Tom, Kevin</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Task 3 -->
-                        <div class="task-card">
-                            <div class="task-header">
-                                <h3 class="task-title">Marketing Campaign Strategy</h3>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Completed</span>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Initiated: Sep 20, 2023</span>
-                                </div>
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Due: Nov 10, 2023</span>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Develop comprehensive marketing strategy for product launch including social media, email campaigns, and influencer partnerships.
-                            </div>
-                            <div class="task-team">
-                                <span class="team-badge team-marketing">Marketing Team</span>
-                            </div>
-                            <div class="assigned-members">
-                                <img src="https://i.pravatar.cc/150?img=9" class="member-avatar" alt="Lisa">
-                                <img src="https://i.pravatar.cc/150?img=10" class="member-avatar" alt="John">
-                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Lisa, John</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Task 4 -->
-                        <div class="task-card">
-                            <div class="task-header">
-                                <h3 class="task-title">Database Optimization</h3>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Completed</span>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Initiated: Sep 05, 2023</span>
-                                </div>
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Due: Oct 20, 2023</span>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Optimize database queries, implement indexing strategies, and improve overall database performance for better application responsiveness.
-                            </div>
-                            <div class="task-team">
-                                <span class="team-badge team-dev">Dev Team</span>
-                            </div>
-                            <div class="assigned-members">
-                                <img src="https://i.pravatar.cc/150?img=11" class="member-avatar" alt="Sarah">
-                                <img src="https://i.pravatar.cc/150?img=12" class="member-avatar" alt="Mike">
-                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Sarah, Mike</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Task 5 -->
-                        <div class="task-card">
-                            <div class="task-header">
-                                <h3 class="task-title">User Testing Sessions</h3>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Completed</span>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Initiated: Sep 25, 2023</span>
-                                </div>
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Due: Oct 30, 2023</span>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Organize and conduct user testing sessions for the new application features, gather feedback, and compile reports for the development team.
-                            </div>
-                            <div class="task-team">
-                                <span class="team-badge team-design">Design Team</span>
-                            </div>
-                            <div class="assigned-members">
-                                <img src="https://i.pravatar.cc/150?img=13" class="member-avatar" alt="Emma">
-                                <img src="https://i.pravatar.cc/150?img=14" class="member-avatar" alt="David">
-                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Emma, David</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Task 6 -->
-                        <div class="task-card">
-                            <div class="task-header">
-                                <h3 class="task-title">Content Creation for Blog</h3>
-                                <div class="checkbox-container">
-                                    <div class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
-                                    <span class="checkbox-label">Completed</span>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Initiated: Aug 20, 2023</span>
-                                </div>
-                                <div class="task-meta-item">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <span>Due: Sep 15, 2023</span>
-                                </div>
-                            </div>
-                            <div class="task-description">
-                                Create engaging blog content about industry trends, product features, and user guides to drive organic traffic and user engagement.
-                            </div>
-                            <div class="task-team">
-                                <span class="team-badge team-marketing">Marketing Team</span>
-                            </div>
-                            <div class="assigned-members">
-                                <img src="https://i.pravatar.cc/150?img=15" class="member-avatar" alt="Anna">
-                                <img src="https://i.pravatar.cc/150?img=16" class="member-avatar" alt="Robert">
-                                <span style="margin-left: 10px; color: var(--gray); font-size: 0.9rem;">Anna, Robert</span>
-                            </div>
-                        </div>
+                    <div class="loading-spinner" id="tasksLoading">
+                        <div class="spinner"></div>
+                        <p>Loading tasks...</p>
+                    </div>
+                    
+                    <div class="tasks-container" id="tasksContainer">
+                        <!-- Tasks will be dynamically loaded here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModalOverlay"></div>
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-header">
+            <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar" class="profile-avatar">
+            <h2 class="profile-name">{{ fullname if fullname else 'User' }}</h2>
+            <p class="profile-email">{{ user_email if user_email else 'user@example.com' }}</p>
+        </div>
+        
+        <div class="profile-section">
+            <h3 class="profile-section-title">Team Assigned</h3>
+            <div class="tags-container">
+                <span class="tag tag-dev">Dev Team</span>
+                <span class="tag tag-design">Design Team</span>
+                <span class="tag tag-marketing">Marketing Team</span>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Languages</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('languages')">Edit</button>
+            </div>
+            <div class="tags-container" id="languagesDisplay">
+                <span class="tag tag-language">JavaScript</span>
+                <span class="tag tag-language">Python</span>
+                <span class="tag tag-language">Java</span>
+                <span class="tag tag-language">C++</span>
+            </div>
+            <div class="editable-field" id="languagesEdit" style="display: none;">
+                <input type="text" class="editable-input" value="JavaScript" placeholder="Add language">
+                <input type="text" class="editable-input" value="Python" placeholder="Add language">
+                <input type="text" class="editable-input" value="Java" placeholder="Add language">
+                <input type="text" class="editable-input" value="C++" placeholder="Add language">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Database</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('database')">Edit</button>
+            </div>
+            <div class="tags-container" id="databaseDisplay">
+                <span class="tag tag-database">MySQL</span>
+                <span class="tag tag-database">MongoDB</span>
+                <span class="tag tag-database">PostgreSQL</span>
+            </div>
+            <div class="editable-field" id="databaseEdit" style="display: none;">
+                <input type="text" class="editable-input" value="MySQL" placeholder="Add database">
+                <input type="text" class="editable-input" value="MongoDB" placeholder="Add database">
+                <input type="text" class="editable-input" value="PostgreSQL" placeholder="Add database">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Tools & Platform</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('tools')">Edit</button>
+            </div>
+            <div class="tags-container" id="toolsDisplay">
+                <span class="tag tag-tools">VS Code</span>
+                <span class="tag tag-tools">Git</span>
+                <span class="tag tag-tools">Docker</span>
+                <span class="tag tag-tools">AWS</span>
+            </div>
+            <div class="editable-field" id="toolsEdit" style="display: none;">
+                <input type="text" class="editable-input" value="VS Code" placeholder="Add tool">
+                <input type="text" class="editable-input" value="Git" placeholder="Add tool">
+                <input type="text" class="editable-input" value="Docker" placeholder="Add tool">
+                <input type="text" class="editable-input" value="AWS" placeholder="Add tool">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">
+                <span>Libraries & Framework</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('frameworks')">Edit</button>
+            </div>
+            <div class="tags-container" id="frameworksDisplay">
+                <span class="tag tag-framework">React</span>
+                <span class="tag tag-framework">Node.js</span>
+                <span class="tag tag-framework">Express</span>
+                <span class="tag tag-framework">Django</span>
+            </div>
+            <div class="editable-field" id="frameworksEdit" style="display: none;">
+                <input type="text" class="editable-input" value="React" placeholder="Add framework">
+                <input type="text" class="editable-input" value="Node.js" placeholder="Add framework">
+                <input type="text" class="editable-input" value="Express" placeholder="Add framework">
+                <input type="text" class="editable-input" value="Django" placeholder="Add framework">
+                <button class="add-tag-btn">+ Add</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global variable to store dashboard data from template
+        let dashboardData = {% if details %}{{ details | tojson }}{% else %}{}{% endif %};
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+    
+            
+            // Load dashboard data
+            if (Object.keys(dashboardData).length === 0) {
+                // If no initial data, fetch from server
+                loadDashboardData();
+            } else {
+                // Use the data passed from template
+                updateDashboardUI(dashboardData);
+            }
+        });
         
         // Logout functionality
         document.getElementById('logoutBtn').addEventListener('click', function(e) {
@@ -1178,6 +1141,31 @@
             // Redirect to login page
             window.location.href = 'auth.html';
         });
+
+        // Profile modal functionality
+        document.getElementById('userProfileBtn').addEventListener('click', function() {
+            document.getElementById('profileModalOverlay').style.display = 'block';
+            document.getElementById('profileModal').classList.add('active');
+        });
+
+        document.getElementById('profileModalOverlay').addEventListener('click', function() {
+            document.getElementById('profileModalOverlay').style.display = 'none';
+            document.getElementById('profileModal').classList.remove('active');
+        });
+
+        // Toggle edit mode for profile sections
+        function toggleEdit(section) {
+            const display = document.getElementById(`${section}Display`);
+            const edit = document.getElementById(`${section}Edit`);
+            
+            if (display.style.display === 'none') {
+                display.style.display = 'flex';
+                edit.style.display = 'none';
+            } else {
+                display.style.display = 'none';
+                edit.style.display = 'flex';
+            }
+        }
 
         // Sidebar navigation
         function showSection(sectionId, title) {
@@ -1198,10 +1186,16 @@
             // Activate the corresponding menu item
             if (sectionId === "dashboardContent") {
                 document.getElementById("dashboardBtn").classList.add('active');
+                // Load dashboard data when Dashboard section is opened
+                loadDashboardData();
             } else if (sectionId === "projectsSection") {
                 document.getElementById("projectsBtn").classList.add('active');
+                // Load projects when Projects section is opened
+                loadProjects();
             } else if (sectionId === "tasksSection") {
                 document.getElementById("tasksBtn").classList.add('active');
+                // Load tasks when Tasks section is opened
+                loadTasks();
             }
         }
 
@@ -1221,19 +1215,426 @@
             showSection("tasksSection", "Tasks");
         });
 
-        // Toggle sub-phases
-        function toggleSubPhases(el) {
-            const subPhases = el.nextElementSibling;
-            if(subPhases.style.display === "block"){
-                subPhases.style.display = "none";
+        // Refresh projects button
+        document.getElementById("refreshProjects").addEventListener("click", function(e){
+            e.preventDefault();
+            loadProjects();
+        });
+
+        // Refresh tasks button
+        document.getElementById("refreshTasks").addEventListener("click", function(e){
+            e.preventDefault();
+            loadTasks();
+        });
+
+        // Load dashboard data from FastAPI server
+        async function loadDashboardData() {
+            try {
+                // Send POST request to FastAPI server
+                const response = await fetch('/client-dashboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Received dashboard data:', data);
+                
+                // Update the dashboard UI with received data
+                updateDashboardUI(data);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                // Keep the existing data or show error message
+            }
+        }
+
+        // Update dashboard UI with data
+        function updateDashboardUI(data) {
+            // Update card values - handle both template and API response formats
+            document.getElementById('totalProjects').textContent = data['total assigned projects'] || 0;
+            document.getElementById('completedProjects').textContent = data['completed projects'] || 0;
+            document.getElementById('totalTasks').textContent = data['total assigned tasks'] || data['total assigned task'] || 0;
+            document.getElementById('completedTasks').textContent = data['completed tasks'] || data['completed task'] || 0;
+            
+            // Update recent projects table
+            const recentProjects = data['recent projects'] || [];
+            const projectsTable = document.getElementById('recentProjectsTable');
+            
+            if (recentProjects.length > 0) {
+                projectsTable.innerHTML = recentProjects.slice(0, 3).map(project => `
+                    <tr>
+                        <td>${project.project_name || 'N/A'}</td>
+                        <td><span class="status ${getStatusClass(project.Status)}">${getStatusText(project.Status)}</span></td>
+                        <td>${project.due_date || 'N/A'}</td>
+                    </tr>
+                `).join('');
             } else {
-                subPhases.style.display = "block";
+                projectsTable.innerHTML = '<tr><td colspan="3" style="text-align: center;">No recent projects</td></tr>';
+            }
+            
+            // Update recent tasks table
+            const recentTasks = data['recent tasks'] || data['recent task'] || [];
+            const tasksTable = document.getElementById('recentTasksTable');
+            
+            if (recentTasks.length > 0) {
+                tasksTable.innerHTML = recentTasks.slice(0, 3).map(task => `
+                    <tr>
+                        <td>${task.task_name || 'N/A'}</td>
+                        <td><span class="status ${getStatusClass(task.Status)}">${getStatusText(task.Status)}</span></td>
+                        <td>${task.due_date || 'N/A'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tasksTable.innerHTML = '<tr><td colspan="3" style="text-align: center;">No recent tasks</td></tr>';
+            }
+        }
+        
+        function getStatusClass(status) {
+            switch(status) {
+                case 1: return 'status-completed';
+                case 0: return 'status-ongoing';
+                default: return 'status-ongoing';
+            }
+        }
+        
+        function getStatusText(status) {
+            switch(status) {
+                case 1: return 'Completed';
+                case 0: return 'Ongoing';
+                default: return 'Ongoing';
             }
         }
 
         // Toggle checkbox
         function toggleCheckbox(checkbox) {
-            checkbox.classList.toggle('checked');
+            // Store the current state before toggling
+            const wasChecked = checkbox.classList.contains('checked');
+            
+            // If this is a project completion checkbox, send update to server
+            if (checkbox.classList.contains('project-completion-checkbox')) {
+                const projectId = checkbox.getAttribute('data-project-id');
+                const newStatus = wasChecked ? 0 : 1; // Toggle the status
+                
+                // Update the checkbox visually immediately for better UX
+                checkbox.classList.toggle('checked');
+                
+                updateProjectStatus(projectId, newStatus, checkbox, wasChecked);
+            } 
+            // If this is a task completion checkbox, send update to server
+            else if (checkbox.classList.contains('task-completion-checkbox')) {
+                const taskId = checkbox.getAttribute('data-task-id');
+                const newStatus = wasChecked ? 0 : 1; // Toggle the status
+                
+                // Update the checkbox visually immediately for better UX
+                checkbox.classList.toggle('checked');
+                
+                updateTaskStatus(taskId, newStatus, checkbox, wasChecked);
+            } else {
+                // For regular checkboxes, just toggle
+                checkbox.classList.toggle('checked');
+            }
+        }
+
+        // Toggle component details
+        function toggleComponentDetails(component) {
+            const details = component.nextElementSibling;
+            if(details.style.display === "block"){
+                details.style.display = "none";
+            } else {
+                details.style.display = "block";
+            }
+        }
+
+        // Load projects from FastAPI server
+        async function loadProjects() {
+            const projectsContainer = document.getElementById('projectsContainer');
+            const loadingSpinner = document.getElementById('projectsLoading');
+            
+            // Show loading spinner
+            projectsContainer.innerHTML = '';
+            loadingSpinner.style.display = 'block';
+            
+            try {
+                // Send POST request to FastAPI server
+                const response = await fetch('/client-projects', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const projects = await response.json();
+                console.log('Received projects:', projects);
+                
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+                
+                // Render projects - handle both array and object with projects property
+                let projectsArray = projects;
+                if (projects && projects.projects) {
+                    projectsArray = projects.projects;
+                }
+                
+                if (projectsArray && projectsArray.length > 0) {
+                    projectsContainer.innerHTML = projectsArray.map(project => createProjectCard(project)).join('');
+                } else {
+                    projectsContainer.innerHTML = '<p>No projects found.</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                loadingSpinner.style.display = 'none';
+                projectsContainer.innerHTML = '<p>Error loading projects. Please try again.</p>';
+            }
+        }
+
+        // Load tasks from FastAPI server
+        async function loadTasks() {
+            const tasksContainer = document.getElementById('tasksContainer');
+            const loadingSpinner = document.getElementById('tasksLoading');
+            
+            // Show loading spinner
+            tasksContainer.innerHTML = '';
+            loadingSpinner.style.display = 'block';
+            
+            try {
+                // Send POST request to FastAPI server
+                const response = await fetch('/client-tasks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const tasks = await response.json();
+                console.log('Received tasks:', tasks);
+                
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+                
+                // Render tasks - handle both array and object with tasks property
+                let tasksArray = tasks;
+                if (tasks && tasks.tasks) {
+                    tasksArray = tasks.tasks;
+                }
+                
+                if (tasksArray && tasksArray.length > 0) {
+                    tasksContainer.innerHTML = tasksArray.map(task => createTaskCard(task)).join('');
+                } else {
+                    tasksContainer.innerHTML = '<p>No tasks found.</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                loadingSpinner.style.display = 'none';
+                tasksContainer.innerHTML = '<p>Error loading tasks. Please try again.</p>';
+            }
+        }
+
+        // Create project card HTML
+        function createProjectCard(project) {
+            const statusClass = project.Status === 1 ? 'status-completed' : 'status-ongoing';
+            const statusText = project.Status === 1 ? 'Completed' : 'Ongoing';
+            const isChecked = project.Status === 1 ? 'checked' : '';
+            
+            // Get assigned members usernames
+            const assignedMembers = project.assigned_member.map(member => member[1]).join(', ');
+            
+            // Get project manager username
+            const projectManager = project.project_manager.length > 0 ? project.project_manager[0][1] : 'Not assigned';
+            
+            // Get project ID - handle both string and ObjectId format
+            let projectId = project._id;
+            if (projectId && typeof projectId === 'object' && projectId.$oid) {
+                projectId = projectId.$oid; // Handle ObjectId format
+            }
+            
+            // Create components HTML
+            let componentsHTML = '';
+            if (project.components && Object.keys(project.components).length > 0) {
+                componentsHTML = Object.entries(project.components).map(([heading, details]) => `
+                    <div class="phase" onclick="toggleComponentDetails(this)">${heading}</div>
+                    <div class="sub-phases">
+                        <p>${details}</p>
+                    </div>
+                `).join('');
+            }
+            
+            return `
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3>${project.project_name}</h3>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="project-meta">Initiated: ${project.initiated_date} | Due: ${project.due_date} | Team: ${project.team} | Manager: ${projectManager}</div>
+                    <div class="project-meta">Assigned Members: ${assignedMembers}</div>
+                    ${componentsHTML}
+                    <div class="checkbox-container project-checkbox">
+                        <div class="custom-checkbox project-completion-checkbox ${isChecked}" 
+                             onclick="toggleCheckbox(this)" 
+                             data-project-id="${projectId}"></div>
+                        <span class="checkbox-label">Mark project as completed</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create task card HTML
+        function createTaskCard(task) {
+            const statusClass = task.Status === 1 ? 'status-completed' : 'status-ongoing';
+            const statusText = task.Status === 1 ? 'Completed' : 'Ongoing';
+            const isChecked = task.Status === 1 ? 'checked' : '';
+            
+            // Get assigned members usernames
+            const assignedMembers = task.assigned_member.map(member => member[1]).join(', ');
+            
+            // Get task ID - handle both string and ObjectId format
+            let taskId = task._id;
+            if (taskId && typeof taskId === 'object' && taskId.$oid) {
+                taskId = taskId.$oid; // Handle ObjectId format
+            }
+            
+            return `
+                <div class="task-card">
+                    <div class="task-header">
+                        <h3 class="task-title">${task.task_name}</h3>
+                        <span class="status ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="task-meta">
+                        <div class="task-meta-item">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Initiated: ${task.initiated_date}</span>
+                        </div>
+                        <div class="task-meta-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Due: ${task.due_date}</span>
+                        </div>
+                    </div>
+                    <div class="task-description">
+                        ${task.desc}
+                    </div>
+                    <div class="assigned-members">
+                        <span style="color: var(--gray); font-size: 0.9rem;">Assigned to: ${assignedMembers}</span>
+                    </div>
+                    <div class="checkbox-container" style="margin-top: 15px;">
+                        <div class="custom-checkbox task-completion-checkbox ${isChecked}" 
+                             onclick="toggleCheckbox(this)" 
+                             data-task-id="${taskId}"></div>
+                        <span class="checkbox-label">Completed</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update project status on server
+        async function updateProjectStatus(projectId, status, checkbox, previousState) {
+            try {
+                const response = await fetch('/project-checkbox', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        project_id: projectId,
+                        status: status
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Project status updated:', result);
+                
+                // Update the status badge
+                const projectCard = document.querySelector(`[data-project-id="${projectId}"]`).closest('.project-card');
+                const statusBadge = projectCard.querySelector('.status');
+                
+                if (status === 1) {
+                    statusBadge.className = 'status status-completed';
+                    statusBadge.textContent = 'Completed';
+                } else {
+                    statusBadge.className = 'status status-ongoing';
+                    statusBadge.textContent = 'Ongoing';
+                }
+                
+            } catch (error) {
+                console.error('Error updating project status:', error);
+                
+                // Revert the checkbox to its previous state
+                if (previousState) {
+                    checkbox.classList.add('checked');
+                } else {
+                    checkbox.classList.remove('checked');
+                }
+                
+                alert('Error updating project status. Please try again.');
+            }
+        }
+
+        // Update task status on server
+        async function updateTaskStatus(taskId, status, checkbox, previousState) {
+            try {
+                const response = await fetch('/task-checkbox', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        task_id: taskId,
+                        status: status
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Task status updated:', result);
+                
+                // Update the status badge
+                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`).closest('.task-card');
+                const statusBadge = taskCard.querySelector('.status');
+                
+                if (status === 1) {
+                    statusBadge.className = 'status status-completed';
+                    statusBadge.textContent = 'Completed';
+                } else {
+                    statusBadge.className = 'status status-ongoing';
+                    statusBadge.textContent = 'Ongoing';
+                }
+                
+            } catch (error) {
+                console.error('Error updating task status:', error);
+                
+                // Revert the checkbox to its previous state
+                if (previousState) {
+                    checkbox.classList.add('checked');
+                } else {
+                    checkbox.classList.remove('checked');
+                }
+                
+                alert('Error updating task status. Please try again.');
+            }
         }
     </script>
 </body>

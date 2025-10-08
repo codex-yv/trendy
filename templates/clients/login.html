@@ -318,6 +318,15 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label for="team">Team</label>
+                            <select id="team" class="form-control" required>
+                                <option value="">Select your team</option>
+                                <option value="Dev">Dev</option>
+                                <option value="Design">Design</option>
+                                <option value="Marketing">Marketing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label for="signupPassword">Password</label>
                             <input type="password" id="signupPassword" class="form-control" placeholder="Create a password" required>
                         </div>
@@ -477,12 +486,13 @@
             const otp = document.getElementById('otp').value;
             const phone = document.getElementById('phone').value;
             const role = document.getElementById('role').value;
+            const team = document.getElementById('team').value;
             const password = document.getElementById('signupPassword').value;
             const terms = document.getElementById('terms').checked;
             const createAccountBtn = document.getElementById('createAccountBtn');
             
             // Simple validation
-            if (!fullName || !email || !phone || !role || !password) {
+            if (!fullName || !email || !phone || !role || !team || !password) {
                 showAlert('Please fill in all fields', 'error');
                 return;
             }
@@ -508,6 +518,7 @@
                         otp: otp,
                         phone: phone,
                         role: role,
+                        team: team,
                         password: password
                     })
                 });

@@ -46,6 +46,11 @@
             color: #065f46;
         }
         
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
         .profile-pic {
             width: 32px;
             height: 32px;
@@ -74,6 +79,22 @@
         
         .stat-card:hover {
             transform: translateY(-2px);
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -194,14 +215,14 @@
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Projects</h3>
                     <div id="recentProjects" class="space-y-4">
-                        <!-- Recent projects will be populated here -->
+                        <!-- Recent projects will be populated from template -->
                     </div>
                 </div>
                 
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Tasks</h3>
                     <div id="recentTasks" class="space-y-4">
-                        <!-- Recent tasks will be populated here -->
+                        <!-- Recent tasks will be populated from template -->
                     </div>
                 </div>
             </div>
@@ -212,8 +233,12 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-gray-800">Sign Up Requests</h2>
                 <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                    <span id="pendingRequestsCount">3</span> Pending Requests
+                    <span id="pendingRequestsCount">0</span> Pending Requests
                 </span>
+            </div>
+            <div id="signUpRequestsLoading" class="text-center py-8 hidden">
+                <div class="loading-spinner mx-auto mb-2"></div>
+                <p class="text-gray-600">Loading sign up requests...</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -243,6 +268,10 @@
                     <button id="completedProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
                 </div>
             </div>
+            <div id="projectStatusLoading" class="text-center py-8 hidden">
+                <div class="loading-spinner mx-auto mb-2"></div>
+                <p class="text-gray-600">Loading projects...</p>
+            </div>
             <div id="projectStatusList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Project status cards will be populated here -->
             </div>
@@ -258,8 +287,102 @@
                     <button id="completedTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
                 </div>
             </div>
+            <div id="taskStatusLoading" class="text-center py-8 hidden">
+                <div class="loading-spinner mx-auto mb-2"></div>
+                <p class="text-gray-600">Loading tasks...</p>
+            </div>
             <div id="taskStatusList" class="space-y-4">
                 <!-- Task status cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="projectDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 id="projectDetailsTitle" class="text-xl font-bold text-gray-800">Project Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Project Information</h4>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Project Name:</span>
+                            <p id="detailProjectName" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Initiated Date:</span>
+                            <p id="detailInitiatedDate"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Due Date:</span>
+                            <p id="detailDueDate"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Team:</span>
+                            <p id="detailTeam"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Status:</span>
+                            <span id="detailStatus" class="status-tag"></span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Team Members</h4>
+                    <div class="mb-4">
+                        <span class="text-sm font-medium text-gray-600">Project Manager:</span>
+                        <p id="detailProjectManager" class="font-medium"></p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Assigned Members:</span>
+                        <ul id="detailAssignedMembers" class="mt-1 space-y-1">
+                            <!-- Assigned members will be populated here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Components</h4>
+                <div id="detailComponents" class="space-y-3">
+                    <!-- Components will be populated here -->
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
+                <button onclick="closeProjectDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 id="taskDetailsTitle" class="text-xl font-bold text-gray-800">Task Details</h3>
+            <div class="space-y-4">
+                <div>
+                    <span class="text-sm font-medium text-gray-600">Task Name:</span>
+                    <p id="detailTaskName" class="font-medium text-lg"></p>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-600">Description:</span>
+                    <p id="detailTaskDescription" class="mt-1 text-gray-700 bg-gray-50 p-3 rounded"></p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Initiated Date:</span>
+                        <p id="detailTaskInitiatedDate"></p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Due Date:</span>
+                        <p id="detailTaskDueDate"></p>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-600">Status:</span>
+                    <span id="detailTaskStatus" class="status-tag"></span>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
+                <button onclick="closeTaskDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
             </div>
         </div>
     </div>
@@ -288,10 +411,11 @@
             </div>
             <div>
                 <label class="block text-gray-700 mb-1">Assign Members</label>
-                <select id="projectMembers" multiple onchange="updateAssigned('project')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option>Alice - Dev</option>
-                    <option>Bob - Design</option>
-                    <option>Charlie - Marketing</option>
+                <div id="projectMembersLoading" class="text-blue-600 mb-2 hidden">
+                    <div class="loading-spinner"></div>Loading users...
+                </div>
+                <select id="projectMembers" multiple onchange="updateAssigned('project')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hidden">
+                    <!-- Users will be populated from API -->
                 </select>
                 <div id="projectAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
@@ -299,9 +423,7 @@
                 <label class="block text-gray-700 mb-1">Assign Project Manager</label>
                 <select id="projectManager" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Select Manager</option>
-                    <option>Alice - Dev</option>
-                    <option>Bob - Design</option>
-                    <option>Charlie - Marketing</option>
+                    <!-- Users will be populated from API -->
                 </select>
             </div>
             <div>
@@ -337,10 +459,11 @@
             </div>
             <div>
                 <label class="block text-gray-700 mb-1">Assign Members</label>
-                <select id="taskMembers" multiple onchange="updateAssigned('task')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option>Alice - Dev</option>
-                    <option>Bob - Design</option>
-                    <option>Charlie - Marketing</option>
+                <div id="taskMembersLoading" class="text-blue-600 mb-2 hidden">
+                    <div class="loading-spinner"></div>Loading users...
+                </div>
+                <select id="taskMembers" multiple onchange="updateAssigned('task')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hidden">
+                    <!-- Users will be populated from API -->
                 </select>
                 <div id="taskAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
@@ -377,81 +500,513 @@
         let components = [];
         let projects = [];
         let tasks = [];
+        let projectUsersDict = {}; // Store users from project API
+        let taskUsersDict = {}; // Store users from task API
+        let projectStatusData = []; // Store projects from API
+        let taskStatusData = []; // Store tasks from API
+        let signUpRequests = []; // Store sign up requests from API
         
-        // Sample data for demonstration
-        let signUpRequests = [
-            { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "+1-234-567-8901", role: "manager", status: "pending" },
-            { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "+1-234-567-8902", role: "intern", status: "pending" },
-            { id: 3, name: "Robert Johnson", email: "robert.j@example.com", phone: "+1-234-567-8903", role: "employee", status: "pending" }
-        ];
-        
-        let projectStatusData = [
-            { id: 1, name: "Website Redesign", status: "ongoing", initiatedDate: "15/09/2023", dueDate: "2023-12-15", team: "Design Team", progress: 65 },
-            { id: 2, name: "Mobile App Development", status: "ongoing", initiatedDate: "01/10/2023", dueDate: "2024-02-20", team: "Dev Team", progress: 30 },
-            { id: 3, name: "Marketing Campaign", status: "completed", initiatedDate: "01/08/2023", dueDate: "2023-10-10", team: "Marketing Team", progress: 100 },
-            { id: 4, name: "Database Migration", status: "ongoing", initiatedDate: "20/09/2023", dueDate: "2023-11-30", team: "Dev Team", progress: 45 }
-        ];
-        
-        let taskStatusData = [
-            { 
-                id: 1, 
-                name: "Implement User Authentication", 
-                status: "ongoing", 
-                initiatedDate: "2023-09-15", 
-                dueDate: "2023-11-10", 
-                project: "Mobile App Development", 
-                team: "Dev Team", 
-                assignedTo: [
-                    { name: "Alice", role: "Developer", profilePic: "https://randomuser.me/api/portraits/women/44.jpg" },
-                    { name: "Bob", role: "Backend", profilePic: "https://randomuser.me/api/portraits/men/32.jpg" }
-                ]
-            },
-            { 
-                id: 2, 
-                name: "Design Landing Page", 
-                status: "completed", 
-                initiatedDate: "2023-08-20", 
-                dueDate: "2023-10-05", 
-                project: "Website Redesign", 
-                team: "Design Team", 
-                assignedTo: [
-                    { name: "Charlie", role: "Designer", profilePic: "https://randomuser.me/api/portraits/men/22.jpg" }
-                ]
-            },
-            { 
-                id: 3, 
-                name: "Social Media Strategy", 
-                status: "ongoing", 
-                initiatedDate: "2023-10-01", 
-                dueDate: "2023-11-15", 
-                project: "Marketing Campaign", 
-                team: "Marketing Team", 
-                assignedTo: [
-                    { name: "Diana", role: "Marketer", profilePic: "https://randomuser.me/api/portraits/women/68.jpg" },
-                    { name: "Ethan", role: "Content Writer", profilePic: "https://randomuser.me/api/portraits/men/36.jpg" }
-                ]
+        // Template variables from FastAPI
+        const templateData = {
+            tp: {{ tp }}, // Total Projects
+            pd: {{ pd }}, // Completed Projects
+            tt: {{ tt }}, // Total Tasks
+            td: {{ td }}, // Completed Tasks
+            rp: {{ rp | tojson }}, // Recent Projects
+            rt: {{ rt | tojson }}  // Recent Tasks
+        };
+
+        // ====== FastAPI Integration for Sign Up Requests ======
+        async function fetchSignUpRequestsFromAPI() {
+            try {
+                // Show loading state
+                document.getElementById('signUpRequestsLoading').classList.remove('hidden');
+                document.getElementById('signUpRequestsList').innerHTML = '';
+                
+                // Send POST request to FastAPI endpoint
+                const response = await fetch('/approve-signups', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Store the sign up requests data
+                signUpRequests = data;
+                
+                // Render the sign up requests
+                renderSignUpRequests();
+                
+                // Hide loading
+                document.getElementById('signUpRequestsLoading').classList.add('hidden');
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching sign up requests from API:', error);
+                document.getElementById('signUpRequestsLoading').classList.add('hidden');
+                alert('Failed to load sign up requests from server.');
+                return [];
             }
-        ];
+        }
+
+        // ====== Send Action to Server ======
+        async function sendUserAction(email, action) {
+            try {
+                // Send POST request to FastAPI endpoint
+                const response = await fetch('/action-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        action: action
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                // Refresh the sign up requests after action
+                await fetchSignUpRequestsFromAPI();
+                
+                // Show success message
+                if (action === 1) {
+                    alert(`User ${email} has been approved successfully!`);
+                } else {
+                    alert(`User ${email} has been rejected successfully!`);
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('Error sending user action to API:', error);
+                alert('Failed to process user action. Please try again.');
+                return null;
+            }
+        }
+
+        // ====== Initialize Dashboard with Template Data ======
+        function initializeDashboard() {
+            // Update dashboard stats
+            document.getElementById('totalProjects').textContent = templateData.tp || 0;
+            document.getElementById('completedProjects').textContent = templateData.pd || 0;
+            document.getElementById('totalTasks').textContent = templateData.tt || 0;
+            document.getElementById('completedTasks').textContent = templateData.td || 0;
+            
+            // Render recent projects and tasks
+            renderRecentProjects();
+            renderRecentTasks();
+        }
+
+        // ====== Render Recent Projects from Template ======
+        function renderRecentProjects() {
+            const container = document.getElementById('recentProjects');
+            container.innerHTML = '';
+            
+            const recentProjects = templateData.rp || [];
+            
+            if (recentProjects.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent projects</p>';
+                return;
+            }
+            
+            recentProjects.forEach(project => {
+                const projectEl = document.createElement('div');
+                projectEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                
+                projectEl.innerHTML = `
+                    <div>
+                        <h4 class="font-medium text-gray-800">${project.project_name}</h4>
+                        <p class="text-sm text-gray-600">${project.team} • Started: ${project.initiated_date}</p>
+                    </div>
+                    <span class="status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}">
+                        ${project.Status === 0 ? 'ongoing' : 'completed'}
+                    </span>
+                `;
+                
+                container.appendChild(projectEl);
+            });
+        }
+
+        // ====== Render Recent Tasks from Template ======
+        function renderRecentTasks() {
+            const container = document.getElementById('recentTasks');
+            container.innerHTML = '';
+            
+            const recentTasks = templateData.rt || [];
+            
+            if (recentTasks.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent tasks</p>';
+                return;
+            }
+            
+            recentTasks.forEach(task => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                
+                taskEl.innerHTML = `
+                    <div>
+                        <h4 class="font-medium text-gray-800">${task.task_name}</h4>
+                        <p class="text-sm text-gray-600">Due: ${task.due_date}</p>
+                    </div>
+                    <span class="status-tag ${task.Status === 0 ? 'status-ongoing' : 'status-completed'}">
+                        ${task.Status === 0 ? 'ongoing' : 'completed'}
+                    </span>
+                `;
+                
+                container.appendChild(taskEl);
+            });
+        }
+
+        // ====== Render Sign Up Requests from API ======
+        function renderSignUpRequests() {
+            const list = document.getElementById('signUpRequestsList');
+            list.innerHTML = '';
+            
+            // Count pending requests (action = -1)
+            const pendingCount = signUpRequests.filter(req => req.action === -1).length;
+            document.getElementById('pendingRequestsCount').textContent = pendingCount;
+            
+            if (signUpRequests.length === 0) {
+                list.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                            No sign up requests found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            signUpRequests.forEach(request => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                // Determine action buttons based on action value
+                let actionButtons = '';
+                if (request.action === -1) {
+                    // Pending - show both Approve and Reject buttons
+                    actionButtons = `
+                        <button onclick="approveUser('${request.email}')" class="text-green-600 hover:text-green-900 mr-3 font-medium">Approve</button>
+                        <button onclick="rejectUser('${request.email}')" class="text-red-600 hover:text-red-900 font-medium">Reject</button>
+                    `;
+                } else if (request.action === 1) {
+                    // Approved - show approved status
+                    actionButtons = '<span class="status-approved px-2 py-1 rounded-full text-xs font-medium">Approved</span>';
+                } else if (request.action === 0) {
+                    // Rejected - show rejected status
+                    actionButtons = '<span class="status-rejected px-2 py-1 rounded-full text-xs font-medium">Rejected</span>';
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${request.fullname}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${request.email}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${request.phone_number}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${request.role === 'manager' ? 'bg-purple-100 text-purple-800' : 
+                              request.role === 'intern' ? 'bg-blue-100 text-blue-800' : 
+                              'bg-green-100 text-green-800'}">
+                            ${request.role}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        ${actionButtons}
+                    </td>
+                `;
+                
+                list.appendChild(row);
+            });
+        }
+
+        // ====== User Action Functions ======
+        async function approveUser(email) {
+            if (confirm('Are you sure you want to approve this user?')) {
+                await sendUserAction(email, 1);
+            }
+        }
+
+        async function rejectUser(email) {
+            if (confirm('Are you sure you want to reject this user?')) {
+                await sendUserAction(email, 0);
+            }
+        }
+
+        // ====== FastAPI Integration for Task Status ======
+        async function fetchTaskStatusFromAPI() {
+            try {
+                document.getElementById('taskStatusLoading').classList.remove('hidden');
+                document.getElementById('taskStatusList').innerHTML = '';
+                
+                const response = await fetch('/show-task-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                taskStatusData = data;
+                renderTaskStatus();
+                document.getElementById('taskStatusLoading').classList.add('hidden');
+                return data;
+            } catch (error) {
+                console.error('Error fetching task status from API:', error);
+                document.getElementById('taskStatusLoading').classList.add('hidden');
+                alert('Failed to load tasks from server.');
+                return [];
+            }
+        }
+
+        // ====== Task Details Modal ======
+        function openTaskDetailsModal(taskIndex) {
+            const task = taskStatusData[taskIndex];
+            
+            document.getElementById('taskDetailsTitle').textContent = `Task Details: ${task.task_name}`;
+            document.getElementById('detailTaskName').textContent = task.task_name;
+            document.getElementById('detailTaskDescription').textContent = task.desc;
+            document.getElementById('detailTaskInitiatedDate').textContent = task.initiated_date;
+            document.getElementById('detailTaskDueDate').textContent = task.due_date;
+            
+            const statusElement = document.getElementById('detailTaskStatus');
+            statusElement.textContent = task.Status === 0 ? 'ongoing' : 'completed';
+            statusElement.className = `status-tag ${task.Status === 0 ? 'status-ongoing' : 'status-completed'}`;
+            
+            toggleModal('taskDetailsModal', true);
+        }
+
+        function closeTaskDetailsModal() {
+            toggleModal('taskDetailsModal', false);
+        }
+
+        // ====== FastAPI Integration for Project Status ======
+        async function fetchProjectStatusFromAPI() {
+            try {
+                document.getElementById('projectStatusLoading').classList.remove('hidden');
+                document.getElementById('projectStatusList').innerHTML = '';
+                
+                const response = await fetch('/show-project-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                projectStatusData = data;
+                renderProjectStatus();
+                document.getElementById('projectStatusLoading').classList.add('hidden');
+                return data;
+            } catch (error) {
+                console.error('Error fetching project status from API:', error);
+                document.getElementById('projectStatusLoading').classList.add('hidden');
+                alert('Failed to load projects from server.');
+                return [];
+            }
+        }
+
+        // ====== Project Details Modal ======
+        function openProjectDetailsModal(projectIndex) {
+            const project = projectStatusData[projectIndex];
+            
+            document.getElementById('projectDetailsTitle').textContent = `Project Details: ${project.project_name}`;
+            document.getElementById('detailProjectName').textContent = project.project_name;
+            document.getElementById('detailInitiatedDate').textContent = project.initiated_date;
+            document.getElementById('detailDueDate').textContent = project.due_date;
+            document.getElementById('detailTeam').textContent = project.team;
+            
+            const statusElement = document.getElementById('detailStatus');
+            statusElement.textContent = project.Status === 0 ? 'ongoing' : 'completed';
+            statusElement.className = `status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}`;
+            
+            document.getElementById('detailProjectManager').textContent = project.project_manager[0][1];
+            
+            const assignedMembersList = document.getElementById('detailAssignedMembers');
+            assignedMembersList.innerHTML = '';
+            project.assigned_member.forEach(member => {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-gray-700';
+                li.textContent = member[1];
+                assignedMembersList.appendChild(li);
+            });
+            
+            const componentsContainer = document.getElementById('detailComponents');
+            componentsContainer.innerHTML = '';
+            Object.entries(project.components).forEach(([heading, details]) => {
+                const componentDiv = document.createElement('div');
+                componentDiv.className = 'border p-3 rounded';
+                componentDiv.innerHTML = `
+                    <h5 class="font-semibold text-gray-800">${heading}</h5>
+                    <p class="text-sm text-gray-600 mt-1">${details}</p>
+                `;
+                componentsContainer.appendChild(componentDiv);
+            });
+            
+            toggleModal('projectDetailsModal', true);
+        }
+
+        function closeProjectDetailsModal() {
+            toggleModal('projectDetailsModal', false);
+        }
+
+        // ====== FastAPI Integration for Projects ======
+        async function fetchProjectUsersFromAPI() {
+            try {
+                document.getElementById('projectMembersLoading').classList.remove('hidden');
+                document.getElementById('projectMembers').classList.add('hidden');
+                
+                const response = await fetch('/load-add-project', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                projectUsersDict = data;
+                populateProjectUserDropdowns();
+                
+                document.getElementById('projectMembersLoading').classList.add('hidden');
+                document.getElementById('projectMembers').classList.remove('hidden');
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching users from project API:', error);
+                document.getElementById('projectMembersLoading').classList.add('hidden');
+                alert('Failed to load users from server.');
+                return {};
+            }
+        }
+
+        function populateProjectUserDropdowns() {
+            const projectMembersSelect = document.getElementById('projectMembers');
+            const projectManagerSelect = document.getElementById('projectManager');
+            
+            projectMembersSelect.innerHTML = '';
+            projectManagerSelect.innerHTML = '<option value="">Select Manager</option>';
+            
+            Object.entries(projectUsersDict).forEach(([email, username]) => {
+                const memberOption = document.createElement('option');
+                memberOption.value = email;
+                memberOption.textContent = username;
+                projectMembersSelect.appendChild(memberOption);
+                
+                const managerOption = document.createElement('option');
+                managerOption.value = email;
+                managerOption.textContent = username;
+                projectManagerSelect.appendChild(managerOption);
+            });
+        }
+
+        // ====== FastAPI Integration for Tasks ======
+        async function fetchTaskUsersFromAPI() {
+            try {
+                document.getElementById('taskMembersLoading').classList.remove('hidden');
+                document.getElementById('taskMembers').classList.add('hidden');
+                
+                const response = await fetch('/load-add-task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                taskUsersDict = data;
+                populateTaskUserDropdowns();
+                
+                document.getElementById('taskMembersLoading').classList.add('hidden');
+                document.getElementById('taskMembers').classList.remove('hidden');
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching users from task API:', error);
+                document.getElementById('taskMembersLoading').classList.add('hidden');
+                alert('Failed to load users from server.');
+                return {};
+            }
+        }
+
+        function populateTaskUserDropdowns() {
+            const taskMembersSelect = document.getElementById('taskMembers');
+            taskMembersSelect.innerHTML = '';
+            
+            Object.entries(taskUsersDict).forEach(([email, username]) => {
+                const memberOption = document.createElement('option');
+                memberOption.value = email;
+                memberOption.textContent = username;
+                taskMembersSelect.appendChild(memberOption);
+            });
+        }
 
         // ====== Tab Navigation ======
         document.getElementById('dashboardBtn').addEventListener('click', function() {
             showSection('dashboardSection');
-            updateDashboardStats();
         });
 
         document.getElementById('approveSignUpsBtn').addEventListener('click', function() {
             showSection('signUpRequestsSection');
-            renderSignUpRequests();
+            fetchSignUpRequestsFromAPI();
         });
 
         document.getElementById('showProjectStatusBtn').addEventListener('click', function() {
             showSection('projectStatusSection');
-            renderProjectStatus();
+            fetchProjectStatusFromAPI();
         });
 
         document.getElementById('showTaskStatusBtn').addEventListener('click', function() {
             showSection('taskStatusSection');
-            renderTaskStatus();
+            fetchTaskStatusFromAPI();
         });
 
         // Project filter buttons
@@ -533,16 +1088,13 @@
         }
 
         function showSection(sectionId) {
-            // Hide all sections
             document.getElementById('dashboardSection').classList.add('hidden');
             document.getElementById('signUpRequestsSection').classList.add('hidden');
             document.getElementById('projectStatusSection').classList.add('hidden');
             document.getElementById('taskStatusSection').classList.add('hidden');
             
-            // Show selected section
             document.getElementById(sectionId).classList.remove('hidden');
             
-            // Update active button state
             document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn').forEach(btn => {
                 btn.classList.remove('active-tab');
             });
@@ -558,217 +1110,37 @@
             }
         }
 
-        // ====== Dashboard Functions ======
-        function updateDashboardStats() {
-            // Calculate stats
-            const totalProjects = projects.length + projectStatusData.length;
-            const completedProjects = projectStatusData.filter(p => p.status === 'completed').length;
-            const totalTasks = tasks.length + taskStatusData.length;
-            const completedTasks = taskStatusData.filter(t => t.status === 'completed').length;
-            
-            // Update dashboard numbers
-            document.getElementById('totalProjects').textContent = totalProjects;
-            document.getElementById('completedProjects').textContent = completedProjects;
-            document.getElementById('totalTasks').textContent = totalTasks;
-            document.getElementById('completedTasks').textContent = completedTasks;
-            
-            // Render recent projects and tasks
-            renderRecentProjects();
-            renderRecentTasks();
-        }
-
-        function renderRecentProjects() {
-            const container = document.getElementById('recentProjects');
-            container.innerHTML = '';
-            
-            // Combine sample data with user-added projects
-            const allProjects = [...projectStatusData, ...projects.map(p => ({
-                id: p.id || Math.random(),
-                name: p.name,
-                status: p.status || 'ongoing',
-                initiatedDate: p.initiatedDate || getCurrentDateFormatted(),
-                dueDate: p.due,
-                team: p.team,
-                progress: p.progress || 0
-            }))];
-            
-            // Sort by date (most recent first) and take first 3
-            const recentProjects = allProjects
-                .sort((a, b) => new Date(b.initiatedDate) - new Date(a.initiatedDate))
-                .slice(0, 3);
-            
-            recentProjects.forEach(project => {
-                const projectEl = document.createElement('div');
-                projectEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
-                
-                projectEl.innerHTML = `
-                    <div>
-                        <h4 class="font-medium text-gray-800">${project.name}</h4>
-                        <p class="text-sm text-gray-600">${project.team} • Started: ${project.initiatedDate}</p>
-                    </div>
-                    <span class="status-tag ${project.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
-                        ${project.status}
-                    </span>
-                `;
-                
-                container.appendChild(projectEl);
-            });
-        }
-
-        function renderRecentTasks() {
-            const container = document.getElementById('recentTasks');
-            container.innerHTML = '';
-            
-            // Combine sample data with user-added tasks
-            const allTasks = [...taskStatusData, ...tasks.map(t => ({
-                id: t.id || Math.random(),
-                name: t.name,
-                status: 'ongoing',
-                initiatedDate: t.initiatedDate || getCurrentDateFormatted(),
-                dueDate: t.due,
-                project: 'General',
-                team: 'Various'
-            }))];
-            
-            // Sort by date (most recent first) and take first 3
-            const recentTasks = allTasks
-                .sort((a, b) => new Date(b.initiatedDate) - new Date(a.initiatedDate))
-                .slice(0, 3);
-            
-            recentTasks.forEach(task => {
-                const taskEl = document.createElement('div');
-                taskEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
-                
-                taskEl.innerHTML = `
-                    <div>
-                        <h4 class="font-medium text-gray-800">${task.name}</h4>
-                        <p class="text-sm text-gray-600">${task.team} • Due: ${new Date(task.dueDate).toLocaleDateString()}</p>
-                    </div>
-                    <span class="status-tag ${task.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
-                        ${task.status}
-                    </span>
-                `;
-                
-                container.appendChild(taskEl);
-            });
-        }
-
-        // ====== Render Sign Up Requests ======
-        function renderSignUpRequests() {
-            const list = document.getElementById('signUpRequestsList');
-            list.innerHTML = '';
-            
-            document.getElementById('pendingRequestsCount').textContent = signUpRequests.filter(req => req.status === 'pending').length;
-            
-            signUpRequests.forEach(request => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                
-                row.innerHTML = `
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${request.name}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${request.email}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${request.phone}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${request.role === 'manager' ? 'bg-purple-100 text-purple-800' : 
-                              request.role === 'intern' ? 'bg-blue-100 text-blue-800' : 
-                              'bg-green-100 text-green-800'}">
-                            ${request.role}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        ${request.status === 'pending' ? 
-                            `<button onclick="approveSignUp(${request.id})" class="text-green-600 hover:text-green-900 mr-3">Approve</button>
-                             <button onclick="rejectSignUp(${request.id})" class="text-red-600 hover:text-red-900">Reject</button>` :
-                            `<span class="text-gray-500">${request.status === 'approved' ? 'Approved' : 'Rejected'}</span>`
-                        }
-                    </td>
-                `;
-                
-                list.appendChild(row);
-            });
-        }
-
-        function approveSignUp(id) {
-            const request = signUpRequests.find(req => req.id === id);
-            if (request) {
-                request.status = 'approved';
-                renderSignUpRequests();
-                alert(`Approved sign up request for ${request.name}`);
-            }
-        }
-
-        function rejectSignUp(id) {
-            const request = signUpRequests.find(req => req.id === id);
-            if (request) {
-                request.status = 'rejected';
-                renderSignUpRequests();
-                alert(`Rejected sign up request for ${request.name}`);
-            }
-        }
-
         // ====== Render Project Status ======
         function renderProjectStatus() {
             const list = document.getElementById('projectStatusList');
             list.innerHTML = '';
             
-            // Combine sample data with user-added projects
-            const allProjects = [...projectStatusData, ...projects.map(p => ({
-                id: p.id || Math.random(),
-                name: p.name,
-                status: 'ongoing',
-                initiatedDate: getCurrentDateFormatted(),
-                dueDate: p.due,
-                team: p.team,
-                progress: 0
-            }))];
-            
-            // Filter projects based on active filter
-            let filteredProjects = allProjects;
+            let filteredProjects = projectStatusData;
             if (window.projectFilter === 'ongoing') {
-                filteredProjects = allProjects.filter(p => p.status === 'ongoing');
+                filteredProjects = projectStatusData.filter(p => p.Status === 0);
             } else if (window.projectFilter === 'completed') {
-                filteredProjects = allProjects.filter(p => p.status === 'completed');
+                filteredProjects = projectStatusData.filter(p => p.Status === 1);
             }
             
-            filteredProjects.forEach(project => {
+            filteredProjects.forEach((project, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
-                        <h3 class="font-bold text-gray-800">${project.name}</h3>
-                        <span class="status-tag ${project.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
-                            ${project.status}
+                        <h3 class="font-bold text-gray-800">${project.project_name}</h3>
+                        <span class="status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}">
+                            ${project.Status === 0 ? 'ongoing' : 'completed'}
                         </span>
-                    </div>
-                    <div class="mb-4">
-                        <div class="flex justify-between text-sm text-gray-600 mb-1">
-                            <span>Progress</span>
-                            <span>${project.progress}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="h-2 rounded-full ${project.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'}" style="width: ${project.progress}%"></div>
-                        </div>
                     </div>
                     <div class="text-sm text-gray-600 space-y-1">
                         <div class="flex justify-between">
                             <span>Initiated Date:</span>
-                            <span class="font-medium">${project.initiatedDate}</span>
+                            <span class="font-medium">${project.initiated_date}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Due Date:</span>
-                            <span class="font-medium">${new Date(project.dueDate).toLocaleDateString()}</span>
+                            <span class="font-medium">${project.due_date}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Team:</span>
@@ -776,7 +1148,7 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                        <button onclick="openProjectDetailsModal(${index})" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
                     </div>
                 `;
                 
@@ -789,74 +1161,46 @@
             const list = document.getElementById('taskStatusList');
             list.innerHTML = '';
             
-            // Combine sample data with user-added tasks
-            const allTasks = [...taskStatusData, ...tasks.map(t => ({
-                id: t.id || Math.random(),
-                name: t.name,
-                status: 'ongoing',
-                initiatedDate: t.initiatedDate || getCurrentDateFormatted(),
-                dueDate: t.due,
-                project: 'General',
-                team: 'Various',
-                assignedTo: t.members ? t.members.map(m => ({ 
-                    name: m.split(' - ')[0], 
-                    role: m.split(' - ')[1],
-                    profilePic: 'https://randomuser.me/api/portraits/lego/1.jpg'
-                })) : []
-            }))];
-            
-            // Filter tasks based on active filter
-            let filteredTasks = allTasks;
+            let filteredTasks = taskStatusData;
             if (window.taskFilter === 'ongoing') {
-                filteredTasks = allTasks.filter(t => t.status === 'ongoing');
+                filteredTasks = taskStatusData.filter(t => t.Status === 0);
             } else if (window.taskFilter === 'completed') {
-                filteredTasks = allTasks.filter(t => t.status === 'completed');
+                filteredTasks = taskStatusData.filter(t => t.Status === 1);
             }
             
-            filteredTasks.forEach(task => {
+            filteredTasks.forEach((task, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
-                        <h3 class="font-bold text-gray-800">${task.name}</h3>
-                        <span class="status-tag ${task.status === 'ongoing' ? 'status-ongoing' : 'status-completed'}">
-                            ${task.status}
+                        <h3 class="font-bold text-gray-800">${task.task_name}</h3>
+                        <span class="status-tag ${task.Status === 0 ? 'status-ongoing' : 'status-completed'}">
+                            ${task.Status === 0 ? 'ongoing' : 'completed'}
                         </span>
                     </div>
                     <div class="text-sm text-gray-600 space-y-2 mb-4">
                         <div class="flex justify-between">
                             <span>Initiated Date:</span>
-                            <span class="font-medium">${new Date(task.initiatedDate).toLocaleDateString()}</span>
+                            <span class="font-medium">${task.initiated_date}</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Due Date:</span>
-                            <span class="font-medium">${new Date(task.dueDate).toLocaleDateString()}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Project:</span>
-                            <span class="font-medium">${task.project}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Team:</span>
-                            <span class="font-medium">${task.team}</span>
+                            <span class="font-medium">${task.due_date}</span>
                         </div>
                     </div>
                     <div>
                         <div class="text-sm text-gray-600 mb-2">Assigned To:</div>
-                        <div class="flex -space-x-2">
-                            ${task.assignedTo.map(member => `
-                                <div class="relative group">
-                                    <img src="${member.profilePic}" alt="${member.name}" class="profile-pic">
-                                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                        ${member.name} - ${member.role}
-                                    </div>
-                                </div>
+                        <div class="flex flex-wrap gap-2">
+                            ${task.assigned_members.map(member => `
+                                <span class="bg-gray-200 px-2 py-1 rounded text-sm">
+                                    ${member[1]}
+                                </span>
                             `).join('')}
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                        <button onclick="openTaskDetailsModal(${index})" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
                     </div>
                 `;
                 
@@ -870,7 +1214,6 @@
             const day = String(today.getDate()).padStart(2, '0');
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const year = today.getFullYear();
-            
             return `${day}/${month}/${year}`;
         }
 
@@ -881,8 +1224,9 @@
         }
 
         // ====== Project Modals ======
-        function openProjectModal(editIndex = null) {
+        async function openProjectModal(editIndex = null) {
             toggleModal("projectModal", true);
+            await fetchProjectUsersFromAPI();
 
             const isEdit = editIndex !== null;
             const title = isEdit ? "Edit Project" : "Add New Project";
@@ -893,17 +1237,34 @@
             document.getElementById("editProjectIndex").value = isEdit ? editIndex : "";
 
             if (isEdit) {
-            const p = projects[editIndex];
-            document.getElementById("projectName").value = p.name;
-            document.getElementById("projectDueDate").value = p.due;
-            document.getElementById("projectTeam").value = p.team;
-            document.getElementById("projectManager").value = p.manager;
+                const p = projects[editIndex];
+                document.getElementById("projectName").value = p.name;
+                document.getElementById("projectDueDate").value = p.due;
+                document.getElementById("projectTeam").value = p.team;
+                
+                if (p.managerEmail && projectUsersDict[p.managerEmail]) {
+                    document.getElementById("projectManager").value = p.managerEmail;
+                } else {
+                    const managerEntry = Object.entries(projectUsersDict).find(([email, username]) => username === p.manager);
+                    if (managerEntry) {
+                        document.getElementById("projectManager").value = managerEntry[0];
+                    }
+                }
 
-            assigned.project = [...p.members];
-            components = [...p.components];
+                assigned.project = [...p.memberEmails || p.members || []];
+                components = [...p.components];
 
-            renderComponents();
-            updateAssigned("project");
+                renderComponents();
+                updateAssigned("project");
+            } else {
+                document.getElementById("projectName").value = "";
+                document.getElementById("projectDueDate").value = "";
+                document.getElementById("projectTeam").value = "";
+                document.getElementById("projectManager").value = "";
+                assigned.project = [];
+                components = [];
+                renderComponents();
+                updateAssigned("project");
             }
         }
 
@@ -912,8 +1273,9 @@
         }
 
         // ====== Task Modals ======
-        function openTaskModal(editIndex = null) {
+        async function openTaskModal(editIndex = null) {
             toggleModal("taskModal", true);
+            await fetchTaskUsersFromAPI();
 
             const isEdit = editIndex !== null;
             const title = isEdit ? "Edit Task" : "Assign Task";
@@ -924,13 +1286,19 @@
             document.getElementById("editTaskIndex").value = isEdit ? editIndex : "";
 
             if (isEdit) {
-            const t = tasks[editIndex];
-            document.getElementById("taskName").value = t.name;
-            document.getElementById("taskDescription").value = t.desc;
-            document.getElementById("taskDueDate").value = t.due;
+                const t = tasks[editIndex];
+                document.getElementById("taskName").value = t.name;
+                document.getElementById("taskDescription").value = t.desc;
+                document.getElementById("taskDueDate").value = t.due;
 
-            assigned.task = [...t.members];
-            updateAssigned("task");
+                assigned.task = [...t.memberEmails || t.members || []];
+                updateAssigned("task");
+            } else {
+                document.getElementById("taskName").value = "";
+                document.getElementById("taskDescription").value = "";
+                document.getElementById("taskDueDate").value = "";
+                assigned.task = [];
+                updateAssigned("task");
             }
         }
 
@@ -955,11 +1323,12 @@
             const display = document.getElementById(`${type}AssignedDisplay`);
             display.innerHTML = "";
 
-            assigned[type].forEach(member => {
-            const span = document.createElement("span");
-            span.className = "bg-gray-200 px-2 py-1 rounded text-sm";
-            span.innerText = member;
-            display.appendChild(span);
+            assigned[type].forEach(email => {
+                const username = type === 'project' ? projectUsersDict[email] : taskUsersDict[email];
+                const span = document.createElement("span");
+                span.className = "bg-gray-200 px-2 py-1 rounded text-sm";
+                span.innerText = username || email;
+                display.appendChild(span);
             });
         }
 
@@ -983,16 +1352,16 @@
             list.innerHTML = "";
 
             components.forEach(c => {
-            const div = document.createElement("div");
-            div.className = "border p-2 rounded";
-            div.innerHTML = `
-                <div class="flex justify-between">
-                <span class="font-semibold">${c.name}</span>
-                <button onclick="this.parentElement.nextElementSibling.classList.toggle('hidden')" class="text-blue-600">▼</button>
-                </div>
-                <div class="hidden mt-2 text-sm text-gray-700">${c.feature}</div>
-            `;
-            list.appendChild(div);
+                const div = document.createElement("div");
+                div.className = "border p-2 rounded";
+                div.innerHTML = `
+                    <div class="flex justify-between">
+                    <span class="font-semibold">${c.name}</span>
+                    <button onclick="this.parentElement.nextElementSibling.classList.toggle('hidden')" class="text-blue-600">▼</button>
+                    </div>
+                    <div class="hidden mt-2 text-sm text-gray-700">${c.feature}</div>
+                `;
+                list.appendChild(div);
             });
         }
 
@@ -1001,44 +1370,64 @@
             const name = document.getElementById("projectName").value;
             const due = document.getElementById("projectDueDate").value;
             const team = document.getElementById("projectTeam").value;
-            const manager = document.getElementById("projectManager").value;
+            const managerEmail = document.getElementById("projectManager").value;
+            const managerUsername = projectUsersDict[managerEmail];
 
-            if (!name || !due || !team || !manager) {
-            alert("Please fill all fields!");
-            return;
+            if (!name || !due || !team || !managerEmail) {
+                alert("Please fill all fields!");
+                return;
             }
 
             const compDict = Object.fromEntries(components.map(c => [c.name, c.feature]));
 
+            const assignedMembersFormatted = assigned.project.map(email => [
+                email, 
+                projectUsersDict[email]
+            ]);
+
+            const projectManagerFormatted = [
+                [managerEmail, managerUsername]
+            ];
+
             const payload = {
-            project_name: name,
-            due_date: due,
-            team,
-            assigned_members: [...assigned.project],
-            project_manager: manager,
-            components: compDict
+                project_name: name,
+                due_date: due,
+                team,
+                assigned_members: assignedMembersFormatted,
+                project_manager: projectManagerFormatted,
+                components: compDict
             };
 
             try {
-            const res = await fetch("/add-project", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
+                const res = await fetch("/add-project", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
 
-            if (res.ok) {
-                alert("Project added successfully!");
-                projects.push({ name, due, team, manager, members: [...assigned.project], components: [...components] });
-                updateDashboardStats();
-                assigned.project = [];
-                components = [];
-                closeProjectModal();
-            } else {
-                alert("Error adding project!");
-            }
+                if (res.ok) {
+                    alert("Project added successfully!");
+                    projects.push({ 
+                        name, 
+                        due, 
+                        team, 
+                        manager: managerUsername,
+                        managerEmail: managerEmail,
+                        memberEmails: [...assigned.project],
+                        members: assigned.project.map(email => projectUsersDict[email]),
+                        components: [...components],
+                        initiatedDate: getCurrentDateFormatted(),
+                        status: 'ongoing'
+                    });
+                    assigned.project = [];
+                    components = [];
+                    closeProjectModal();
+                } else {
+                    alert("Error adding project!");
+                }
             } catch (err) {
-            console.error(err);
-            alert("Failed to connect to backend!");
+                console.error(err);
+                alert("Failed to connect to backend!");
             }
         }
 
@@ -1049,53 +1438,70 @@
             const due = document.getElementById("taskDueDate").value;
 
             if (!name || !desc || !due) {
-            alert("Fill all task fields!");
-            return;
+                alert("Fill all task fields!");
+                return;
             }
 
+            const assignedMembersFormatted = assigned.task.map(email => [
+                email, 
+                taskUsersDict[email]
+            ]);
+
             const payload = {
-            task_name: name,
-            desc,
-            due_date: due,
-            assigned_members: [...assigned.task]
+                task_name: name,
+                desc,
+                due_date: due,
+                assigned_members: assignedMembersFormatted
             };
 
             try {
-            const res = await fetch("/add-task", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
+                const res = await fetch("/add-task", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
 
-            if (res.ok) {
-                alert("Task added successfully!");
-                tasks.push({ name, desc, due, members: [...assigned.task] });
-                updateDashboardStats();
-                assigned.task = [];
-                closeTaskModal();
-            } else {
-                alert("Error adding task!");
-            }
+                if (res.ok) {
+                    alert("Task added successfully!");
+                    tasks.push({ 
+                        name, 
+                        desc, 
+                        due, 
+                        memberEmails: [...assigned.task],
+                        members: assigned.task.map(email => taskUsersDict[email]),
+                        initiatedDate: getCurrentDateFormatted(),
+                        status: 'ongoing'
+                    });
+                    assigned.task = [];
+                    closeTaskModal();
+                } else {
+                    alert("Error adding task!");
+                }
             } catch (err) {
-            console.error(err);
-            alert("Failed to connect to backend!");
+                console.error(err);
+                alert("Failed to connect to backend!");
             }
         }
 
         // ====== Update Project/Task ======
         function updateProject() {
             const idx = +document.getElementById("editProjectIndex").value;
+            const managerEmail = document.getElementById("projectManager").value;
+            const managerUsername = projectUsersDict[managerEmail];
 
             projects[idx] = {
-            name: document.getElementById("projectName").value,
-            due: document.getElementById("projectDueDate").value,
-            team: document.getElementById("projectTeam").value,
-            manager: document.getElementById("projectManager").value,
-            members: [...assigned.project],
-            components: [...components]
+                name: document.getElementById("projectName").value,
+                due: document.getElementById("projectDueDate").value,
+                team: document.getElementById("projectTeam").value,
+                manager: managerUsername,
+                managerEmail: managerEmail,
+                memberEmails: [...assigned.project],
+                members: assigned.project.map(email => projectUsersDict[email]),
+                components: [...components],
+                initiatedDate: getCurrentDateFormatted(),
+                status: 'ongoing'
             };
 
-            updateDashboardStats();
             closeProjectModal();
         }
 
@@ -1103,29 +1509,29 @@
             const idx = +document.getElementById("editTaskIndex").value;
 
             tasks[idx] = {
-            name: document.getElementById("taskName").value,
-            desc: document.getElementById("taskDescription").value,
-            due: document.getElementById("taskDueDate").value,
-            members: [...assigned.task]
+                name: document.getElementById("taskName").value,
+                desc: document.getElementById("taskDescription").value,
+                due: document.getElementById("taskDueDate").value,
+                memberEmails: [...assigned.task],
+                members: assigned.task.map(email => taskUsersDict[email])
             };
 
-            updateDashboardStats();
             closeTaskModal();
         }
 
-        // Initialize the dashboard
+        // Initialize the dashboard when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Set default filters
             window.projectFilter = 'all';
             window.taskFilter = 'all';
             
-            // Set active filter buttons
             setActiveProjectFilter('all');
             setActiveTaskFilter('all');
             
+            // Initialize dashboard with template data
+            initializeDashboard();
+            
             // Show dashboard by default
             showSection('dashboardSection');
-            updateDashboardStats();
         });
     </script>
 

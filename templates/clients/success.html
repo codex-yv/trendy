@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Signup Submitted</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --warning: #f59e0b;
+            --accent: #111827;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #fefce8, #ffffff 60%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: var(--accent);
+        }
+
+        .card {
+            width: 100%;
+            max-width: 720px;
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
+            padding: 32px;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .icon {
+            flex: 0 0 84px;
+            height: 84px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.06));
+            color: var(--warning);
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .content h1 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            letter-spacing: -0.2px;
+        }
+
+        .content p {
+            margin: 0 0 12px 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .name {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .note {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        @media (max-width:600px) {
+            .card {
+                flex-direction: column;
+                text-align: center
+            }
+
+            .icon {
+                margin-bottom: 6px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="card" role="main" aria-labelledby="title">
+        <div class="icon" aria-hidden="true">✅</div>
+
+        <div class="content">
+            <h1 id="title">Signup Submitted</h1>
+            <p id="message">
+                Your signup response has been
+                <strong>successfully submitted</strong> and is awaiting admin approval.
+            </p>
+
+            <p class="note">You will be notified once your application is approved. Please check back later or contact
+                support if needed.</p>
+        </div>
+    </main>
+
+    <script>
+        // Optional: dynamically insert the name from URL (?name=John)
+        const params = new URLSearchParams(window.location.search);
+        const name = params.get("name");
+        if (name) {
+            document.getElementById("theName").textContent = name;
+        }
+    </script>
+</body>
+
+</html>
