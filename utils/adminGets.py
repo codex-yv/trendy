@@ -1,4 +1,5 @@
 from configs.trendyDB import client
+from utils.clientGets import get_project_by_id, get_task_by_id
 
 async def get_users():
     db = client["Clients"]
@@ -98,3 +99,45 @@ async def get_users_for_approve():
             user_list.append(formatt)
 
     return user_list
+
+async def get_all_members():
+    db = client["Clients"]
+    collections_list = await db.list_collection_names()
+
+    members_details = {}
+
+    for collection in collections_list:
+        collections = db[collection]
+
+        member_data = await collections.find({}, {"_id": 0}).to_list(None)
+
+        if member_data:
+
+            # test_member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":"unknown", "techStack":["Java", "Python"], "assignedProjects":[["Sprite Landing Page", True], ["Trendy webpage", False]], "assignedTask":["Postgrase SQL", "Mysql"]}
+
+            member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":"unknown", "techStack":["Java", "Python"], "assignedProjects":[], "assignedTask":[]}
+
+            all_projects = member_data[0]['assigned_projects']
+            for project in all_projects:
+                project_id = list(project.keys())[0]
+                project_org = await get_project_by_id(project_id=project_id)
+                if collection == project_org['project_manager'][0][0]:
+                    project = [project_org['project_name'], True]
+                    member_detail["assignedProjects"].append(project)
+                else:
+                    project = [project_org['project_name'], False]
+                    member_detail["assignedProjects"].append(project)
+                
+                
+
+            all_task = member_data[0]['assigned_task']
+            for task in all_task:
+                task_id = list(task.keys())[0]
+                task_org = await get_task_by_id(task_id=task_id)
+                task_name = task_org['task_name']
+                member_detail["assignedTask"].append(task_name)
+            
+            members_details[member_data[0]['email']] = member_detail
+
+    # print(members_details)
+    return members_details

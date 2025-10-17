@@ -6,7 +6,7 @@ from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
 
 from utils.adminPosts import insert_project, insert_task
-from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve
+from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members
 from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act
 
 from utils.clientPost import add_new_client
@@ -80,7 +80,7 @@ async def get_dashboard(request: Request):
             "recent projects": projects,                
             "recent tasks": tasks                    
         }
-        print(details)
+        # print(projects)
         return templates_clients.TemplateResponse("index.html", {"request": request, "fullname": fullname, "details":details})
 
     except TypeError:
@@ -219,3 +219,10 @@ async def update_dashboard_fapi(request: Request, x:UselessClient):
         "recent tasks": tasks                    
     }
     return details
+
+
+@app.post("/mps")
+async def show_members(request:Request, x:Useless):
+    return_value = await get_all_members()
+    # print(return_value)
+    return return_value

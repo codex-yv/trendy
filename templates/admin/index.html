@@ -704,73 +704,7 @@
         };
 
         // ====== Members Data ======
-        let membersData = [
-            {
-                id: 1,
-                fullName: "John Smith",
-                email: "john.smith@company.com",
-                phone: "+1 (555) 123-4567",
-                lastActive: "2023-11-15 09:30 AM",
-                team: "Dev Team",
-                role: "Manager",
-                assignedProjects: ["Website Redesign", "Mobile App Development"],
-                assignedTasks: ["Fix login bug", "Update API documentation"],
-                managerProjects: ["Website Redesign"],
-                techStack: ["JavaScript", "React", "Node.js", "MongoDB", "AWS"]
-            },
-            {
-                id: 2,
-                fullName: "Sarah Johnson",
-                email: "sarah.johnson@company.com",
-                phone: "+1 (555) 987-6543",
-                lastActive: "2023-11-14 03:45 PM",
-                team: "Design Team",
-                role: "Employee",
-                assignedProjects: ["Website Redesign", "Brand Identity"],
-                assignedTasks: ["Create landing page design", "Design mobile app UI"],
-                managerProjects: [],
-                techStack: ["Figma", "Adobe XD", "Sketch", "Photoshop", "Illustrator"]
-            },
-            {
-                id: 3,
-                fullName: "Michael Chen",
-                email: "michael.chen@company.com",
-                phone: "+1 (555) 456-7890",
-                lastActive: "2023-11-15 11:20 AM",
-                team: "Dev Team",
-                role: "Employee",
-                assignedProjects: ["Mobile App Development", "API Integration"],
-                assignedTasks: ["Implement user authentication", "Optimize database queries"],
-                managerProjects: [],
-                techStack: ["Python", "Django", "PostgreSQL", "Docker", "Redis"]
-            },
-            {
-                id: 4,
-                fullName: "Emily Davis",
-                email: "emily.davis@company.com",
-                phone: "+1 (555) 234-5678",
-                lastActive: "2023-11-13 02:15 PM",
-                team: "Marketing Team",
-                role: "Manager",
-                assignedProjects: ["Q4 Campaign", "Social Media Strategy"],
-                assignedTasks: ["Create campaign report", "Analyze social media metrics"],
-                managerProjects: ["Q4 Campaign", "Social Media Strategy"],
-                techStack: ["Google Analytics", "SEO", "Content Marketing", "Social Media"]
-            },
-            {
-                id: 5,
-                fullName: "Alex Rodriguez",
-                email: "alex.rodriguez@company.com",
-                phone: "+1 (555) 876-5432",
-                lastActive: "2023-11-15 10:05 AM",
-                team: "Dev Team",
-                role: "Intern",
-                assignedProjects: ["Website Redesign"],
-                assignedTasks: ["Fix CSS issues", "Update documentation"],
-                managerProjects: [],
-                techStack: ["HTML", "CSS", "JavaScript", "React"]
-            }
-        ];
+        let membersData = [];
 
         // ====== Notification System ======
         let notifications = [
@@ -878,13 +812,87 @@
         }
 
         // ====== Member's Profile Functions ======
+        async function fetchMembersFromAPI() {
+            try {
+                document.getElementById('membersProfileLoading').classList.remove('hidden');
+                document.getElementById('membersList').innerHTML = '';
+                
+                const response = await fetch('/mps', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Transform the API response into our membersData format
+                membersData = Object.entries(data).map(([email, memberInfo], index) => {
+                    // Process assignedProjects to separate assigned projects and manager projects
+                    const assignedProjects = [];
+                    const managerProjects = [];
+                    
+                    if (memberInfo.assignedProjects && Array.isArray(memberInfo.assignedProjects)) {
+                        memberInfo.assignedProjects.forEach(project => {
+                            if (Array.isArray(project) && project.length >= 2) {
+                                const projectName = project[0];
+                                const isManager = project[1];
+                                
+                                assignedProjects.push(projectName);
+                                
+                                if (isManager === true) {
+                                    managerProjects.push(projectName);
+                                }
+                            }
+                        });
+                    }
+                    
+                    return {
+                        id: index + 1,
+                        fullName: memberInfo.name || "Unknown",
+                        email: email,
+                        phone: memberInfo.phone || "Not provided",
+                        lastActive: memberInfo.lastActive || "Unknown",
+                        team: memberInfo.team || "Not assigned",
+                        role: memberInfo.role || "Employee",
+                        assignedProjects: assignedProjects,
+                        assignedTasks: memberInfo.assignedTask || [],
+                        managerProjects: managerProjects,
+                        techStack: memberInfo.techStack || []
+                    };
+                });
+                
+                renderMembers();
+                document.getElementById('membersProfileLoading').classList.add('hidden');
+                return membersData;
+            } catch (error) {
+                console.error('Error fetching members from API:', error);
+                document.getElementById('membersProfileLoading').classList.add('hidden');
+                alert('Failed to load members from server.');
+                return [];
+            }
+        }
+
         function renderMembers() {
             const list = document.getElementById('membersList');
             list.innerHTML = '';
             
             let filteredMembers = membersData;
             if (window.memberFilter && window.memberFilter !== 'all') {
-                filteredMembers = membersData.filter(member => member.team === window.memberFilter);
+                // Convert filter to match API team values
+                let teamFilter = window.memberFilter;
+                if (teamFilter === 'Dev Team') teamFilter = 'Dev';
+                if (teamFilter === 'Design Team') teamFilter = 'Design';
+                if (teamFilter === 'Marketing Team') teamFilter = 'Marketing';
+                
+                filteredMembers = membersData.filter(member => member.team === teamFilter);
             }
             
             if (filteredMembers.length === 0) {
@@ -902,6 +910,31 @@
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50';
                 
+                // Determine team display name and color
+                let teamDisplay = member.team;
+                let teamColorClass = 'bg-gray-100 text-gray-800';
+                
+                if (member.team === 'Dev') {
+                    teamDisplay = 'Dev Team';
+                    teamColorClass = 'bg-blue-100 text-blue-800';
+                } else if (member.team === 'Design') {
+                    teamDisplay = 'Design Team';
+                    teamColorClass = 'bg-purple-100 text-purple-800';
+                } else if (member.team === 'Marketing') {
+                    teamDisplay = 'Marketing Team';
+                    teamColorClass = 'bg-green-100 text-green-800';
+                }
+                
+                // Determine role color
+                let roleColorClass = 'bg-gray-100 text-gray-800';
+                if (member.role === 'Manager') {
+                    roleColorClass = 'bg-yellow-100 text-yellow-800';
+                } else if (member.role === 'Employee') {
+                    roleColorClass = 'bg-indigo-100 text-indigo-800';
+                } else if (member.role === 'Intern') {
+                    roleColorClass = 'bg-gray-100 text-gray-800';
+                }
+                
                 row.innerHTML = `
                     <td class="px-4 py-3 whitespace-nowrap">
                         <div class="flex items-center">
@@ -914,18 +947,12 @@
                         <div class="text-sm text-gray-900">${member.email}</div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${member.team === 'Dev Team' ? 'bg-blue-100 text-blue-800' : 
-                              member.team === 'Design Team' ? 'bg-purple-100 text-purple-800' : 
-                              'bg-green-100 text-green-800'}">
-                            ${member.team}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${teamColorClass}">
+                            ${teamDisplay}
                         </span>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${member.role === 'Manager' ? 'bg-yellow-100 text-yellow-800' : 
-                              member.role === 'Employee' ? 'bg-indigo-100 text-indigo-800' : 
-                              'bg-gray-100 text-gray-800'}">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleColorClass}">
                             ${member.role}
                         </span>
                     </td>
@@ -946,43 +973,68 @@
             document.getElementById('detailEmail').textContent = member.email;
             document.getElementById('detailPhone').textContent = member.phone;
             document.getElementById('detailLastActive').textContent = member.lastActive;
-            document.getElementById('detailTeam').textContent = member.team;
+            
+            // Determine team display name
+            let teamDisplay = member.team;
+            if (member.team === 'Dev') teamDisplay = 'Dev Team';
+            else if (member.team === 'Design') teamDisplay = 'Design Team';
+            else if (member.team === 'Marketing') teamDisplay = 'Marketing Team';
+            
+            document.getElementById('detailTeam').textContent = teamDisplay;
             document.getElementById('detailRole').textContent = member.role;
             
             // Tech Stack
             const techStackContainer = document.getElementById('detailTechStack');
             techStackContainer.innerHTML = '';
-            member.techStack.forEach(tech => {
-                const span = document.createElement('span');
-                span.className = 'tech-stack-tag';
-                span.textContent = tech;
-                techStackContainer.appendChild(span);
-            });
+            if (member.techStack && member.techStack.length > 0) {
+                member.techStack.forEach(tech => {
+                    const span = document.createElement('span');
+                    span.className = 'tech-stack-tag';
+                    span.textContent = tech;
+                    techStackContainer.appendChild(span);
+                });
+            } else {
+                techStackContainer.innerHTML = '<span class="text-gray-500 text-sm">No tech stack specified</span>';
+            }
             
             // Assigned Projects
             const assignedProjectsList = document.getElementById('detailAssignedProjects');
             assignedProjectsList.innerHTML = '';
-            member.assignedProjects.forEach(project => {
+            if (member.assignedProjects && member.assignedProjects.length > 0) {
+                member.assignedProjects.forEach(project => {
+                    const li = document.createElement('li');
+                    li.className = 'text-sm text-gray-700';
+                    li.textContent = project;
+                    assignedProjectsList.appendChild(li);
+                });
+            } else {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-gray-700';
-                li.textContent = project;
+                li.className = 'text-sm text-gray-500 italic';
+                li.textContent = 'No projects assigned';
                 assignedProjectsList.appendChild(li);
-            });
+            }
             
             // Assigned Tasks
             const assignedTasksList = document.getElementById('detailAssignedTasks');
             assignedTasksList.innerHTML = '';
-            member.assignedTasks.forEach(task => {
+            if (member.assignedTasks && member.assignedTasks.length > 0) {
+                member.assignedTasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = 'text-sm text-gray-700';
+                    li.textContent = task;
+                    assignedTasksList.appendChild(li);
+                });
+            } else {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-gray-700';
-                li.textContent = task;
+                li.className = 'text-sm text-gray-500 italic';
+                li.textContent = 'No tasks assigned';
                 assignedTasksList.appendChild(li);
-            });
+            }
             
             // Manager Projects
             const managerProjectsList = document.getElementById('detailManagerProjects');
             managerProjectsList.innerHTML = '';
-            if (member.managerProjects.length > 0) {
+            if (member.managerProjects && member.managerProjects.length > 0) {
                 member.managerProjects.forEach(project => {
                     const li = document.createElement('li');
                     li.className = 'text-sm text-gray-700';
@@ -1098,9 +1150,6 @@
             
             // Initialize notification badge
             updateNotificationBadge();
-            
-            // Initialize members
-            renderMembers();
         }
 
         // ====== Render Recent Projects from Template ======
@@ -1504,7 +1553,7 @@
 
         document.getElementById('membersProfileBtn').addEventListener('click', function() {
             showSection('membersProfileSection');
-            renderMembers();
+            fetchMembersFromAPI();
         });
 
         // Notification button
