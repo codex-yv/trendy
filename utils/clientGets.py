@@ -144,3 +144,30 @@ async def get_user_tasks(collection_name:str):
         tasks_list.append(task_org)
     
     return tasks_list, total_task, done_task
+
+
+
+async def get_client_profile(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+    documents = await collection.find({}, {"_id": 0}).to_list(None)
+
+    try:
+        skills = documents[0]["skills"]
+    except KeyError:
+        skills = []
+
+    try:
+        tnp = documents[0]["tnp"]
+    except KeyError:
+        tnp = []
+
+
+    profile = {
+        "skills":skills,
+        "tnp":tnp,
+        "team":documents[0]["team"],
+        "email":collection_name
+    }
+
+    return profile

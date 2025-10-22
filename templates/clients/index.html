@@ -143,11 +143,16 @@
             justify-content: center;
         }
         
-        .user-profile img {
+        .user-profile {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            object-fit: cover;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
         }
         
         .content {
@@ -594,11 +599,16 @@
             border-bottom: 1px solid var(--light-gray);
         }
         
-        .profile-avatar {
+        .profile-icon {
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            object-fit: cover;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
             margin: 0 auto 15px;
             border: 4px solid var(--primary);
         }
@@ -639,36 +649,13 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
-            color: white;
-        }
-        
-        .tag-dev {
-            background-color: var(--primary);
-        }
-        
-        .tag-design {
-            background-color: var(--warning);
-        }
-        
-        .tag-marketing {
-            background-color: var(--success);
-        }
-        
-        .tag-language {
-            background-color: #6c5ce7;
-        }
-        
-        .tag-database {
-            background-color: #00b894;
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
         }
         
         .tag-tools {
-            background-color: #fd79a8;
-        }
-        
-        .tag-framework {
-            background-color: #fdcb6e;
-            color: var(--dark);
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--warning);
         }
         
         .editable-field {
@@ -694,6 +681,40 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.8rem;
+        }
+        
+        .save-btn-container {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(100px);
+            opacity: 0;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast-success {
+            background-color: var(--success);
+        }
+        
+        .toast-error {
+            background-color: var(--danger);
         }
         
         /* Notifications List */
@@ -872,7 +893,7 @@
                         <span class="notification-badge">3</span>
                     </div>
                     <div class="user-profile" id="userProfileBtn">
-                        <img src="https://i.pravatar.cc/150?img=12" alt="User Profile">
+                        <i class="fas fa-user"></i>
                     </div>
                 </div>
             </div>
@@ -1016,14 +1037,16 @@
     <div class="modal-overlay" id="profileModalOverlay"></div>
     <div class="profile-modal" id="profileModal">
         <div class="profile-header">
-            <img src="https://i.pravatar.cc/150?img=12" alt="User Avatar" class="profile-avatar">
+            <div class="profile-icon">
+                <i class="fas fa-user"></i>
+            </div>
             <h2 class="profile-name">{{ fullname if fullname else 'User' }}</h2>
-            <p class="profile-email">{{ user_email if user_email else 'user@example.com' }}</p>
+            <p class="profile-email" id="profileEmail">{{ user_email if user_email else 'user@example.com' }}</p>
         </div>
         
         <div class="profile-section">
             <h3 class="profile-section-title">Team Assigned</h3>
-            <div class="tags-container">
+            <div class="tags-container" id="teamContainer">
                 <span class="tag tag-dev">Dev Team</span>
                 <span class="tag tag-design">Design Team</span>
                 <span class="tag tag-marketing">Marketing Team</span>
@@ -1032,39 +1055,18 @@
         
         <div class="profile-section">
             <div class="profile-section-title">
-                <span>Languages</span>
-                <button class="btn btn-sm btn-outline" onclick="toggleEdit('languages')">Edit</button>
+                <span>Skills</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleEdit('skills')">Edit</button>
             </div>
-            <div class="tags-container" id="languagesDisplay">
-                <span class="tag tag-language">JavaScript</span>
-                <span class="tag tag-language">Python</span>
-                <span class="tag tag-language">Java</span>
-                <span class="tag tag-language">C++</span>
+            <div class="tags-container" id="skillsDisplay">
+                <!-- Skills will be populated here -->
             </div>
-            <div class="editable-field" id="languagesEdit" style="display: none;">
-                <input type="text" class="editable-input" value="JavaScript" placeholder="Add language">
-                <input type="text" class="editable-input" value="Python" placeholder="Add language">
-                <input type="text" class="editable-input" value="Java" placeholder="Add language">
-                <input type="text" class="editable-input" value="C++" placeholder="Add language">
-                <button class="add-tag-btn">+ Add</button>
+            <div class="editable-field" id="skillsEdit" style="display: none;">
+                <!-- Editable skills will be populated here -->
+                <button class="add-tag-btn" onclick="addNewInput('skills')">+ Add</button>
             </div>
-        </div>
-        
-        <div class="profile-section">
-            <div class="profile-section-title">
-                <span>Database</span>
-                <button class="btn btn-sm btn-outline" onclick="toggleEdit('database')">Edit</button>
-            </div>
-            <div class="tags-container" id="databaseDisplay">
-                <span class="tag tag-database">MySQL</span>
-                <span class="tag tag-database">MongoDB</span>
-                <span class="tag tag-database">PostgreSQL</span>
-            </div>
-            <div class="editable-field" id="databaseEdit" style="display: none;">
-                <input type="text" class="editable-input" value="MySQL" placeholder="Add database">
-                <input type="text" class="editable-input" value="MongoDB" placeholder="Add database">
-                <input type="text" class="editable-input" value="PostgreSQL" placeholder="Add database">
-                <button class="add-tag-btn">+ Add</button>
+            <div class="save-btn-container" id="skillsSaveContainer">
+                <button class="btn btn-primary btn-sm" onclick="saveProfileData('skills')">Save</button>
             </div>
         </div>
         
@@ -1074,44 +1076,28 @@
                 <button class="btn btn-sm btn-outline" onclick="toggleEdit('tools')">Edit</button>
             </div>
             <div class="tags-container" id="toolsDisplay">
-                <span class="tag tag-tools">VS Code</span>
-                <span class="tag tag-tools">Git</span>
-                <span class="tag tag-tools">Docker</span>
-                <span class="tag tag-tools">AWS</span>
+                <!-- Tools & Platform will be populated here -->
             </div>
             <div class="editable-field" id="toolsEdit" style="display: none;">
-                <input type="text" class="editable-input" value="VS Code" placeholder="Add tool">
-                <input type="text" class="editable-input" value="Git" placeholder="Add tool">
-                <input type="text" class="editable-input" value="Docker" placeholder="Add tool">
-                <input type="text" class="editable-input" value="AWS" placeholder="Add tool">
-                <button class="add-tag-btn">+ Add</button>
+                <!-- Editable tools will be populated here -->
+                <button class="add-tag-btn" onclick="addNewInput('tools')">+ Add</button>
             </div>
-        </div>
-        
-        <div class="profile-section">
-            <div class="profile-section-title">
-                <span>Libraries & Framework</span>
-                <button class="btn btn-sm btn-outline" onclick="toggleEdit('frameworks')">Edit</button>
-            </div>
-            <div class="tags-container" id="frameworksDisplay">
-                <span class="tag tag-framework">React</span>
-                <span class="tag tag-framework">Node.js</span>
-                <span class="tag tag-framework">Express</span>
-                <span class="tag tag-framework">Django</span>
-            </div>
-            <div class="editable-field" id="frameworksEdit" style="display: none;">
-                <input type="text" class="editable-input" value="React" placeholder="Add framework">
-                <input type="text" class="editable-input" value="Node.js" placeholder="Add framework">
-                <input type="text" class="editable-input" value="Express" placeholder="Add framework">
-                <input type="text" class="editable-input" value="Django" placeholder="Add framework">
-                <button class="add-tag-btn">+ Add</button>
+            <div class="save-btn-container" id="toolsSaveContainer">
+                <button class="btn btn-primary btn-sm" onclick="saveProfileData('tools')">Save</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div class="toast" id="toastNotification"></div>
+
     <script>
         // Global variable to store dashboard data from template
         let dashboardData = {% if details %}{{ details | tojson }}{% else %}{}{% endif %};
+        
+        // Global variables to track current profile data
+        let currentSkills = [];
+        let currentTools = [];
 
         // Check if user is logged in
         document.addEventListener('DOMContentLoaded', function() {
@@ -1146,6 +1132,9 @@
         document.getElementById('userProfileBtn').addEventListener('click', function() {
             document.getElementById('profileModalOverlay').style.display = 'block';
             document.getElementById('profileModal').classList.add('active');
+            
+            // Load profile data when opening modal
+            loadProfileData();
         });
 
         document.getElementById('profileModalOverlay').addEventListener('click', function() {
@@ -1157,14 +1146,67 @@
         function toggleEdit(section) {
             const display = document.getElementById(`${section}Display`);
             const edit = document.getElementById(`${section}Edit`);
+            const saveContainer = document.getElementById(`${section}SaveContainer`);
             
             if (display.style.display === 'none') {
+                // Switching from edit to display mode
                 display.style.display = 'flex';
                 edit.style.display = 'none';
+                saveContainer.style.display = 'none';
             } else {
+                // Switching from display to edit mode
                 display.style.display = 'none';
                 edit.style.display = 'flex';
+                saveContainer.style.display = 'block';
+                
+                // Initialize the editable fields with current data
+                if (section === 'skills') {
+                    initializeEditableFields('skills', currentSkills);
+                } else if (section === 'tools') {
+                    initializeEditableFields('tools', currentTools);
+                }
             }
+        }
+
+        // Initialize editable fields with current data
+        function initializeEditableFields(section, data) {
+            const editContainer = document.getElementById(`${section}Edit`);
+            
+            // Clear existing inputs except the add button
+            const addButton = editContainer.querySelector('.add-tag-btn');
+            editContainer.innerHTML = '';
+            
+            // Add input fields for each item
+            data.forEach(item => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'editable-input';
+                input.value = item;
+                input.placeholder = `Add ${section === 'skills' ? 'skill' : 'tool'}`;
+                editContainer.appendChild(input);
+            });
+            
+            // Add the add button back
+            const newAddButton = document.createElement('button');
+            newAddButton.className = 'add-tag-btn';
+            newAddButton.textContent = '+ Add';
+            newAddButton.onclick = function() { addNewInput(section); };
+            editContainer.appendChild(newAddButton);
+        }
+
+        // Add new input field
+        function addNewInput(section) {
+            const editContainer = document.getElementById(`${section}Edit`);
+            const addButton = editContainer.querySelector('.add-tag-btn');
+            
+            // Create new input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'editable-input';
+            input.placeholder = `Add ${section === 'skills' ? 'skill' : 'tool'}`;
+            
+            // Insert before the add button
+            editContainer.insertBefore(input, addButton);
         }
 
         // Sidebar navigation
@@ -1635,6 +1677,188 @@
                 
                 alert('Error updating task status. Please try again.');
             }
+        }
+
+        // Load profile data from FastAPI server
+        async function loadProfileData() {
+            try {
+                // Send POST request to FastAPI server
+                const response = await fetch('/client-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const profileData = await response.json();
+                console.log('Received profile data:', profileData);
+                
+                // Update the profile modal with received data
+                updateProfileModal(profileData);
+                
+            } catch (error) {
+                console.error('Error loading profile data:', error);
+                // Keep the existing data or show error message
+            }
+        }
+
+        // Update profile modal with data
+        function updateProfileModal(data) {
+            // Update email
+            if (data.email) {
+                document.getElementById('profileEmail').textContent = data.email;
+            }
+            
+            // Update team
+            const teamContainer = document.getElementById('teamContainer');
+            if (data.team) {
+                teamContainer.innerHTML = `<span class="tag">${data.team}</span>`;
+            }
+            
+            // Update skills
+            const skillsDisplay = document.getElementById('skillsDisplay');
+            
+            if (data.skills && data.skills.length > 0) {
+                currentSkills = [...data.skills];
+                skillsDisplay.innerHTML = data.skills.map(skill => `
+                    <span class="tag">${skill}</span>
+                `).join('');
+            } else {
+                currentSkills = [];
+                skillsDisplay.innerHTML = '<span>No skills added yet</span>';
+            }
+            
+            // Update tools & platform
+            const toolsDisplay = document.getElementById('toolsDisplay');
+            
+            if (data.tnp && data.tnp.length > 0) {
+                currentTools = [...data.tnp];
+                toolsDisplay.innerHTML = data.tnp.map(tool => `
+                    <span class="tag tag-tools">${tool}</span>
+                `).join('');
+            } else {
+                currentTools = [];
+                toolsDisplay.innerHTML = '<span>No tools added yet</span>';
+            }
+        }
+
+        // Save profile data to server
+        async function saveProfileData(section) {
+            try {
+                // Get the current values from input fields
+                const editContainer = document.getElementById(`${section}Edit`);
+                const inputs = editContainer.querySelectorAll('.editable-input');
+                
+                // Extract values from inputs, filtering out empty ones
+                const values = Array.from(inputs)
+                    .map(input => input.value.trim())
+                    .filter(value => value !== '');
+                
+                // Prepare data for the request
+                let requestData = {};
+                
+                if (section === 'skills') {
+                    requestData = {
+                        skills: values,
+                        tnp: [] // Empty array for tools when saving skills
+                    };
+                } else if (section === 'tools') {
+                    requestData = {
+                        skills: [], // Empty array for skills when saving tools
+                        tnp: values
+                    };
+                }
+                
+                console.log('Saving profile data:', requestData);
+                
+                // Send POST request to FastAPI server
+                const response = await fetch('/update-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Profile update response:', result);
+                
+                // Show appropriate toast message based on response
+                if (result === 0) {
+                    showToast('Updated successfully!', 'success');
+                    
+                    // Update the current data and display
+                    if (section === 'skills') {
+                        currentSkills = values;
+                        updateSkillsDisplay(values);
+                    } else if (section === 'tools') {
+                        currentTools = values;
+                        updateToolsDisplay(values);
+                    }
+                    
+                    // Switch back to display mode
+                    toggleEdit(section);
+                    
+                } else if (result === 1) {
+                    showToast('Update unsuccessful!', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error saving profile data:', error);
+                showToast('Error updating profile. Please try again.', 'error');
+            }
+        }
+
+        // Update skills display
+        function updateSkillsDisplay(skills) {
+            const skillsDisplay = document.getElementById('skillsDisplay');
+            
+            if (skills && skills.length > 0) {
+                skillsDisplay.innerHTML = skills.map(skill => `
+                    <span class="tag">${skill}</span>
+                `).join('');
+            } else {
+                skillsDisplay.innerHTML = '<span>No skills added yet</span>';
+            }
+        }
+
+        // Update tools display
+        function updateToolsDisplay(tools) {
+            const toolsDisplay = document.getElementById('toolsDisplay');
+            
+            if (tools && tools.length > 0) {
+                toolsDisplay.innerHTML = tools.map(tool => `
+                    <span class="tag tag-tools">${tool}</span>
+                `).join('');
+            } else {
+                toolsDisplay.innerHTML = '<span>No tools added yet</span>';
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.className = `toast ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            
+            // Show the toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Hide the toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
     </script>
 </body>

@@ -10,8 +10,8 @@ from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info,
 from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act
 
 from utils.clientPost import add_new_client
-from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks
-from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid
+from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile
+from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile
 
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails
@@ -22,6 +22,7 @@ from schemas.useless import Useless, UselessClient
 from schemas.adminActionSchemas import AdminAction
 from schemas.updatePjtSchemas import UpdateProjets
 from schemas.updateTskSchema import UpdateTask
+from schemas.profileSchemas import Updated
 
 templates_clients = Jinja2Templates(directory="templates/clients")
 templates_admin = Jinja2Templates(directory="templates/admin")
@@ -226,3 +227,17 @@ async def show_members(request:Request, x:Useless):
     return_value = await get_all_members()
     # print(return_value)
     return return_value
+
+
+@app.post("/client-profile")
+async def userProfile(request:Request, x:UselessClient):
+    details = await get_client_profile(collection_name= request.session.get("email"))
+    return details
+
+@app.post("/update-profile")
+async def updateProfile(request:Request, data:Updated):
+    if data.skills or data.tnp:
+        await update_user_profile(collection_name=request.session.get("email"), data=data)
+        return 0
+    else:
+        return 1
