@@ -114,8 +114,19 @@ async def get_all_members():
         if member_data:
 
             # test_member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":"unknown", "techStack":["Java", "Python"], "assignedProjects":[["Sprite Landing Page", True], ["Trendy webpage", False]], "assignedTask":["Postgrase SQL", "Mysql"]}
+            try:
+                skills = member_data[0]["skills"]
+            except KeyError:
+                skills = []
+            
+            try:
+                tnp = member_data[0]["tnp"]
+            except KeyError:
+                tnp = []
+            
+            all_skills = skills+tnp
 
-            member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":"unknown", "techStack":["Java", "Python"], "assignedProjects":[], "assignedTask":[]}
+            member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":"unknown", "techStack":all_skills, "assignedProjects":[], "assignedTask":[]}
 
             all_projects = member_data[0]['assigned_projects']
             for project in all_projects:
