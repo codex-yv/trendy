@@ -96,6 +96,57 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Notification styles */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .notification-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .notification-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-unread {
+            background-color: #f0f9ff;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        /* Member profile styles */
+        .tech-stack-tag {
+            display: inline-block;
+            background-color: #e0e7ff;
+            color: #3730a3;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            margin: 0.125rem;
+        }
     </style>
 </head>
 
@@ -121,9 +172,20 @@
                     <i class="fas fa-tasks"></i>
                     <span>Show Task Status</span>
                 </button>
+                <button id="membersProfileBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
+                    <i class="fas fa-users"></i>
+                    <span>Member's Profile</span>
+                </button>
             </div>
         </div>
-        <div class="space-x-3">
+        <div class="flex items-center space-x-3">
+            <!-- Notification Icon -->
+            <div class="relative">
+                <button id="notificationBtn" class="p-2 rounded-full hover:bg-blue-500 transition-colors">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span id="notificationBadge" class="notification-badge hidden">0</span>
+                </button>
+            </div>
             <button onclick="openProjectModal()"
                 class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
                 <i class="fas fa-plus mr-2"></i>Add Project
@@ -293,6 +355,131 @@
             </div>
             <div id="taskStatusList" class="space-y-4">
                 <!-- Task status cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Member's Profile Section -->
+        <div id="membersProfileSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Member's Profile</h2>
+                <div class="flex space-x-2">
+                    <button id="allMembersBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
+                    <button id="devTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Dev Team</button>
+                    <button id="designTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Design Team</button>
+                    <button id="marketingTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Marketing Team</button>
+                </div>
+            </div>
+            <div id="membersProfileLoading" class="text-center py-8 hidden">
+                <div class="loading-spinner mx-auto mb-2"></div>
+                <p class="text-gray-600">Loading members...</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersList" class="bg-white divide-y divide-gray-200">
+                        <!-- Members will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Details Modal -->
+    <div id="memberDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <h3 id="memberDetailsTitle" class="text-xl font-bold text-gray-800">Member Details</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Personal Information</h4>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Full Name:</span>
+                            <p id="detailFullName" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Email:</span>
+                            <p id="detailEmail"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Phone:</span>
+                            <p id="detailPhone"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Last Active:</span>
+                            <p id="detailLastActive"></p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Work Information</h4>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Team:</span>
+                            <p id="detailTeam" class="font-medium"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Role:</span>
+                            <p id="detailRole"></p>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Tech Stack:</span>
+                            <div id="detailTechStack" class="flex flex-wrap mt-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Assigned Projects</h4>
+                    <ul id="detailAssignedProjects" class="space-y-1">
+                        <!-- Assigned projects will be populated here -->
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Assigned Tasks</h4>
+                    <ul id="detailAssignedTasks" class="space-y-1">
+                        <!-- Assigned tasks will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold text-gray-700 mb-2">Projects as Manager</h4>
+                <ul id="detailManagerProjects" class="space-y-1">
+                    <!-- Manager projects will be populated here -->
+                </ul>
+            </div>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
+                <button onclick="closeMemberDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-11/12 md:w-1/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Notifications</h3>
+                <div class="flex space-x-2">
+                    <button onclick="markAllAsRead()" class="text-sm text-blue-600 hover:text-blue-800">Mark all as read</button>
+                    <button onclick="closeNotificationModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="notificationsList" class="space-y-2">
+                <!-- Notifications will be populated here -->
+            </div>
+            <div id="noNotifications" class="text-center py-8 hidden">
+                <i class="fas fa-bell-slash text-gray-300 text-4xl mb-4"></i>
+                <p class="text-gray-500">No notifications</p>
             </div>
         </div>
     </div>
@@ -516,6 +703,358 @@
             rt: {{ rt | tojson }}  // Recent Tasks
         };
 
+        // ====== Members Data ======
+        let membersData = [];
+
+        // ====== Notification System ======
+        let notifications = [
+            {
+                id: 1,
+                message: "New user registration requires approval",
+                time: "2023-11-15 10:30 AM",
+                sender: "System",
+                read: false
+            },
+            {
+                id: 2,
+                message: "Project 'Website Redesign' is behind schedule",
+                time: "2023-11-14 03:45 PM",
+                sender: "Project Manager",
+                read: false
+            },
+            {
+                id: 3,
+                message: "Task 'Update Documentation' has been completed",
+                time: "2023-11-14 11:20 AM",
+                sender: "Developer",
+                read: true
+            },
+            {
+                id: 4,
+                message: "New comment on project 'Mobile App Development'",
+                time: "2023-11-13 09:15 AM",
+                sender: "Design Team",
+                read: false
+            }
+        ];
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notificationBadge');
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function openNotificationModal() {
+            renderNotifications();
+            toggleModal('notificationModal', true);
+        }
+
+        function closeNotificationModal() {
+            toggleModal('notificationModal', false);
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            const noNotifications = document.getElementById('noNotifications');
+            
+            container.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                noNotifications.classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            }
+            
+            noNotifications.classList.add('hidden');
+            container.classList.remove('hidden');
+            
+            notifications.forEach(notification => {
+                const notificationEl = document.createElement('div');
+                notificationEl.className = `notification-item ${!notification.read ? 'notification-unread' : ''}`;
+                notificationEl.innerHTML = `
+                    <div class="flex justify-between">
+                        <div class="font-medium text-gray-800">${notification.sender}</div>
+                        <div class="notification-time">${notification.time}</div>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">${notification.message}</div>
+                `;
+                
+                // Mark as read when clicked
+                notificationEl.addEventListener('click', () => {
+                    markAsRead(notification.id);
+                });
+                
+                container.appendChild(notificationEl);
+            });
+        }
+
+        function markAsRead(notificationId) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification && !notification.read) {
+                notification.read = true;
+                updateNotificationBadge();
+                renderNotifications();
+            }
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                notification.read = true;
+            });
+            updateNotificationBadge();
+            renderNotifications();
+        }
+
+        // ====== Member's Profile Functions ======
+        async function fetchMembersFromAPI() {
+            try {
+                document.getElementById('membersProfileLoading').classList.remove('hidden');
+                document.getElementById('membersList').innerHTML = '';
+                
+                const response = await fetch('/mps', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Transform the API response into our membersData format
+                membersData = Object.entries(data).map(([email, memberInfo], index) => {
+                    // Process assignedProjects to separate assigned projects and manager projects
+                    const assignedProjects = [];
+                    const managerProjects = [];
+                    
+                    if (memberInfo.assignedProjects && Array.isArray(memberInfo.assignedProjects)) {
+                        memberInfo.assignedProjects.forEach(project => {
+                            if (Array.isArray(project) && project.length >= 2) {
+                                const projectName = project[0];
+                                const isManager = project[1];
+                                
+                                assignedProjects.push(projectName);
+                                
+                                if (isManager === true) {
+                                    managerProjects.push(projectName);
+                                }
+                            }
+                        });
+                    }
+                    
+                    return {
+                        id: index + 1,
+                        fullName: memberInfo.name || "Unknown",
+                        email: email,
+                        phone: memberInfo.phone || "Not provided",
+                        lastActive: memberInfo.lastActive || "Unknown",
+                        team: memberInfo.team || "Not assigned",
+                        role: memberInfo.role || "Employee",
+                        assignedProjects: assignedProjects,
+                        assignedTasks: memberInfo.assignedTask || [],
+                        managerProjects: managerProjects,
+                        techStack: memberInfo.techStack || []
+                    };
+                });
+                
+                renderMembers();
+                document.getElementById('membersProfileLoading').classList.add('hidden');
+                return membersData;
+            } catch (error) {
+                console.error('Error fetching members from API:', error);
+                document.getElementById('membersProfileLoading').classList.add('hidden');
+                alert('Failed to load members from server.');
+                return [];
+            }
+        }
+
+        function renderMembers() {
+            const list = document.getElementById('membersList');
+            list.innerHTML = '';
+            
+            let filteredMembers = membersData;
+            if (window.memberFilter && window.memberFilter !== 'all') {
+                // Convert filter to match API team values
+                let teamFilter = window.memberFilter;
+                if (teamFilter === 'Dev Team') teamFilter = 'Dev';
+                if (teamFilter === 'Design Team') teamFilter = 'Design';
+                if (teamFilter === 'Marketing Team') teamFilter = 'Marketing';
+                
+                filteredMembers = membersData.filter(member => member.team === teamFilter);
+            }
+            
+            if (filteredMembers.length === 0) {
+                list.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                            No members found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredMembers.forEach(member => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                // Determine team display name and color
+                let teamDisplay = member.team;
+                let teamColorClass = 'bg-gray-100 text-gray-800';
+                
+                if (member.team === 'Dev') {
+                    teamDisplay = 'Dev Team';
+                    teamColorClass = 'bg-blue-100 text-blue-800';
+                } else if (member.team === 'Design') {
+                    teamDisplay = 'Design Team';
+                    teamColorClass = 'bg-purple-100 text-purple-800';
+                } else if (member.team === 'Marketing') {
+                    teamDisplay = 'Marketing Team';
+                    teamColorClass = 'bg-green-100 text-green-800';
+                }
+                
+                // Determine role color
+                let roleColorClass = 'bg-gray-100 text-gray-800';
+                if (member.role === 'Manager') {
+                    roleColorClass = 'bg-yellow-100 text-yellow-800';
+                } else if (member.role === 'Employee') {
+                    roleColorClass = 'bg-indigo-100 text-indigo-800';
+                } else if (member.role === 'Intern') {
+                    roleColorClass = 'bg-gray-100 text-gray-800';
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${member.fullName}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${member.email}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${teamColorClass}">
+                            ${teamDisplay}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${roleColorClass}">
+                            ${member.role}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <button onclick="openMemberDetailsModal(${member.id})" class="text-blue-600 hover:text-blue-900">View Details</button>
+                    </td>
+                `;
+                
+                list.appendChild(row);
+            });
+        }
+
+        function openMemberDetailsModal(memberId) {
+            const member = membersData.find(m => m.id === memberId);
+            
+            document.getElementById('memberDetailsTitle').textContent = `Member Details: ${member.fullName}`;
+            document.getElementById('detailFullName').textContent = member.fullName;
+            document.getElementById('detailEmail').textContent = member.email;
+            document.getElementById('detailPhone').textContent = member.phone;
+            document.getElementById('detailLastActive').textContent = member.lastActive;
+            
+            // Determine team display name
+            let teamDisplay = member.team;
+            if (member.team === 'Dev') teamDisplay = 'Dev Team';
+            else if (member.team === 'Design') teamDisplay = 'Design Team';
+            else if (member.team === 'Marketing') teamDisplay = 'Marketing Team';
+            
+            document.getElementById('detailTeam').textContent = teamDisplay;
+            document.getElementById('detailRole').textContent = member.role;
+            
+            // Tech Stack
+            const techStackContainer = document.getElementById('detailTechStack');
+            techStackContainer.innerHTML = '';
+            if (member.techStack && member.techStack.length > 0) {
+                member.techStack.forEach(tech => {
+                    const span = document.createElement('span');
+                    span.className = 'tech-stack-tag';
+                    span.textContent = tech;
+                    techStackContainer.appendChild(span);
+                });
+            } else {
+                techStackContainer.innerHTML = '<span class="text-gray-500 text-sm">No tech stack specified</span>';
+            }
+            
+            // Assigned Projects
+            const assignedProjectsList = document.getElementById('detailAssignedProjects');
+            assignedProjectsList.innerHTML = '';
+            if (member.assignedProjects && member.assignedProjects.length > 0) {
+                member.assignedProjects.forEach(project => {
+                    const li = document.createElement('li');
+                    li.className = 'text-sm text-gray-700';
+                    li.textContent = project;
+                    assignedProjectsList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-gray-500 italic';
+                li.textContent = 'No projects assigned';
+                assignedProjectsList.appendChild(li);
+            }
+            
+            // Assigned Tasks
+            const assignedTasksList = document.getElementById('detailAssignedTasks');
+            assignedTasksList.innerHTML = '';
+            if (member.assignedTasks && member.assignedTasks.length > 0) {
+                member.assignedTasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = 'text-sm text-gray-700';
+                    li.textContent = task;
+                    assignedTasksList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-gray-500 italic';
+                li.textContent = 'No tasks assigned';
+                assignedTasksList.appendChild(li);
+            }
+            
+            // Manager Projects
+            const managerProjectsList = document.getElementById('detailManagerProjects');
+            managerProjectsList.innerHTML = '';
+            if (member.managerProjects && member.managerProjects.length > 0) {
+                member.managerProjects.forEach(project => {
+                    const li = document.createElement('li');
+                    li.className = 'text-sm text-gray-700';
+                    li.textContent = project;
+                    managerProjectsList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = 'text-sm text-gray-500 italic';
+                li.textContent = 'No projects managed';
+                managerProjectsList.appendChild(li);
+            }
+            
+            toggleModal('memberDetailsModal', true);
+        }
+
+        function closeMemberDetailsModal() {
+            toggleModal('memberDetailsModal', false);
+        }
+
         // ====== FastAPI Integration for Sign Up Requests ======
         async function fetchSignUpRequestsFromAPI() {
             try {
@@ -608,6 +1147,9 @@
             // Render recent projects and tasks
             renderRecentProjects();
             renderRecentTasks();
+            
+            // Initialize notification badge
+            updateNotificationBadge();
         }
 
         // ====== Render Recent Projects from Template ======
@@ -1009,6 +1551,16 @@
             fetchTaskStatusFromAPI();
         });
 
+        document.getElementById('membersProfileBtn').addEventListener('click', function() {
+            showSection('membersProfileSection');
+            fetchMembersFromAPI();
+        });
+
+        // Notification button
+        document.getElementById('notificationBtn').addEventListener('click', function() {
+            openNotificationModal();
+        });
+
         // Project filter buttons
         document.getElementById('allProjectsBtn').addEventListener('click', function() {
             setActiveProjectFilter('all');
@@ -1039,6 +1591,27 @@
         document.getElementById('completedTasksBtn').addEventListener('click', function() {
             setActiveTaskFilter('completed');
             renderTaskStatus();
+        });
+
+        // Member filter buttons
+        document.getElementById('allMembersBtn').addEventListener('click', function() {
+            setActiveMemberFilter('all');
+            renderMembers();
+        });
+
+        document.getElementById('devTeamBtn').addEventListener('click', function() {
+            setActiveMemberFilter('Dev Team');
+            renderMembers();
+        });
+
+        document.getElementById('designTeamBtn').addEventListener('click', function() {
+            setActiveMemberFilter('Design Team');
+            renderMembers();
+        });
+
+        document.getElementById('marketingTeamBtn').addEventListener('click', function() {
+            setActiveMemberFilter('Marketing Team');
+            renderMembers();
         });
 
         function setActiveProjectFilter(filter) {
@@ -1087,15 +1660,44 @@
             window.taskFilter = filter;
         }
 
+        function setActiveMemberFilter(filter) {
+            document.getElementById('allMembersBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('devTeamBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('designTeamBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('marketingTeamBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            
+            document.getElementById('allMembersBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('devTeamBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('designTeamBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('marketingTeamBtn').classList.add('bg-gray-100', 'text-gray-700');
+            
+            if (filter === 'all') {
+                document.getElementById('allMembersBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('allMembersBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'Dev Team') {
+                document.getElementById('devTeamBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('devTeamBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'Design Team') {
+                document.getElementById('designTeamBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('designTeamBtn').classList.add('bg-blue-100', 'text-blue-700');
+            } else if (filter === 'Marketing Team') {
+                document.getElementById('marketingTeamBtn').classList.remove('bg-gray-100', 'text-gray-700');
+                document.getElementById('marketingTeamBtn').classList.add('bg-blue-100', 'text-blue-700');
+            }
+            
+            window.memberFilter = filter;
+        }
+
         function showSection(sectionId) {
             document.getElementById('dashboardSection').classList.add('hidden');
             document.getElementById('signUpRequestsSection').classList.add('hidden');
             document.getElementById('projectStatusSection').classList.add('hidden');
             document.getElementById('taskStatusSection').classList.add('hidden');
+            document.getElementById('membersProfileSection').classList.add('hidden');
             
             document.getElementById(sectionId).classList.remove('hidden');
             
-            document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn').forEach(btn => {
+            document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn, #membersProfileBtn').forEach(btn => {
                 btn.classList.remove('active-tab');
             });
             
@@ -1107,6 +1709,8 @@
                 document.getElementById('showProjectStatusBtn').classList.add('active-tab');
             } else if (sectionId === 'taskStatusSection') {
                 document.getElementById('showTaskStatusBtn').classList.add('active-tab');
+            } else if (sectionId === 'membersProfileSection') {
+                document.getElementById('membersProfileBtn').classList.add('active-tab');
             }
         }
 
@@ -1523,9 +2127,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             window.projectFilter = 'all';
             window.taskFilter = 'all';
+            window.memberFilter = 'all';
             
             setActiveProjectFilter('all');
             setActiveTaskFilter('all');
+            setActiveMemberFilter('all');
             
             // Initialize dashboard with template data
             initializeDashboard();

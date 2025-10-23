@@ -15,6 +15,8 @@ async def add_new_client(client_add:dict):
         "profileImg":"",
         "team":client_add.team,
         "role":client_add.role,
+        "skills":client_add.skills,
+        "tnp":client_add.tnp,
         "assigned_projects":[],  # total projects done
         "assigned_task":[],    # pending projects
         "project_manager":[],

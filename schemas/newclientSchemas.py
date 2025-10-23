@@ -8,3 +8,5 @@ class NewUser(BaseModel):
     role: str
     team: str
     password: str
+    skills:list
+    tnp:list
