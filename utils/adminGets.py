@@ -152,3 +152,17 @@ async def get_all_members():
 
     # print(members_details)
     return members_details
+
+
+async def get_admin_notification():
+    db = client["Admins"]
+    collection = db["Base"]
+
+    docs = await collection.find({}, {"_id":0}).to_list(None)
+
+    try:
+        notifications = docs[0]["notify"]
+    except KeyError:
+        notifications = []
+    
+    return notifications[::-1]

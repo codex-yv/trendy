@@ -6,6 +6,68 @@
     <title>Dashboard | Client Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* All previous CSS remains the same, just adding WebSocket status indicator */
+        
+        .websocket-status {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 15px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-connected {
+            background-color: var(--success);
+        }
+        
+        .status-disconnected {
+            background-color: var(--danger);
+        }
+        
+        .status-connecting {
+            background-color: var(--warning);
+        }
+        
+        /* Rest of the CSS remains exactly the same as before */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* All other CSS styles remain exactly the same as in your original code */
+        /* ... (rest of the CSS) ... */
         :root {
             --primary: #4361ee;
             --secondary: #3a0ca3;
@@ -721,6 +783,8 @@
         .notification-item {
             padding: 15px;
             border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: flex-start;
         }
         
         .notification-item:last-child {
@@ -737,6 +801,7 @@
             align-items: center;
             justify-content: center;
             margin-right: 15px;
+            flex-shrink: 0;
         }
         
         .notification-success {
@@ -745,6 +810,79 @@
         
         .notification-warning {
             background-color: var(--warning);
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-message {
+            margin-bottom: 5px;
+        }
+        
+        .notification-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .notification-unread {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* Notification Modal */
+        .notification-modal {
+            position: fixed;
+            top: 60px;
+            right: 30px;
+            width: 400px;
+            max-height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            z-index: 2002;
+            transform: translateY(-10px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-modal.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-title {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--gray);
+            cursor: pointer;
+        }
+        
+        .notification-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notification-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--gray);
         }
         
         /* Responsive Styles */
@@ -769,6 +907,11 @@
             
             .profile-modal {
                 width: 100%;
+            }
+            
+            .notification-modal {
+                width: 350px;
+                right: 20px;
             }
         }
         
@@ -809,7 +952,14 @@
                 margin-right: 0 !important;
                 margin-bottom: 20px;
             }
+            
+            .notification-modal {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+            }
         }
+        
     </style>
 </head>
 <body>
@@ -819,6 +969,11 @@
             <div class="sidebar-header">
                 <h2>Client Portal</h2>
                 <p id="welcomeMessage">Welcome, {{ fullname if fullname else 'User' }}</p>
+                <p id="user_id_for_socket">{{emailUser}}</p>
+                <div class="websocket-status" id="websocketStatus">
+                    <div class="status-indicator status-connecting" id="statusIndicator"></div>
+                    <span id="statusText">Connecting...</span>
+                </div>
             </div>
             <div class="sidebar-menu">
                 <ul>
@@ -854,26 +1009,8 @@
                     </li>
                     <li>
                         <a href="#">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            <span>Invoices</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Reports</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
                         </a>
                     </li>
                 </ul>
@@ -888,9 +1025,9 @@
                     <h1 id="pageTitle">Dashboard</h1>
                 </div>
                 <div class="header-right">
-                    <div class="notification-icon">
+                    <div class="notification-icon" id="notificationIcon">
                         <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
+                        <span class="notification-badge" id="notificationBadge">{{unreadd}}</span>
                     </div>
                     <div class="user-profile" id="userProfileBtn">
                         <i class="fas fa-user"></i>
@@ -1088,6 +1225,19 @@
         </div>
     </div>
 
+    <!-- Notification Modal -->
+    <div class="notification-modal" id="notificationModal">
+        <div class="notification-header">
+            <h3 class="notification-title">Notifications</h3>
+            <button class="notification-close" id="notificationClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notification-body" id="notificationBody">
+            <!-- Notifications will be loaded here -->
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="toast" id="toastNotification"></div>
 
@@ -1098,11 +1248,19 @@
         // Global variables to track current profile data
         let currentSkills = [];
         let currentTools = [];
+        
+        // WebSocket variables
+        let socket = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        let userId = document.getElementById('user_id_for_socket').textContent.trim();
 
-        // Check if user is logged in
+        // Check if user is logged in and initialize WebSocket
         document.addEventListener('DOMContentLoaded', function() {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
-    
+            
+            // Initialize WebSocket connection
+            initializeWebSocket();
             
             // Load dashboard data
             if (Object.keys(dashboardData).length === 0) {
@@ -1112,21 +1270,177 @@
                 // Use the data passed from template
                 updateDashboardUI(dashboardData);
             }
+            
+            // Set up notification icon click handler
+            document.getElementById('notificationIcon').addEventListener('click', function() {
+                toggleNotificationModal();
+            });
+            
+            // Set up notification modal close handler
+            document.getElementById('notificationClose').addEventListener('click', function() {
+                closeNotificationModal();
+            });
         });
         
-        // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.preventDefault();
+        // Initialize WebSocket connection
+        function initializeWebSocket() {
+            if (!userId) {
+                console.error('User ID not found for WebSocket connection');
+                return;
+            }
             
-            // Clear user data from localStorage
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userCompany');
+            try {
+                // Determine WebSocket URL based on current location
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/${userId}`;
+                
+                socket = new WebSocket(wsUrl);
+                
+                socket.onopen = function(event) {
+                    console.log('WebSocket connected successfully');
+                    updateConnectionStatus('connected', 'Connected');
+                    reconnectAttempts = 0;
+                };
+                
+                socket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    console.log('WebSocket message received:', data);
+                    
+                    if (data.type === 'notification') {
+                        handleNewNotification(data.notification);
+                    } else if (data.type === 'connected_users') {
+                        console.log('Connected users:', data.users);
+                    }
+                };
+                
+                socket.onclose = function(event) {
+                    console.log('WebSocket disconnected:', event);
+                    updateConnectionStatus('disconnected', 'Disconnected');
+                    
+                    // Attempt to reconnect
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        setTimeout(() => {
+                            reconnectAttempts++;
+                            console.log(`Attempting to reconnect... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                            initializeWebSocket();
+                        }, 3000);
+                    }
+                };
+                
+                socket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateConnectionStatus('disconnected', 'Connection Error');
+                };
+                
+            } catch (error) {
+                console.error('Error initializing WebSocket:', error);
+                updateConnectionStatus('disconnected', 'Connection Failed');
+            }
+        }
+        
+        // Update connection status UI
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
             
-            // Redirect to login page
-            window.location.href = 'auth.html';
-        });
+            indicator.className = 'status-indicator';
+            indicator.classList.add(`status-${status}`);
+            statusText.textContent = text;
+        }
+        
+        // Handle new notification from WebSocket
+        function handleNewNotification(notificationData) {
+            const [message, status, timestamp] = notificationData;
+            
+            // Update notification badge
+            updateNotificationBadge();
+            
+            // Show toast notification
+            showToast(message, 'success');
+            
+            // If notification modal is open, update it
+            const modal = document.getElementById('notificationModal');
+            if (modal.classList.contains('active')) {
+                addNotificationToModal(message, status);
+            }
+            
+            // Play notification sound (optional)
+            playNotificationSound();
+        }
+        
+        // Add notification to modal
+        function addNotificationToModal(message, status) {
+            const notificationBody = document.getElementById('notificationBody');
+            const emptyState = notificationBody.querySelector('.notification-empty');
+            
+            // Remove empty state if it exists
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            // Create new notification element
+            const notificationElement = document.createElement('div');
+            notificationElement.className = `notification-item ${status === 0 ? 'notification-unread' : ''}`;
+            notificationElement.innerHTML = `
+                <div class="notification-icon-container ${status === 0 ? 'notification-warning' : 'notification-success'}">
+                    <i class="fas ${status === 0 ? 'fa-exclamation' : 'fa-check'}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-message">${message}</div>
+                </div>
+            `;
+            
+            // Add to the top of the list
+            notificationBody.insertBefore(notificationElement, notificationBody.firstChild);
+        }
+        
+        // Update notification badge count
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            let currentCount = parseInt(badge.textContent) || 0;
+            badge.textContent = currentCount + 1;
+        }
+        
+        // Reset notification badge to zero
+        function resetNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            badge.textContent = '0';
+        }
+        
+        // Play notification sound
+        function playNotificationSound() {
+            // Create a simple notification sound
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.log('Audio context not supported');
+            }
+        }
+        
+        // Send notification via WebSocket (for testing/demo purposes)
+        function sendTestNotification() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                const testNotification = ["Test notification from WebSocket", 0, new Date().toISOString()];
+                socket.send(JSON.stringify({
+                    type: 'test_notification',
+                    notification: testNotification
+                }));
+            }
+        }
 
         // Profile modal functionality
         document.getElementById('userProfileBtn').addEventListener('click', function() {
@@ -1859,6 +2173,93 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
+        }
+
+        // Toggle notification modal
+        function toggleNotificationModal() {
+            const modal = document.getElementById('notificationModal');
+            
+            if (modal.classList.contains('active')) {
+                closeNotificationModal();
+            } else {
+                openNotificationModal();
+            }
+        }
+
+        // Open notification modal
+        function openNotificationModal() {
+            const modal = document.getElementById('notificationModal');
+            modal.classList.add('active');
+            
+            // Reset notification badge to zero when modal is opened
+            resetNotificationBadge();
+            
+            // Load notifications
+            loadNotifications();
+        }
+
+        // Close notification modal
+        function closeNotificationModal() {
+            const modal = document.getElementById('notificationModal');
+            modal.classList.remove('active');
+        }
+
+        // Load notifications from FastAPI server
+        async function loadNotifications() {
+            const notificationBody = document.getElementById('notificationBody');
+            
+            try {
+                // Send POST request to FastAPI server
+                const response = await fetch('/notification-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const notifications = await response.json();
+                console.log('Received notifications:', notifications);
+                
+                // Render notifications
+                if (notifications && notifications.length > 0) {
+                    notificationBody.innerHTML = notifications.map((notification, index) => {
+                        const [message, status] = notification;
+                        const isUnread = status === 0;
+                        
+                        return `
+                            <div class="notification-item ${isUnread ? 'notification-unread' : ''}">
+                                <div class="notification-icon-container ${isUnread ? 'notification-warning' : 'notification-success'}">
+                                    <i class="fas ${isUnread ? 'fa-exclamation' : 'fa-check'}"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-message">${message}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    notificationBody.innerHTML = `
+                        <div class="notification-empty">
+                            <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>No notifications</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                notificationBody.innerHTML = `
+                    <div class="notification-empty">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>Error loading notifications</p>
+                    </div>
+                `;
+            }
         }
     </script>
 </body>

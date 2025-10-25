@@ -81,26 +81,26 @@ async def get_task_by_id(task_id):
         # Ensure the ID is a valid ObjectId
         obj_id = ObjectId(task_id)
     except Exception as e:
-        return {"error": "Invalid project ID format."}
+        return {"error": "Invalid task ID format."}
 
     doc = await collection.find_one({"_id": obj_id})
 
     if not doc:
-        return {"error": "Project not found."}
+        return {"error": "task not found."}
 
 # {"_id":"", "task_name":"", "initiated_date":"", "due_date":"", "Status":0 or 1, "assigned_member":[["email", "username"], ["email", "username"]], "desc":"describe of task"}
 
-    project = {
+    task = {
         "_id":"",
         "task_name": doc['task_name'],
         "initiated_date": doc['initiated_date'],
         "due_date": doc['due_date'],
         "Status": doc['status'],
         "assigned_member": doc['assigned_members'],
-        "desc":"describe of task"
+        "desc":doc['desc']
     }
 
-    return project
+    return task
 
 async def get_user_projects(collection_name:str):
     db = client["Clients"]
@@ -171,3 +171,37 @@ async def get_client_profile(collection_name:str):
     }
 
     return profile
+
+async def get_client_notification(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+
+    docs = await collection.find({}, {"_id":0}).to_list(None)
+
+    try:
+        notifications = docs[0]["notify"]
+    except KeyError:
+        notifications = []
+    
+    return notifications[::-1]
+    
+
+async def get_total_unread_messages(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+
+    docs = await collection.find({}, {"_id":0}).to_list(None)
+    unread = 0
+    try:
+        notifications = docs[0]["notify"]
+    except KeyError:
+        notifications = []
+    
+    if notifications:
+        for notification in notifications:
+            if notification[1] == 0:
+                unread+=1
+    else:
+        return 0
+    
+    return unread
