@@ -1,5 +1,7 @@
 from configs.trendyDB import client
 from bson import ObjectId
+from utils.clientGets import get_client_notification
+
 
 async def update_assign_member(collecation_name, pid):
     db = client["Clients"]
@@ -73,4 +75,29 @@ async def update_user_profile(collection_name:str, data:object):
             {"email":collection_name},
             {"$set":{"tnp":data.tnp}}
         )
+
+async def update_client_notification(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+
+    notifications = await get_client_notification(collection_name=collection_name)
+
+    new_notification = []
+    for notification in notifications[::-1]:
+        if notification[1] != 1:
+            notification[1] = 1
+
+        new_notification.append(notification)
+    
+    # print (new_notification)
+    await collection.update_one(
+        {"email":collection_name},
+        {"$set":{"notify":new_notification}}
+    )
+
+        
+
+
+
+    
     

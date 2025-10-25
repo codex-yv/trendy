@@ -36,3 +36,15 @@ async def insert_task(task):
     result = await collection.insert_one(format_data)
     return result.inserted_id
 
+async def push_notification_by_admin(collections:list[list[str]], message:str):
+
+    db = client["Clients"]
+    aMessage = [message, 0]
+
+    for collection_name in collections:
+        collection = db[collection_name[0]]
+
+        await collection.update_one(
+            {"email":collection_name[0]},
+            {"$push": {"notify": aMessage}}
+        )

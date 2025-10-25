@@ -118,6 +118,8 @@
             border-bottom: 1px solid #e5e7eb;
             padding: 12px 0;
             transition: background-color 0.2s;
+            display: flex;
+            align-items: flex-start;
         }
         
         .notification-item:hover {
@@ -132,9 +134,33 @@
             background-color: #f0f9ff;
         }
         
-        .notification-time {
-            font-size: 0.75rem;
+        .notification-icon-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .notification-icon-unread {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .notification-icon-read {
+            background-color: #d1d5db;
             color: #6b7280;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-message {
+            margin-bottom: 5px;
         }
         
         /* Member profile styles */
@@ -147,247 +173,333 @@
             font-size: 0.75rem;
             margin: 0.125rem;
         }
+
+        /* WebSocket status styles */
+        .websocket-status {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 15px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-connected {
+            background-color: #10b981;
+        }
+        
+        .status-disconnected {
+            background-color: #ef4444;
+        }
+        
+        .status-connecting {
+            background-color: #f59e0b;
+        }
+        
+        /* Sidebar styles */
+        .sidebar {
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            transition: all 0.3s ease;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .sidebar-text {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+        }
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center space-x-4">
-            <h1 class="text-2xl font-bold">Admin Dashboard</h1>
-            <div class="flex space-x-2">
-                <button id="dashboardBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2 active-tab">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </button>
-                <button id="approveSignUpsBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
-                    <i class="fas fa-user-check"></i>
-                    <span>Approve Sign Ups</span>
-                </button>
-                <button id="showProjectStatusBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
-                    <i class="fas fa-project-diagram"></i>
-                    <span>Show Project Status</span>
-                </button>
-                <button id="showTaskStatusBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
-                    <i class="fas fa-tasks"></i>
-                    <span>Show Task Status</span>
-                </button>
-                <button id="membersProfileBtn" class="px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-2">
-                    <i class="fas fa-users"></i>
-                    <span>Member's Profile</span>
-                </button>
-            </div>
+    <!-- Sidebar -->
+    <div class="sidebar fixed h-full bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-lg z-40">
+        <div class="p-4 flex items-center justify-between border-b border-blue-500">
+            <h1 class="text-xl font-bold sidebar-text">Admin Dashboard</h1>
+            <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-blue-500 transition-colors">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
-        <div class="flex items-center space-x-3">
-            <!-- Notification Icon -->
-            <div class="relative">
-                <button id="notificationBtn" class="p-2 rounded-full hover:bg-blue-500 transition-colors">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span id="notificationBadge" class="notification-badge hidden">0</span>
-                </button>
+        
+        <div class="p-4">
+            <p id="id_for_admin" style="display: none;">qwertyuiop</p>
+            <div class="websocket-status mb-4" id="websocketStatus">
+                <div class="status-indicator status-connecting" id="statusIndicator"></div>
+                <span id="statusText" class="sidebar-text">Connecting...</span>
             </div>
-            <button onclick="openProjectModal()"
-                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
-                <i class="fas fa-plus mr-2"></i>Add Project
-            </button>
-            <button onclick="openTaskModal()"
-                class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
-                <i class="fas fa-tasks mr-2"></i>Assign Task
-            </button>
+
+            <nav class="space-y-2">
+                <button id="dashboardBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3 active-tab">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </button>
+                <button id="approveSignUpsBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                    <i class="fas fa-user-check w-5"></i>
+                    <span class="sidebar-text">Approve Sign Ups</span>
+                </button>
+                <button id="showProjectStatusBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                    <i class="fas fa-project-diagram w-5"></i>
+                    <span class="sidebar-text">Show Project Status</span>
+                </button>
+                <button id="showTaskStatusBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                    <i class="fas fa-tasks w-5"></i>
+                    <span class="sidebar-text">Show Task Status</span>
+                </button>
+                <button id="membersProfileBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="sidebar-text">Member's Profile</span>
+                </button>
+            </nav>
         </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="p-6">
-        <!-- Dashboard Section -->
-        <div id="dashboardSection" class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Projects</p>
-                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalProjects">0</h3>
-                        </div>
-                        <div class="bg-blue-100 p-3 rounded-full">
-                            <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <span class="text-sm text-green-600 font-medium">
-                            <i class="fas fa-arrow-up mr-1"></i>5.2% from last month
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Completed Projects</p>
-                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedProjects">0</h3>
-                        </div>
-                        <div class="bg-green-100 p-3 rounded-full">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <span class="text-sm text-green-600 font-medium">
-                            <i class="fas fa-arrow-up mr-1"></i>12.4% from last month
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Total Tasks</p>
-                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalTasks">0</h3>
-                        </div>
-                        <div class="bg-purple-100 p-3 rounded-full">
-                            <i class="fas fa-tasks text-purple-600 text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <span class="text-sm text-green-600 font-medium">
-                            <i class="fas fa-arrow-up mr-1"></i>8.7% from last month
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Completed Tasks</p>
-                            <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedTasks">0</h3>
-                        </div>
-                        <div class="bg-yellow-100 p-3 rounded-full">
-                            <i class="fas fa-clipboard-check text-yellow-600 text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <span class="text-sm text-green-600 font-medium">
-                            <i class="fas fa-arrow-up mr-1"></i>3.1% from last month
-                        </span>
-                    </div>
-                </div>
+    <!-- Header -->
+    <div class="main-content">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">Admin Dashboard</h1>
             </div>
-            
-            <!-- Recent Activity Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Projects</h3>
-                    <div id="recentProjects" class="space-y-4">
-                        <!-- Recent projects will be populated from template -->
-                    </div>
+            <div class="flex items-center space-x-3">
+                <!-- Notification Icon -->
+                <div class="relative">
+                    <button id="notificationBtn" class="p-2 rounded-full hover:bg-blue-500 transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="notificationBadge" class="notification-badge hidden">0</span>
+                    </button>
                 </div>
-                
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Tasks</h3>
-                    <div id="recentTasks" class="space-y-4">
-                        <!-- Recent tasks will be populated from template -->
-                    </div>
-                </div>
+                <button onclick="openProjectModal()"
+                    class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
+                    <i class="fas fa-plus mr-2"></i>Add Project
+                </button>
+                <button onclick="openTaskModal()"
+                    class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
+                    <i class="fas fa-tasks mr-2"></i>Assign Task
+                </button>
             </div>
         </div>
 
-        <!-- Sign Up Requests Section -->
-        <div id="signUpRequestsSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">Sign Up Requests</h2>
-                <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                    <span id="pendingRequestsCount">0</span> Pending Requests
-                </span>
-            </div>
-            <div id="signUpRequestsLoading" class="text-center py-8 hidden">
-                <div class="loading-spinner mx-auto mb-2"></div>
-                <p class="text-gray-600">Loading sign up requests...</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="signUpRequestsList" class="bg-white divide-y divide-gray-200">
-                        <!-- Sign up requests will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Project Status Section -->
-        <div id="projectStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">Project Status</h2>
-                <div class="flex space-x-2">
-                    <button id="allProjectsBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
-                    <button id="ongoingProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
-                    <button id="completedProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+        <!-- Main Content Area -->
+        <div class="p-6">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Projects</p>
+                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalProjects">0</h3>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-sm text-green-600 font-medium">
+                                <i class="fas fa-arrow-up mr-1"></i>5.2% from last month
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Completed Projects</p>
+                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedProjects">0</h3>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-sm text-green-600 font-medium">
+                                <i class="fas fa-arrow-up mr-1"></i>12.4% from last month
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Tasks</p>
+                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalTasks">0</h3>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <i class="fas fa-tasks text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-sm text-green-600 font-medium">
+                                <i class="fas fa-arrow-up mr-1"></i>8.7% from last month
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Completed Tasks</p>
+                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedTasks">0</h3>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-full">
+                                <i class="fas fa-clipboard-check text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-sm text-green-600 font-medium">
+                                <i class="fas fa-arrow-up mr-1"></i>3.1% from last month
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Projects</h3>
+                        <div id="recentProjects" class="space-y-4">
+                            <!-- Recent projects will be populated from template -->
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Tasks</h3>
+                        <div id="recentTasks" class="space-y-4">
+                            <!-- Recent tasks will be populated from template -->
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="projectStatusLoading" class="text-center py-8 hidden">
-                <div class="loading-spinner mx-auto mb-2"></div>
-                <p class="text-gray-600">Loading projects...</p>
-            </div>
-            <div id="projectStatusList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Project status cards will be populated here -->
-            </div>
-        </div>
 
-        <!-- Task Status Section -->
-        <div id="taskStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">Task Status</h2>
-                <div class="flex space-x-2">
-                    <button id="allTasksBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
-                    <button id="ongoingTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
-                    <button id="completedTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+            <!-- Sign Up Requests Section -->
+            <div id="signUpRequestsSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Sign Up Requests</h2>
+                    <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                        <span id="pendingRequestsCount">0</span> Pending Requests
+                    </span>
+                </div>
+                <div id="signUpRequestsLoading" class="text-center py-8 hidden">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading sign up requests...</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="signUpRequestsList" class="bg-white divide-y divide-gray-200">
+                            <!-- Sign up requests will be populated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div id="taskStatusLoading" class="text-center py-8 hidden">
-                <div class="loading-spinner mx-auto mb-2"></div>
-                <p class="text-gray-600">Loading tasks...</p>
-            </div>
-            <div id="taskStatusList" class="space-y-4">
-                <!-- Task status cards will be populated here -->
-            </div>
-        </div>
 
-        <!-- Member's Profile Section -->
-        <div id="membersProfileSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800">Member's Profile</h2>
-                <div class="flex space-x-2">
-                    <button id="allMembersBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
-                    <button id="devTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Dev Team</button>
-                    <button id="designTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Design Team</button>
-                    <button id="marketingTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Marketing Team</button>
+            <!-- Project Status Section -->
+            <div id="projectStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Project Status</h2>
+                    <div class="flex space-x-2">
+                        <button id="allProjectsBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
+                        <button id="ongoingProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
+                        <button id="completedProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+                    </div>
+                </div>
+                <div id="projectStatusLoading" class="text-center py-8 hidden">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading projects...</p>
+                </div>
+                <div id="projectStatusList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Project status cards will be populated here -->
                 </div>
             </div>
-            <div id="membersProfileLoading" class="text-center py-8 hidden">
-                <div class="loading-spinner mx-auto mb-2"></div>
-                <p class="text-gray-600">Loading members...</p>
+
+            <!-- Task Status Section -->
+            <div id="taskStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Task Status</h2>
+                    <div class="flex space-x-2">
+                        <button id="allTasksBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
+                        <button id="ongoingTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
+                        <button id="completedTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+                    </div>
+                </div>
+                <div id="taskStatusLoading" class="text-center py-8 hidden">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading tasks...</p>
+                </div>
+                <div id="taskStatusList" class="space-y-4">
+                    <!-- Task status cards will be populated here -->
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="membersList" class="bg-white divide-y divide-gray-200">
-                        <!-- Members will be populated here -->
-                    </tbody>
-                </table>
+
+            <!-- Member's Profile Section -->
+            <div id="membersProfileSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Member's Profile</h2>
+                    <div class="flex space-x-2">
+                        <button id="allMembersBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
+                        <button id="devTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Dev Team</button>
+                        <button id="designTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Design Team</button>
+                        <button id="marketingTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Marketing Team</button>
+                    </div>
+                </div>
+                <div id="membersProfileLoading" class="text-center py-8 hidden">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading members...</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersList" class="bg-white divide-y divide-gray-200">
+                            <!-- Members will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -468,7 +580,6 @@
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-bold text-gray-800">Notifications</h3>
                 <div class="flex space-x-2">
-                    <button onclick="markAllAsRead()" class="text-sm text-blue-600 hover:text-blue-800">Mark all as read</button>
                     <button onclick="closeNotificationModal()" class="text-gray-500 hover:text-gray-700">
                         <i class="fas fa-times"></i>
                     </button>
@@ -682,6 +793,12 @@
     </div>
 
     <script>
+        // ====== WebSocket Variables ======
+        let socket = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        let adminId = document.getElementById('id_for_admin').textContent.trim();
+
         // ====== Data Stores ======
         let assigned = { project: [], task: [] };
         let components = [];
@@ -707,36 +824,138 @@
         let membersData = [];
 
         // ====== Notification System ======
-        let notifications = [
-            {
-                id: 1,
-                message: "New user registration requires approval",
-                time: "2023-11-15 10:30 AM",
-                sender: "System",
-                read: false
-            },
-            {
-                id: 2,
-                message: "Project 'Website Redesign' is behind schedule",
-                time: "2023-11-14 03:45 PM",
-                sender: "Project Manager",
-                read: false
-            },
-            {
-                id: 3,
-                message: "Task 'Update Documentation' has been completed",
-                time: "2023-11-14 11:20 AM",
-                sender: "Developer",
-                read: true
-            },
-            {
-                id: 4,
-                message: "New comment on project 'Mobile App Development'",
-                time: "2023-11-13 09:15 AM",
-                sender: "Design Team",
-                read: false
+        let notifications = [];
+
+        // ====== WebSocket Functions ======
+        function initializeWebSocket() {
+            if (!adminId) {
+                console.error('Admin ID not found for WebSocket connection');
+                return;
             }
-        ];
+            
+            try {
+                // Determine WebSocket URL based on current location
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/${adminId}`;
+                
+                socket = new WebSocket(wsUrl);
+                
+                socket.onopen = function(event) {
+                    console.log('WebSocket connected successfully for admin');
+                    updateConnectionStatus('connected', 'Connected');
+                    reconnectAttempts = 0;
+                };
+                
+                socket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    console.log('WebSocket message received:', data);
+                    
+                    if (data.type === 'notification') {
+                        handleNewNotification(data.notification);
+                    } else if (data.type === 'connected_users') {
+                        console.log('Connected users:', data.users);
+                    }
+                };
+                
+                socket.onclose = function(event) {
+                    console.log('WebSocket disconnected:', event);
+                    updateConnectionStatus('disconnected', 'Disconnected');
+                    
+                    // Attempt to reconnect
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        setTimeout(() => {
+                            reconnectAttempts++;
+                            console.log(`Attempting to reconnect... (${reconnectAttempts}/${maxReconnectAttempts})`);
+                            initializeWebSocket();
+                        }, 3000);
+                    }
+                };
+                
+                socket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateConnectionStatus('disconnected', 'Connection Error');
+                };
+                
+            } catch (error) {
+                console.error('Error initializing WebSocket:', error);
+                updateConnectionStatus('disconnected', 'Connection Failed');
+            }
+        }
+        
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            indicator.className = 'status-indicator';
+            indicator.classList.add(`status-${status}`);
+            statusText.textContent = text;
+        }
+        
+        function handleNewNotification(notificationData) {
+            const [message, status, timestamp] = notificationData;
+            
+            // Add to notifications array
+            const newNotification = {
+                id: notifications.length + 1,
+                message: message,
+                read: status === 1
+            };
+            
+            notifications.unshift(newNotification);
+            
+            // Update notification badge
+            updateNotificationBadge();
+            
+            // Show toast notification
+            showToast(message, 'success');
+            
+            // If notification modal is open, update it
+            const modal = document.getElementById('notificationModal');
+            if (modal.classList.contains('flex')) {
+                renderNotifications();
+            }
+            
+            // Play notification sound
+            playNotificationSound();
+        }
+        
+        function playNotificationSound() {
+            // Create a simple notification sound
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.log('Audio context not supported');
+            }
+        }
+        
+        function showToast(message, type) {
+            // Create a simple toast notification
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white font-medium z-50 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
 
         function updateNotificationBadge() {
             const unreadCount = notifications.filter(n => !n.read).length;
@@ -750,7 +969,47 @@
             }
         }
 
-        function openNotificationModal() {
+        // ====== Notification API Functions ======
+        async function fetchNotificationsFromAPI() {
+            try {
+                const response = await fetch('/notification-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        x: "any string value"
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Transform the API response into our notifications format
+                notifications = data.map((notification, index) => {
+                    return {
+                        id: index + 1,
+                        message: notification[0],
+                        read: notification[1] === 1
+                    };
+                });
+                
+                // Update notification badge to zero when clicked
+                document.getElementById('notificationBadge').classList.add('hidden');
+                
+                return notifications;
+            } catch (error) {
+                console.error('Error fetching notifications from API:', error);
+                alert('Failed to load notifications from server.');
+                return [];
+            }
+        }
+
+        async function openNotificationModal() {
+            await fetchNotificationsFromAPI();
             renderNotifications();
             toggleModal('notificationModal', true);
         }
@@ -777,38 +1036,22 @@
             notifications.forEach(notification => {
                 const notificationEl = document.createElement('div');
                 notificationEl.className = `notification-item ${!notification.read ? 'notification-unread' : ''}`;
-                notificationEl.innerHTML = `
-                    <div class="flex justify-between">
-                        <div class="font-medium text-gray-800">${notification.sender}</div>
-                        <div class="notification-time">${notification.time}</div>
-                    </div>
-                    <div class="text-sm text-gray-600 mt-1">${notification.message}</div>
-                `;
                 
-                // Mark as read when clicked
-                notificationEl.addEventListener('click', () => {
-                    markAsRead(notification.id);
-                });
+                // Determine icon based on read status
+                const iconClass = !notification.read ? 'notification-icon-unread' : 'notification-icon-read';
+                const icon = !notification.read ? 'fa-exclamation' : 'fa-check';
+                
+                notificationEl.innerHTML = `
+                    <div class="notification-icon-container ${iconClass}">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="text-sm text-gray-800">${notification.message}</div>
+                    </div>
+                `;
                 
                 container.appendChild(notificationEl);
             });
-        }
-
-        function markAsRead(notificationId) {
-            const notification = notifications.find(n => n.id === notificationId);
-            if (notification && !notification.read) {
-                notification.read = true;
-                updateNotificationBadge();
-                renderNotifications();
-            }
-        }
-
-        function markAllAsRead() {
-            notifications.forEach(notification => {
-                notification.read = true;
-            });
-            updateNotificationBadge();
-            renderNotifications();
         }
 
         // ====== Member's Profile Functions ======
@@ -1614,6 +1857,15 @@
             renderMembers();
         });
 
+        // Sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
         function setActiveProjectFilter(filter) {
             document.getElementById('allProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
             document.getElementById('ongoingProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
@@ -1819,6 +2071,11 @@
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const year = today.getFullYear();
             return `${day}/${month}/${year}`;
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
         // ====== Modal Utilities ======
@@ -2135,6 +2392,9 @@
             
             // Initialize dashboard with template data
             initializeDashboard();
+            
+            // Initialize WebSocket connection
+            initializeWebSocket();
             
             // Show dashboard by default
             showSection('dashboardSection');

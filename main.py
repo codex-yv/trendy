@@ -5,13 +5,15 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
 
-from utils.adminPosts import insert_project, insert_task
-from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members
-from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act
+from utils.adminPosts import insert_project, insert_task, push_notification_by_admin
+from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members, get_admin_notification
+from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act, update_admin_notification
 
-from utils.clientPost import add_new_client
-from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile
-from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile
+from utils.clientPost import add_new_client, push_notification_by_client
+from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages
+from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification
+
+from utils.general import create_message, get_users_list, create_message_for_admin
 
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails
@@ -23,6 +25,11 @@ from schemas.adminActionSchemas import AdminAction
 from schemas.updatePjtSchemas import UpdateProjets
 from schemas.updateTskSchema import UpdateTask
 from schemas.profileSchemas import Updated
+
+from datetime import datetime
+from typing import Dict, List
+import json
+import asyncio
 
 templates_clients = Jinja2Templates(directory="templates/clients")
 templates_admin = Jinja2Templates(directory="templates/admin")
@@ -38,6 +45,113 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Store connected clients
+class ConnectionManager:
+    def __init__(self):
+        # Dictionary to store active connections: {user_id: WebSocket}
+        self.active_connections: Dict[str, WebSocket] = {}
+        
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+        # print(f"User {user_id} connected. Total connections: {len(self.active_connections)}")
+        
+        # Send current connected users to all clients (optional)
+        await self.broadcast_connected_users()
+        
+    def disconnect(self, user_id: str):
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+            # print(f"User {user_id} disconnected. Total connections: {len(self.active_connections)}")
+            # Notify remaining users about connection change
+            asyncio.create_task(self.broadcast_connected_users())
+    
+    async def send_personal_message(self, message: str, user_id: str):
+        if user_id in self.active_connections:
+            try:
+                await self.active_connections[user_id].send_text(message)
+            except Exception as e:
+                print(f"Error sending message to {user_id}: {e}")
+                self.disconnect(user_id)
+    
+    async def send_notification(self, notification: List, to_users: List[str]):
+        """
+        Send notification to specific users
+        notification format: [message, 0, timestamp]
+        """
+        message_data = {
+            "type": "notification",
+            "notification": notification
+        }
+        
+        for user_id in to_users:
+            if user_id in self.active_connections:
+                try:
+                    await self.active_connections[user_id].send_text(json.dumps(message_data))
+                    # print(f"Notification sent to {user_id}: {notification[0]}")
+                except Exception as e:
+                    print(f"Error sending notification to {user_id}: {e}")
+                    self.disconnect(user_id)
+    
+    async def broadcast(self, message: str):
+        disconnected_users = []
+        for user_id, connection in self.active_connections.items():
+            try:
+                await connection.send_text(message)
+            except Exception as e:
+                print(f"Error broadcasting to {user_id}: {e}")
+                disconnected_users.append(user_id)
+        
+        # Remove disconnected users
+        for user_id in disconnected_users:
+            self.disconnect(user_id)
+    
+    async def broadcast_connected_users(self):
+        """Broadcast list of connected users to all clients"""
+        connected_users = list(self.active_connections.keys())
+        message_data = {
+            "type": "connected_users",
+            "users": connected_users
+        }
+        await self.broadcast(json.dumps(message_data))
+    
+    def get_connected_users(self) -> List[str]:
+        return list(self.active_connections.keys())
+
+# Create connection manager instance
+manager = ConnectionManager()
+
+# WebSocket endpoint
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            # Wait for any message from client (can be used for ping/pong or other commands)
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            
+            # Handle different types of messages from client
+            if message_data.get('type') == 'ping':
+                # Respond to ping
+                await manager.send_personal_message(json.dumps({
+                    "type": "pong",
+                    "timestamp": datetime.now().isoformat()
+                }), user_id)
+                
+            elif message_data.get('type') == 'test_notification':
+                # Echo test notification back to sender
+                await manager.send_personal_message(json.dumps({
+                    "type": "notification",
+                    "notification": message_data.get('notification')
+                }), user_id)
+                
+    except WebSocketDisconnect:
+        manager.disconnect(user_id)
+    except Exception as e:
+        print(f"WebSocket error for user {user_id}: {e}")
+        manager.disconnect(user_id)
 
 @app.get("/login") # FOR Client PAGE.
 async def home(request:Request):
@@ -81,7 +195,8 @@ async def get_dashboard(request: Request):
             "recent projects": projects,                
             "recent tasks": tasks                    
         }
-        return templates_clients.TemplateResponse("index.html", {"request": request, "fullname": fullname, "details":details})
+        unread = await get_total_unread_messages(collection_name=request.session.get("email"))
+        return templates_clients.TemplateResponse("index.html", {"request": request, "fullname": fullname, "details":details, "emailUser":request.session.get("email"), "unreadd": unread})
 
     except TypeError:
         return RedirectResponse("/login", status_code=HTTP_303_SEE_OTHER)
@@ -142,13 +257,24 @@ async def admin_add_projects(request: Request, project: Project):
     await update_assign_member(collecation_name=project.assigned_members, pid=Inserted_id)
     await update_project_manager(collecation_name=project.project_manager, pid=Inserted_id)
 
+    rmessage = await create_message(message=[project.project_name, "p"])
+
+    await push_notification_by_admin(collections=project.assigned_members, message=rmessage)
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    to_users = await get_users_list(data = project.assigned_members)
+    await manager.send_notification(notification, to_users)
 
 @app.post("/add-task") # FOR ADMIN PAGE.
 async def admin_add_tasks(request: Request, task: Task):
     Inserted_id = await insert_task(task=task)
     await update_task_member(collecation_name=task.assigned_members, pid=Inserted_id)
     
+    rmessage = await create_message(message=[task.task_name, "t"])
 
+    await push_notification_by_admin(collections=task.assigned_members, message=rmessage)
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    to_users = await get_users_list(data = task.assigned_members)
+    await manager.send_notification(notification, to_users)
 
 @app.post("/load-add-project") # FOR ADMIN PAGE.
 async def load_add_projects(data:Useless):
@@ -193,10 +319,24 @@ async def update_project_status(request: Request,data: UpdateProjets):
     await update_project_status_act(pid=data.project_id, status=data.status)
     await update_project_status_bid(project_id=data.project_id, status=data.status, collection_name=request.session.get("email"))
 
+    fullname = await get_username(collection_name=request.session.get("email"))
+    project_name = await get_project_by_id(project_id=data.project_id)
+
+    rmessage = await create_message_for_admin(fullname=fullname, project_taskname=project_name, status=data.status, sym='p')
+
+    await push_notification_by_client(message=rmessage)
+
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    to_users = ["qwertyuiop"]
+    await manager.send_notification(notification, to_users)
+
+
+
+
 @app.post("/client-tasks")
 async def show_client_task(request: Request, x:UselessClient):
     val, total_task, done_task = await get_user_tasks(collection_name=request.session.get("email"))
-    print(val)
+    # print(val)
     return val
 
 
@@ -205,6 +345,19 @@ async def update_task_status(request: Request, data:UpdateTask):
 
     await update_task_status_act(pid = data.task_id, status=data.status)
     await update_task_status_bid(task_id = data.task_id, status = data.status, collection_name= request.session.get("email"))
+
+    fullname = await get_username(collection_name=request.session.get("email"))
+    taskname = await get_task_by_id(task_id=data.task_id)
+
+    rmessage = await create_message_for_admin(fullname=fullname, project_taskname=taskname, status=data.status, sym='t')
+
+    await push_notification_by_client(message=rmessage)
+
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    to_users = ["qwertyuiop"]
+    await manager.send_notification(notification, to_users)
+
+
 
 @app.post("/client-dashboard")
 async def update_dashboard_fapi(request: Request, x:UselessClient):
@@ -240,3 +393,30 @@ async def updateProfile(request:Request, data:Updated):
         return 0
     else:
         return 1
+    
+
+@app.post("/notification-user")
+async def get_notification_user(request:Request, x:UselessClient):
+    notifications = await get_client_notification(collection_name=request.session.get("email"))
+    await update_client_notification(collection_name=request.session.get("email"))
+    # print(manager.get_connected_users())
+    # This would be called from your application logic
+    # notification = ["New project assigned to you", 0, "2023-12-07T10:30:00"]
+    # to_users = ["yv956@gmail.com"]
+    # await manager.send_notification(notification, to_users)
+    return notifications
+
+
+@app.post("/notification-admin")
+async def get_notification_user(request:Request, x:UselessClient):
+    notifications = await get_admin_notification()
+    await update_admin_notification()
+    # print(manager.get_connected_users())
+    return notifications
+
+@app.post("/send-notification")
+async def senndd(): 
+    notification = ["New project assigned to you New project assigned to you", 0, "2023-12-07T10:30:00"]
+    to_users = ["qwertyuiop"]
+    await manager.send_notification(notification, to_users)
+    return 0

@@ -28,3 +28,16 @@ async def add_new_client(client_add:dict):
     await collection.insert_one(format_data)
 
 
+async def push_notification_by_client(message:str):
+
+    db = client["Admins"]
+    collection = db["Base"]
+
+    aMessage = [message, 0]
+    
+    await collection.update_one(
+        {"unique":"qwertyuiop"},
+        {"$push": {"notify": aMessage}}
+    )
+
+    
