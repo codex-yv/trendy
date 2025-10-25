@@ -9,11 +9,12 @@ from utils.adminPosts import insert_project, insert_task, push_notification_by_a
 from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members, get_admin_notification
 from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act, update_admin_notification
 
-from utils.clientPost import add_new_client, push_notification_by_client
-from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages
+from utils.clientPost import add_new_client, push_notification_by_client, save_unified_chat_message
+from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history
 from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification
 
 from utils.general import create_message, get_users_list, create_message_for_admin
+from utils.IST import ISTTime
 
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails
@@ -152,6 +153,137 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     except Exception as e:
         print(f"WebSocket error for user {user_id}: {e}")
         manager.disconnect(user_id)
+
+# Unified Community Connection Manager
+class UnifiedCommunityConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+        self.user_info: Dict[str, Dict] = {}  # Store user info like username and type
+        
+    async def connect(self, websocket: WebSocket, user_id: str, username: str = None, user_type: str = "client"):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+        self.user_info[user_id] = {
+            "username": username or user_id,
+            "type": user_type
+        }
+        
+        # Notify all users that someone joined
+        await self.broadcast_user_joined(user_id, username)
+        # print(f"User {user_id} ({user_type}) joined community chat. Total connections: {len(self.active_connections)}")
+        
+    def disconnect(self, user_id: str):
+        if user_id in self.active_connections:
+            username = self.user_info[user_id].get("username", user_id)
+            user_type = self.user_info[user_id].get("type", "client")
+            del self.active_connections[user_id]
+            if user_id in self.user_info:
+                del self.user_info[user_id]
+            
+            # Notify all users that someone left
+            asyncio.create_task(self.broadcast_user_left(user_id, username))
+            # print(f"User {user_id} ({user_type}) left community chat. Total connections: {len(self.active_connections)}")
+    
+    async def send_personal_message(self, message: str, user_id: str):
+        if user_id in self.active_connections:
+            try:
+                await self.active_connections[user_id].send_text(message)
+            except Exception as e:
+                print(f"Error sending message to {user_id}: {e}")
+                self.disconnect(user_id)
+    
+    async def broadcast_message(self, message_data: dict):
+        disconnected_users = []
+        for user_id, connection in self.active_connections.items():
+            try:
+                await connection.send_text(json.dumps(message_data))
+            except Exception as e:
+                print(f"Error broadcasting to {user_id}: {e}")
+                disconnected_users.append(user_id)
+        
+        # Remove disconnected users
+        for user_id in disconnected_users:
+            self.disconnect(user_id)
+    
+    async def broadcast_user_joined(self, user_id: str, username: str = None):
+        message_data = {
+            "type": "user_joined",
+            "user_id": user_id,
+            "username": username or user_id
+        }
+        await self.broadcast_message(message_data)
+    
+    async def broadcast_user_left(self, user_id: str, username: str = None):
+        message_data = {
+            "type": "user_left",
+            "user_id": user_id,
+            "username": username or user_id
+        }
+        await self.broadcast_message(message_data)
+    
+    async def broadcast_chat_message(self, message_data: dict):
+        await self.broadcast_message({
+            "type": "chat_message",
+            "message": message_data
+        })
+    
+    def get_connected_users(self) -> List[str]:
+        return list(self.active_connections.keys())
+
+# Create unified community connection manager instance
+unified_community_manager = UnifiedCommunityConnectionManager()
+
+# Unified Community WebSocket endpoint for both clients and admins
+@app.websocket("/ws/community/{user_id}")
+async def unified_community_websocket_endpoint(websocket: WebSocket, user_id: str):
+    # Determine if it's an admin or client based on user_id or session
+    # For now, we'll check if user_id contains "admin" or use a different method
+    user_type = "admin" if "@" not in user_id.lower() else "client"
+    
+    # Get username from database or use user_id as fallback
+    username = "Admin" if user_type == "admin" else user_id
+    
+    await unified_community_manager.connect(websocket, user_id, username, user_type)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            
+            if message_data.get('type') == 'chat_message':
+                # Save message to database
+                message_content = message_data.get('message', '').strip()
+                if message_content:
+                    # Store message in database
+                    if username != "Admin":
+                        chat_data = {
+                            "user": user_id,
+                            "username": await get_username(collection_name=user_id),
+                            "message": message_content,
+                            "time": ISTTime(),
+                            "user_type": user_type
+                        }
+                    else:
+                        chat_data = {
+                            "user": user_id,
+                            "username": username,
+                            "message": message_content,
+                            "time": ISTTime(),
+                            "user_type": user_type
+                        }
+                    # Save to MongoDB
+                    await save_unified_chat_message(chat_data)
+                    
+                    # Broadcast to ALL users (both clients and admins)
+                    await unified_community_manager.broadcast_chat_message(chat_data)
+                    
+    except WebSocketDisconnect:
+        unified_community_manager.disconnect(user_id)
+    except Exception as e:
+        print(f"Unified Community WebSocket error for user {user_id}: {e}")
+        unified_community_manager.disconnect(user_id)
+
+
+
 
 @app.get("/login") # FOR Client PAGE.
 async def home(request:Request):
@@ -400,11 +532,6 @@ async def updateProfile(request:Request, data:Updated):
 async def get_notification_user(request:Request, x:UselessClient):
     notifications = await get_client_notification(collection_name=request.session.get("email"))
     await update_client_notification(collection_name=request.session.get("email"))
-    # print(manager.get_connected_users())
-    # This would be called from your application logic
-    # notification = ["New project assigned to you", 0, "2023-12-07T10:30:00"]
-    # to_users = ["yv956@gmail.com"]
-    # await manager.send_notification(notification, to_users)
     return notifications
 
 
@@ -421,3 +548,59 @@ async def senndd():
     to_users = ["qwertyuiop"]
     await manager.send_notification(notification, to_users)
     return 0
+
+
+# HTTP endpoint to get unified community chats
+@app.post("/community")
+async def get_unified_community_chats(request: Request):
+    try:
+        # Get unified chat history from MongoDB
+        chats = await get_unified_chat_history()
+        return chats
+    except Exception as e:
+        print(f"Error getting unified community chats: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to load chats"})
+    
+
+# HTTP endpoint to send message (works for both clients and admins)
+@app.post("/send-message")
+async def send_unified_chat_message(request: Request):
+    try:
+        data = await request.json()
+        message_content = data.get('message', '').strip()
+        
+        if not message_content:
+            return JSONResponse(status_code=400, content={"error": "Message cannot be empty"})
+        
+        # Get user info from session or request
+        # For demo purposes, we'll use placeholders - replace with actual authentication
+        user_id = data.get('user_id', 'unknown_user')
+        # username = data.get('username', 'Unknown User')
+        # user_type = data.get('user_type', 'client')
+        
+        if "@" in user_id:
+            username = await get_username(collection_name= request.session.get("email"))
+            user_type = "client"
+        else:
+            username = "Admin"
+            user_type = "admin"
+        # Save message to database
+        chat_data = {
+            "user": user_id,
+            "username": username,
+            "message": message_content,
+            "time": ISTTime(),
+            "user_type": user_type
+        }
+        
+        await save_unified_chat_message(chat_data)
+        
+        # Broadcast to ALL connected users (both clients and admins)
+        await unified_community_manager.broadcast_chat_message(chat_data)
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        print(f"Error sending unified message: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to send message"})
+

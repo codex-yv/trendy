@@ -40,4 +40,21 @@ async def push_notification_by_client(message:str):
         {"$push": {"notify": aMessage}}
     )
 
-    
+
+async def save_unified_chat_message(chat_data: dict):
+    """
+    Save chat message to database
+    Replace this with your actual database implementation
+    """
+    db = client["History"]
+    collection = db["chat"]
+
+    format_chat = {
+        'user':chat_data['user'],
+        'username':chat_data['username'],
+        'message':chat_data['message'],
+        'time':chat_data['time'], 
+        'user_type':chat_data['user_type']
+    }
+
+    await collection.insert_one(format_chat)

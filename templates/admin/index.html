@@ -238,6 +238,143 @@
                 margin-left: 70px;
             }
         }
+        /* Community Chat Styles */
+        .community-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+
+        .message-container {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message-container.own-message {
+            justify-content: flex-end;
+        }
+
+        .message-container.other-message {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .own-message .message-bubble {
+            background-color: #3b82f6;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .other-message .message-bubble {
+            background-color: white;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-header {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .own-message .message-header {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .other-message .message-header {
+            color: #3b82f6;
+        }
+
+        .message-content {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .message-input-container {
+            display: flex;
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .message-input:focus {
+            border-color: #3b82f6;
+        }
+
+        #sendMessageBtn {
+            border-radius: 25px;
+            padding: 12px 25px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        #sendMessageBtn:hover {
+            background-color: #2563eb;
+        }
+
+        /* Empty state for chat */
+        .chat-empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 40px 20px;
+        }
+
+        .chat-empty i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .system-message {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .system-message-content {
+            display: inline-block;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -278,6 +415,10 @@
                 <button id="membersProfileBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
                     <i class="fas fa-users w-5"></i>
                     <span class="sidebar-text">Member's Profile</span>
+                </button>
+                <button id="communityBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="sidebar-text">Community</span>
                 </button>
             </nav>
         </div>
@@ -468,7 +609,7 @@
                     <!-- Task status cards will be populated here -->
                 </div>
             </div>
-
+            
             <!-- Member's Profile Section -->
             <div id="membersProfileSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
                 <div class="flex justify-between items-center mb-6">
@@ -499,6 +640,28 @@
                             <!-- Members will be populated here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <!-- Community Section -->
+            <div id="communitySection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Community Chat</h2>
+                    <button class="btn btn-outline" id="refreshCommunity">Refresh</button>
+                </div>
+                
+                <div class="loading-spinner" id="communityLoading" class="text-center py-8 hidden">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading community chat...</p>
+                </div>
+                
+                <div class="community-container" id="communityContainer">
+                    <div class="chat-area" id="chatArea">
+                        <!-- Messages will be displayed here -->
+                    </div>
+                    <div class="message-input-container">
+                        <input type="text" id="messageInput" placeholder="Type your message here..." class="message-input">
+                        <button class="btn btn-primary" id="sendMessageBtn">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2399,6 +2562,305 @@
             // Show dashboard by default
             showSection('dashboardSection');
         });
+        // Community WebSocket variables
+        let communitySocket = null;
+        let currentAdminId = document.getElementById('id_for_admin').textContent.trim();
+
+        // Add Community button to sidebar navigation
+        document.getElementById("communityBtn").addEventListener("click", function(e){
+            e.preventDefault();
+            showSection('communitySection');
+            loadCommunityChat();
+            initializeCommunityWebSocket();
+        });
+
+        // Refresh community button
+        document.getElementById("refreshCommunity").addEventListener("click", function(e){
+            e.preventDefault();
+            loadCommunityChat();
+        });
+
+        // Send message button functionality
+        document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
+
+        // Send message on Enter key
+        document.getElementById("messageInput").addEventListener("keypress", function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Update showSection function to include community section
+        function showSection(sectionId) {
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('signUpRequestsSection').classList.add('hidden');
+            document.getElementById('projectStatusSection').classList.add('hidden');
+            document.getElementById('taskStatusSection').classList.add('hidden');
+            document.getElementById('membersProfileSection').classList.add('hidden');
+            document.getElementById('communitySection').classList.add('hidden');
+            
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn, #membersProfileBtn, #communityBtn').forEach(btn => {
+                btn.classList.remove('active-tab');
+            });
+            
+            if (sectionId === 'dashboardSection') {
+                document.getElementById('dashboardBtn').classList.add('active-tab');
+            } else if (sectionId === 'signUpRequestsSection') {
+                document.getElementById('approveSignUpsBtn').classList.add('active-tab');
+            } else if (sectionId === 'projectStatusSection') {
+                document.getElementById('showProjectStatusBtn').classList.add('active-tab');
+            } else if (sectionId === 'taskStatusSection') {
+                document.getElementById('showTaskStatusBtn').classList.add('active-tab');
+            } else if (sectionId === 'membersProfileSection') {
+                document.getElementById('membersProfileBtn').classList.add('active-tab');
+            } else if (sectionId === 'communitySection') {
+                document.getElementById('communityBtn').classList.add('active-tab');
+            }
+        }
+
+        // Update the endpoint for loading community chats in admin
+        async function loadCommunityChat() {
+            const chatArea = document.getElementById('chatArea');
+            const loadingSpinner = document.getElementById('communityLoading');
+            
+            // Show loading spinner
+            chatArea.innerHTML = '';
+            loadingSpinner.classList.remove('hidden');
+            
+            try {
+                // Use the unified endpoint
+                const response = await fetch('/community', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const chats = await response.json();
+                console.log('Received unified community chats:', chats);
+                
+                // Hide loading spinner
+                loadingSpinner.classList.add('hidden');
+                
+                // Render chats
+                if (chats && chats.length > 0) {
+                    renderChatMessages(chats);
+                } else {
+                    chatArea.innerHTML = `
+                        <div class="chat-empty">
+                            <i class="fas fa-comments"></i>
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading community chat:', error);
+                loadingSpinner.classList.add('hidden');
+                chatArea.innerHTML = `
+                    <div class="chat-empty">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error loading messages. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render chat messages
+        function renderChatMessages(chats) {
+            const chatArea = document.getElementById('chatArea');
+            
+            chatArea.innerHTML = chats.map(chat => {
+                const isOwnMessage = chat.user === currentAdminId;
+                const messageClass = isOwnMessage ? 'own-message' : 'other-message';
+                
+                return `
+                    <div class="message-container ${messageClass}">
+                        <div class="message-bubble">
+                            <div class="message-header">${chat.username || 'Unknown User'}</div>
+                            <div class="message-content">${chat.message}</div>
+                            <div class="message-time">${chat.time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Scroll to bottom
+            scrollToBottom();
+        }
+
+        // Format time for display
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            
+            try {
+                const date = new Date(timeString);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return timeString;
+            }
+        }
+
+        // Scroll chat to bottom
+        function scrollToBottom() {
+            const chatArea = document.getElementById('chatArea');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Update the WebSocket URL to use the unified endpoint
+        function initializeCommunityWebSocket() {
+            if (!currentAdminId) {
+                console.error('Admin ID not found for Community WebSocket connection');
+                return;
+            }
+            
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/community/${currentAdminId}`;
+                
+                communitySocket = new WebSocket(wsUrl);
+                
+                communitySocket.onopen = function(event) {
+                    console.log('Unified Community WebSocket connected successfully for admin');
+                };
+                
+                communitySocket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    console.log('Unified Community WebSocket message received:', data);
+                    
+                    if (data.type === 'chat_message') {
+                        handleNewChatMessage(data.message);
+                    } else if (data.type === 'user_joined') {
+                        showSystemMessage(`${data.username} joined the chat`);
+                    } else if (data.type === 'user_left') {
+                        showSystemMessage(`${data.username} left the chat`);
+                    }
+                };
+                
+                communitySocket.onclose = function(event) {
+                    console.log('Community WebSocket disconnected:', event);
+                };
+                
+                communitySocket.onerror = function(error) {
+                    console.error('Community WebSocket error:', error);
+                };
+                
+            } catch (error) {
+                console.error('Error initializing Community WebSocket:', error);
+            }
+        }
+
+        // Handle new chat message from WebSocket
+        function handleNewChatMessage(messageData) {
+            // Add the new message to the chat area
+            const chatArea = document.getElementById('chatArea');
+            
+            // Remove empty state if it exists
+            const emptyState = chatArea.querySelector('.chat-empty');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const isOwnMessage = messageData.user === currentAdminId;
+            const messageClass = isOwnMessage ? 'own-message' : 'other-message';
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message-container ${messageClass}`;
+            messageElement.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-header">${messageData.username || 'Unknown User'}</div>
+                    <div class="message-content">${messageData.message}</div>
+                    <div class="message-time">${messageData.time}</div>
+                </div>
+            `;
+            
+            chatArea.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        // Show system message
+        function showSystemMessage(message) {
+            const chatArea = document.getElementById('chatArea');
+            
+            // Remove empty state if it exists
+            const emptyState = chatArea.querySelector('.chat-empty');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const systemElement = document.createElement('div');
+            systemElement.className = 'system-message';
+            systemElement.innerHTML = `
+                <div class="system-message-content">
+                    ${message}
+                </div>
+            `;
+            
+            chatArea.appendChild(systemElement);
+            scrollToBottom();
+        }
+
+        // Update sendMessage function for admin
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            if (communitySocket && communitySocket.readyState === WebSocket.OPEN) {
+                // Send via WebSocket with admin info
+                communitySocket.send(JSON.stringify({
+                    type: 'chat_message',
+                    message: message,
+                    user_id: currentAdminId,
+                    username: "Admin", // Admin identifier
+                    user_type: "admin"
+                }));
+                
+                // Clear input
+                messageInput.value = '';
+            } else {
+                // Fallback: Send via HTTP POST with admin info
+                try {
+                    const response = await fetch('/send-message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            message: message,
+                            user_id: currentAdminId,
+                            username: "Admin",
+                            user_type: "admin"
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        messageInput.value = '';
+                    } else {
+                        alert('Error sending message. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('Error sending message. Please try again.');
+                }
+            }
+        }
+
+        // Close community WebSocket when leaving the section
+        function closeCommunityWebSocket() {
+            if (communitySocket) {
+                communitySocket.close();
+                communitySocket = null;
+            }
+        }
     </script>
 
 </body>
