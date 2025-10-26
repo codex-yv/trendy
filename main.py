@@ -1,9 +1,14 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body, HTTPException, status, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.openapi.docs import get_swagger_ui_html
+import secrets
+
+from configs.access_configs import doc_username, doc_password, admin_password, admin_username
 
 from utils.adminPosts import insert_project, insert_task, push_notification_by_admin
 from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members, get_admin_notification
@@ -13,11 +18,11 @@ from utils.clientPost import add_new_client, push_notification_by_client, save_u
 from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history
 from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification
 
-from utils.general import create_message, get_users_list, create_message_for_admin
+from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password
 from utils.IST import ISTTime
 
 from schemas.newclientSchemas import NewUser
-from schemas.otpSchemas import OTPDetails
+from schemas.otpSchemas import OTPDetails, Email
 from schemas.loginSchemas import LoginSchema
 from schemas.adminProjectSchemas import Project
 from schemas.adminTasksSchemas import Task
@@ -36,7 +41,7 @@ templates_clients = Jinja2Templates(directory="templates/clients")
 templates_admin = Jinja2Templates(directory="templates/admin")
 
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None)
 
 app.add_middleware(SessionMiddleware, secret_key="qwertyuiopasdfghjkl@#$%RTYU")
 app.add_middleware(
@@ -46,6 +51,42 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+security = HTTPBasic()
+
+def get_current_user(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, doc_username)
+    correct_password = secrets.compare_digest(credentials.password, doc_password)
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
+def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = admin_username
+    correct_password = admin_password
+    if credentials.username != correct_username or credentials.password != correct_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
+
+@app.get("/docs", include_in_schema=False)
+def custom_swagger_ui(user: str = Depends(get_current_user)):
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="Secure API Docs")
+
+
+@app.api_route("/", methods=["HEAD"], operation_id="welcome_get")
+async def welcome_head():
+    return {"Message": "Ok"}
+
 
 # Store connected clients
 class ConnectionManager:
@@ -290,7 +331,7 @@ async def home(request:Request):
     return templates_clients.TemplateResponse("login.html", {"request":request})
 
 @app.get("/admin-dashboard") # FOR ADMIN PAGE.
-async def load_admin(request:Request):
+async def load_admin(request:Request, authenticated: bool = Depends(verify_credentials)):
     pd, total_projects = await get_projet_info()
     projects = await get_projects()
     recent_projects = projects[0:3]
@@ -348,7 +389,9 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
         return JSONResponse(content=0)  # Email already exists
 
     # Validate OTP
-    if "OTP"!= "OTP":  # Replace with real OTP validation
+    if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
+        print(data.otp)
+        print(request.session.get("otp"))
         return JSONResponse(content=1) 
 
     await add_new_client(client_add=data)
@@ -358,6 +401,7 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
 
 @app.post("/send-otp") # FOR Client PAGE.
 async def validate_otp(request: Request, data: OTPDetails = Body(...)):
+    request.session["otp"] = await send_otp(email=data.email)
     return 1
 
 
@@ -379,6 +423,14 @@ async def trendy_login(request: Request, data: LoginSchema = Body(...)):
                 return RedirectResponse(url="/dashboard", status_code=HTTP_303_SEE_OTHER)
         else:
             return 1
+    else:
+        return 0
+
+@app.post("/forget-password")
+async def forget_password(request:Request, data:Email):
+    if not await check_existing_user(collection_name=data.email):
+        val = await send_password(email= data.email)
+        return val
     else:
         return 0
 

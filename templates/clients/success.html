@@ -1,98 +1,211 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <script src="https://static.readdy.ai/static/e.js"></script>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Signup Submitted</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet" />
     <style>
-        :root {
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --muted: #6b7280;
-            --warning: #f59e0b;
-            --accent: #111827;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDIxapCSOBg7S-QT7q4A.ttf) format('truetype');
         }
 
-        html,
-        body {
-            height: 100%;
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pb0EMOs.ttf) format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF8Os.ttf) format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FsOs.ttf) format('truetype');
+        }
+
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .valorant-bg {
+            background: linear-gradient(135deg, #0f1419 0%, #1e2328 50%, #0f1419 100%);
+        }
+
+        .valorant-card {
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.9) 0%, rgba(15, 20, 25, 0.9) 100%);
+            border: 1px solid rgba(255, 70, 85, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 70, 85, 0.2);
+        }
+
+        .valorant-card:hover {
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 0 12px 40px rgba(0, 255, 255, 0.2), inset 0 1px 0 rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff4655, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 70, 85, 0.5);
         }
 
         body {
             margin: 0;
-            background: linear-gradient(180deg, #fefce8, #ffffff 60%);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 24px;
-            color: var(--accent);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
         }
 
         .card {
             width: 100%;
             max-width: 720px;
-            background: var(--card);
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
-            padding: 32px;
+            padding: 48px 32px;
             display: flex;
-            gap: 24px;
+            gap: 32px;
             align-items: center;
         }
 
         .icon {
-            flex: 0 0 84px;
-            height: 84px;
+            flex: 0 0 100px;
+            height: 100px;
             border-radius: 50%;
             display: grid;
             place-items: center;
-            background: linear-gradient(180deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.06));
-            color: var(--warning);
-            font-size: 36px;
+            background: linear-gradient(180deg, rgba(0, 255, 255, 0.2), rgba(255, 70, 85, 0.1));
+            color: #00ffff;
+            font-size: 42px;
             font-weight: 700;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
         .content h1 {
-            margin: 0 0 8px 0;
-            font-size: 20px;
+            margin: 0 0 16px 0;
+            font-size: 28px;
+            font-weight: 700;
             letter-spacing: -0.2px;
+            background: linear-gradient(45deg, #ff4655, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .content p {
-            margin: 0 0 12px 0;
-            color: var(--muted);
-            line-height: 1.5;
+            margin: 0 0 16px 0;
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 18px;
+            font-weight: 500;
         }
 
         .name {
             font-weight: 600;
-            color: var(--accent);
+            color: #00ffff;
         }
 
         .note {
-            margin-top: 10px;
-            font-size: 13px;
-            color: var(--muted);
+            margin-top: 16px;
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 500;
         }
 
-        @media (max-width:600px) {
+        strong {
+            color: #ff4655;
+            font-weight: 700;
+        }
+
+        @media (max-width: 600px) {
             .card {
                 flex-direction: column;
-                text-align: center
+                text-align: center;
+                padding: 32px 24px;
             }
 
             .icon {
-                margin-bottom: 6px
+                margin-bottom: 12px;
+                flex: 0 0 80px;
+                height: 80px;
+                font-size: 36px;
+            }
+
+            .content h1 {
+                font-size: 24px;
+            }
+
+            .content p {
+                font-size: 16px;
             }
         }
     </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4655',
+                        secondary: '#00ffff'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    },
+                    fontFamily: {
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 
-<body>
-    <main class="card" role="main" aria-labelledby="title">
-        <div class="icon" aria-hidden="true">✅</div>
+<body class="valorant-bg">
+    <main class="card valorant-card" role="main" aria-labelledby="title">
+        <div class="icon glow-cyan" aria-hidden="true">
+            <i class="ri-checkbox-circle-line"></i>
+        </div>
 
         <div class="content">
             <h1 id="title">Signup Submitted</h1>
@@ -111,8 +224,31 @@
         const params = new URLSearchParams(window.location.search);
         const name = params.get("name");
         if (name) {
-            document.getElementById("theName").textContent = name;
+            const nameElement = document.createElement('span');
+            nameElement.className = 'name';
+            nameElement.id = 'theName';
+            nameElement.textContent = name;
+            
+            const message = document.getElementById('message');
+            message.insertBefore(nameElement, message.firstChild);
+            message.insertBefore(document.createTextNode(' '), message.firstChild);
         }
+    </script>
+    
+    <script>
+        !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.crossOrigin = "anonymous", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+        posthog.init('phc_t9tkQZJiyi2ps9zUYm8TDsL6qXo4YmZx0Ot5rBlAlEd', {
+            api_host: 'https://us.i.posthog.com',
+            autocapture: false,
+            capture_pageview: false,
+            capture_pageleave: false,
+            capture_performance: {
+                web_vitals: false,
+            },
+            rageclick: false,
+        })
+        window.shareKey = 'rY3DRWD-rrQU59xaKzsn_A';
+        window.host = 'readdy.ai';
     </script>
 </body>
 

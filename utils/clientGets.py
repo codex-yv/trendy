@@ -11,6 +11,18 @@ async def check_existing_user(collection_name):
     else:
         return True
 
+async def get_client_password(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+    docs = await collection.find({}, {"_id":0}).to_list(None)
+    try:
+        password = docs[0]['password']
+        key = docs[0]['key']
+        password_dec = decryptt(token=password, key = key)
+    except KeyError:
+        password = "Not Found!"
+    
+    return password_dec
 
 async def check_password(collection_name, password):
     db = client["Clients"]

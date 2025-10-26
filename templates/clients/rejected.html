@@ -1,29 +1,60 @@
 <!doctype html>
-
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Application Rejected</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet" />
     <style>
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDIxapCSOBg7S-QT7q4A.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pb0EMOs.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF8Os.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FsOs.ttf) format('truetype');
+        }
+
         :root {
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --muted: #6b7280;
-            --danger: #ef4444;
-            --accent: #111827;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            --bg: #0f1419;
+            --card: rgba(30, 35, 40, 0.9);
+            --muted: rgba(255, 255, 255, 0.7);
+            --danger: #ff4655;
+            --accent: #ffffff;
+            --cyan: #00ffff;
+            font-family: 'Rajdhani', sans-serif;
         }
 
         html,
         body {
-            height: 100%
+            height: 100%;
+            margin: 0;
         }
 
         body {
-            margin: 0;
-            background: linear-gradient(180deg, #f3f4f6, #ffffff 60%);
+            background: linear-gradient(135deg, #0f1419 0%, #1e2328 50%, #0f1419 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -34,13 +65,26 @@
         .card {
             width: 100%;
             max-width: 720px;
-            background: var(--card);
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.9) 0%, rgba(15, 20, 25, 0.9) 100%);
+            border: 1px solid rgba(255, 70, 85, 0.4);
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 0 rgba(255, 70, 85, 0.3),
+                        0 0 25px rgba(255, 70, 85, 0.3);
             padding: 32px;
             display: flex;
             gap: 24px;
             align-items: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 70, 85, 0.7);
+            box-shadow: 0 12px 40px rgba(255, 70, 85, 0.4), 
+                        inset 0 1px 0 rgba(255, 70, 85, 0.4),
+                        0 0 30px rgba(255, 70, 85, 0.5);
+            transform: translateY(-2px);
         }
 
         .icon {
@@ -49,62 +93,126 @@
             border-radius: 50%;
             display: grid;
             place-items: center;
-            background: linear-gradient(180deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.06));
+            background: linear-gradient(135deg, rgba(255, 70, 85, 0.3), rgba(255, 70, 85, 0.15));
             color: var(--danger);
             font-size: 36px;
             font-weight: 700;
+            border: 1px solid rgba(255, 70, 85, 0.5);
+            box-shadow: 0 0 20px rgba(255, 70, 85, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .icon:hover {
+            background: linear-gradient(135deg, rgba(255, 70, 85, 0.4), rgba(255, 70, 85, 0.25));
+            border-color: rgba(255, 70, 85, 0.8);
+            box-shadow: 0 0 25px rgba(255, 70, 85, 0.6);
+            transform: scale(1.05);
         }
 
         .content h1 {
             margin: 0 0 8px 0;
-            font-size: 20px;
+            font-size: 24px;
             letter-spacing: -0.2px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff4655, #ff6b7a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 15px rgba(255, 70, 85, 0.3);
         }
 
         .content p {
             margin: 0 0 12px 0;
             color: var(--muted);
             line-height: 1.5;
+            font-size: 16px;
         }
 
         .name {
             font-weight: 600;
-            color: var(--accent);
+            color: var(--cyan);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
-        .note {
-            margin-top: 10px;
-            font-size: 13px;
+        .rejection-note {
+            margin-top: 16px;
+            font-size: 14px;
             color: var(--muted);
+            border-left: 3px solid rgba(255, 70, 85, 0.7);
+            padding-left: 12px;
+            background: rgba(255, 70, 85, 0.1);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            border: 1px solid rgba(255, 70, 85, 0.2);
+        }
+
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
         }
 
         .btn {
-            padding: 10px 14px;
+            padding: 10px 18px;
             border-radius: 8px;
-            border: 1px solid rgba(16, 24, 40, 0.06);
-            background: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(15, 20, 25, 0.7);
             cursor: pointer;
             font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 70, 85, 0.6);
+            box-shadow: 0 0 12px rgba(255, 70, 85, 0.4);
+            transform: translateY(-1px);
         }
 
         .btn.primary {
-            background: var(--danger);
+            background: linear-gradient(45deg, #ff4655, #bd3944);
             color: white;
-            border: none;
+            border: 1px solid #ff4655;
+        }
+
+        .btn.primary:hover {
+            background: linear-gradient(45deg, #ff6b7a, #ff4655);
+            border-color: #ff6b7a;
+            box-shadow: 0 0 18px rgba(255, 70, 85, 0.6);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, rgba(255, 70, 85, 0.2), rgba(255, 70, 85, 0.1));
+            color: #ff4655;
+            border: 1px solid rgba(255, 70, 85, 0.4);
+        }
+
+        .btn.secondary:hover {
+            background: linear-gradient(45deg, rgba(255, 70, 85, 0.3), rgba(255, 70, 85, 0.2));
+            border-color: rgba(255, 70, 85, 0.7);
+            box-shadow: 0 0 12px rgba(255, 70, 85, 0.4);
         }
 
         @media (max-width:600px) {
             .card {
                 flex-direction: column;
-                text-align: center
+                text-align: center;
+                padding: 24px;
             }
 
             .icon {
-                margin-bottom: 6px
+                margin-bottom: 6px;
             }
 
             .actions {
-                justify-content: center
+                justify-content: center;
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
             }
         }
     </style>
@@ -112,17 +220,22 @@
 
 <body>
     <main class="card" role="main" aria-labelledby="title">
-        <div class="icon" aria-hidden="true">✖</div>
+        <div class="icon" aria-hidden="true">
+            <i class="ri-close-circle-line" style="font-size: 36px;"></i>
+        </div>
+
         <div class="content">
             <h1 id="title">Application Rejected</h1>
             <p id="message">
-                Dear <span id="theName" class="name">{{fullname}}</span>, your application to <strong>Sign Up</strong> has
+                Dear <span id="theName" class="name">{{fullname}}</span>, your application to <strong style="color: #ff4655;">Sign Up</strong> has
                 been rejected by the admin. Thus you can't login.
             </p>
+            
+            <div class="rejection-note">
+                <strong>Note:</strong> If you believe this was a mistake, please contact the administrator for further clarification.
+            </div>
+                
         </div>
-
     </main>
-
 </body>
-
 </html>
