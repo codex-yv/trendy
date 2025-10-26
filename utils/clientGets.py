@@ -11,6 +11,18 @@ async def check_existing_user(collection_name):
     else:
         return True
 
+async def get_client_password(collection_name:str):
+    db = client["Clients"]
+    collection = db[collection_name]
+    docs = await collection.find({}, {"_id":0}).to_list(None)
+    try:
+        password = docs[0]['password']
+        key = docs[0]['key']
+        password_dec = decryptt(token=password, key = key)
+    except KeyError:
+        password = "Not Found!"
+    
+    return password_dec
 
 async def check_password(collection_name, password):
     db = client["Clients"]
@@ -205,3 +217,19 @@ async def get_total_unread_messages(collection_name:str):
         return 0
     
     return unread
+
+
+async def get_unified_chat_history(limit: int = 100):
+    """
+    Retrieve chat history from database
+    Replace this with your actual database implementation
+    """
+    db = client["History"]
+    collection = db["chat"]
+
+    chats = await collection.find().sort("time", 1).limit(limit).to_list(length=limit)
+
+    if chats:
+        return [{"user": chat["user"], "message": chat["message"], "time": chat["time"], "username": chat["username"]} for chat in chats]
+    else:
+        return []

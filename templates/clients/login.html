@@ -3,40 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Client Portal</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Login | Trendy Portal</title>
+    <script src="https://static.readdy.ai/static/e.js"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet" />
     <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --success: #4cc9f0;
-            --warning: #f72585;
-            --danger: #e63946;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --light-gray: #e9ecef;
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDIxapCSOBg7S-QT7q4A.ttf) format('truetype');
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pb0EMOs.ttf) format('truetype');
         }
-        
-        body {
-            background-color: #f5f7fb;
-            color: var(--dark);
-            line-height: 1.6;
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF8Os.ttf) format('truetype');
         }
-        
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FsOs.ttf) format('truetype');
+        }
+
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .valorant-bg {
+            background: linear-gradient(135deg, #0f1419 0%, #1e2328 50%, #0f1419 100%);
+        }
+
+        .valorant-card {
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.9) 0%, rgba(15, 20, 25, 0.9) 100%);
+            border: 1px solid rgba(255, 70, 85, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 70, 85, 0.2);
+        }
+
+        .valorant-card:hover {
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 0 12px 40px rgba(0, 255, 255, 0.2), inset 0 1px 0 rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .glow-red {
+            box-shadow: 0 0 20px rgba(255, 70, 85, 0.5);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .glow-pink {
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.5);
+        }
+
+        .glow-orange {
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+        }
+
+        .valorant-button {
+            background: linear-gradient(45deg, #ff4655, #bd3944);
+            border: 1px solid #ff4655;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .valorant-button:hover {
+            background: linear-gradient(45deg, #00ffff, #0099cc);
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .form-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .form-tab.active {
+            color: #00ffff;
+            border-bottom: 2px solid #00ffff;
+        }
+
+        .form-content {
+            display: none;
+        }
+
+        .form-content.active {
+            display: block;
+        }
+
+        .otp-section {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .otp-section.active {
+            display: block;
+        }
+
+        .email-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .email-input-group .form-control {
+            flex: 1;
+        }
+
+        .send-otp-btn {
+            padding: 12px 15px;
+            background: linear-gradient(45deg, #00ffff, #0099cc);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .send-otp-btn:hover {
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .send-otp-btn:disabled {
+            background: rgba(108, 117, 125, 0.5);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-error {
+            background-color: rgba(230, 57, 70, 0.1);
+            color: #e63946;
+            border: 1px solid #e63946;
+        }
+
+        .alert-success {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: #4cc9f0;
+            border: 1px solid #4cc9f0;
+        }
+
+        .alert-info {
+            background-color: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        /* Loading animation styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 20, 25, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 70, 85, 0.3);
+            border-top: 4px solid #ff4655;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #00ffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tag input styles */
+        .tag-input-container {
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 8px;
+            min-height: 44px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
+            background: rgba(15, 20, 25, 0.5);
+        }
+
+        .tag-input-container:focus-within {
+            border-color: #ff4655;
+        }
+
+        .tag {
+            background-color: rgba(255, 70, 85, 0.2);
+            border-radius: 20px;
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: white;
+        }
+
+        .tag-remove {
+            margin-left: 5px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .tag-remove:hover {
+            color: #e63946;
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            padding: 5px;
+            background: transparent;
+            color: white;
+        }
+
+        .additional-fields {
+            display: none;
+        }
+
+        .additional-fields.active {
+            display: block;
+        }
+
         .auth-container {
             display: flex;
             min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-family: 'Rajdhani', sans-serif;
         }
-        
+
         .auth-left {
             flex: 1;
             display: flex;
@@ -45,252 +290,126 @@
             align-items: center;
             padding: 40px;
             color: white;
+            background: linear-gradient(135deg, #ff4655 0%, #bd3944 50%, #ff4655 100%);
         }
-        
+
         .auth-left h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
+            font-weight: 700;
         }
-        
+
         .auth-left p {
             font-size: 1.1rem;
             text-align: center;
             max-width: 500px;
+            opacity: 0.9;
         }
-        
+
         .auth-right {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: white;
-            border-radius: 20px 0 0 20px;
+            background-color: rgba(15, 20, 25, 0.9);
             padding: 40px;
         }
-        
+
         .auth-form {
             width: 100%;
             max-width: 400px;
         }
-        
+
         .auth-form h2 {
-            color: var(--primary);
+            color: #00ffff;
             margin-bottom: 30px;
             text-align: center;
+            font-weight: 600;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
         }
-        
+
         .form-control {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid var(--light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
             font-size: 1rem;
             transition: border 0.3s;
+            background: rgba(15, 20, 25, 0.5);
+            color: white;
         }
-        
+
         .form-control:focus {
-            border-color: var(--primary);
+            border-color: #ff4655;
             outline: none;
         }
-        
+
         .auth-btn {
             width: 100%;
             padding: 12px;
-            background-color: var(--primary);
+            background: linear-gradient(45deg, #ff4655, #bd3944);
             color: white;
             border: none;
             border-radius: 5px;
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
             margin-top: 10px;
         }
-        
+
         .auth-btn:hover {
-            background-color: var(--secondary);
+            background: linear-gradient(45deg, #00ffff, #0099cc);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
         }
-        
+
         .auth-btn:disabled {
-            background-color: var(--gray);
+            background: rgba(108, 117, 125, 0.5);
             cursor: not-allowed;
         }
-        
+
         .auth-links {
             display: flex;
             justify-content: space-between;
             margin-top: 15px;
         }
-        
+
         .auth-links a {
-            color: var(--primary);
+            color: #00ffff;
             text-decoration: none;
             font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
-        
+
+        .auth-links a:hover {
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+        }
+
         .auth-switch {
             text-align: center;
             margin-top: 20px;
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.7);
         }
-        
+
         .auth-switch a {
-            color: var(--primary);
+            color: #00ffff;
             text-decoration: none;
             font-weight: 500;
         }
-        
-        .form-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        
-        .form-tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
-            color: var(--gray);
-            border-bottom: 2px solid transparent;
-        }
-        
-        .form-tab.active {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        .form-content {
-            display: none;
-        }
-        
-        .form-content.active {
-            display: block;
-        }
-        
-        .otp-section {
-            display: none;
-            margin-top: 10px;
-        }
-        
-        .otp-section.active {
-            display: block;
-        }
-        
-        .email-input-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .email-input-group .form-control {
-            flex: 1;
-        }
-        
-        .send-otp-btn {
-            padding: 12px 15px;
-            background-color: var(--success);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        
-        .send-otp-btn:disabled {
-            background-color: var(--gray);
-            cursor: not-allowed;
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .alert-error {
-            background-color: rgba(230, 57, 70, 0.1);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-        
-        .alert-success {
-            background-color: rgba(76, 201, 240, 0.1);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-        
-        /* Tag input styles */
-        .tag-input-container {
-            position: relative;
-            border: 1px solid var(--light-gray);
-            border-radius: 5px;
-            padding: 8px;
-            min-height: 44px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .tag-input-container:focus-within {
-            border-color: var(--primary);
-        }
-        
-        .tag {
-            background-color: var(--light-gray);
-            border-radius: 20px;
-            padding: 5px 10px;
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-        }
-        
-        .tag-remove {
-            margin-left: 5px;
-            cursor: pointer;
-            color: var(--gray);
-        }
-        
-        .tag-remove:hover {
-            color: var(--danger);
-        }
-        
-        .tag-input {
-            border: none;
-            outline: none;
-            flex: 1;
-            min-width: 100px;
-            padding: 5px;
-        }
-        
-        .additional-fields {
-            display: none;
-        }
-        
-        .additional-fields.active {
-            display: block;
-        }
-        
+
         @media (max-width: 768px) {
             .auth-container {
                 flex-direction: column;
-            }
-            
-            .auth-right {
-                border-radius: 20px 20px 0 0;
             }
             
             .email-input-group {
@@ -298,12 +417,48 @@
             }
         }
     </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4655',
+                        secondary: '#00ffff'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    },
+                    fontFamily: {
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+
+<body class="valorant-bg text-white font-rajdhani min-h-screen">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Processing your request...</div>
+        </div>
+    </div>
+
     <div class="auth-container">
         <div class="auth-left">
-            <h1>Client Portal</h1>
-            <p>Welcome to our Startup Management System. Access your projects, track progress, and communicate with our team all in one place.</p>
+            <h1>Trendy Member's Portal</h1>
+            <p>Welcome to Trendy Office. Access your projects, track progress, and communicate with our team all in one place.</p>
         </div>
         <div class="auth-right">
             <div class="auth-form">
@@ -315,6 +470,7 @@
                 <!-- Alert Messages -->
                 <div class="alert alert-error" id="errorAlert"></div>
                 <div class="alert alert-success" id="successAlert"></div>
+                <div class="alert alert-info" id="infoAlert"></div>
                 
                 <!-- Login Form -->
                 <div class="form-content active" id="loginForm">
@@ -401,7 +557,7 @@
                         </div>
                         <div class="form-group">
                             <input type="checkbox" id="terms" required>
-                            <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                            <label for="terms">I agree to the <a href="#" style="color: #00ffff;">Terms of Service</a> and <a href="#" style="color: #00ffff;">Privacy Policy</a></label>
                         </div>
                         <button type="submit" class="auth-btn" id="createAccountBtn">Create Account</button>
                     </form>
@@ -439,6 +595,10 @@
                 const alert = document.getElementById('successAlert');
                 alert.textContent = message;
                 alert.style.display = 'block';
+            } else if (type === 'info') {
+                const alert = document.getElementById('infoAlert');
+                alert.textContent = message;
+                alert.style.display = 'block';
             }
         }
         
@@ -446,7 +606,64 @@
         function hideAlerts() {
             document.getElementById('errorAlert').style.display = 'none';
             document.getElementById('successAlert').style.display = 'none';
+            document.getElementById('infoAlert').style.display = 'none';
         }
+        
+        // Show loading animation
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        // Hide loading animation
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        // Forgot Password functionality
+        document.getElementById('forgotPassword').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            
+            // Check if email is provided
+            if (!email) {
+                showAlert('Please enter your email address first', 'error');
+                return;
+            }
+            
+            // Show loading animation
+            showLoading();
+            
+            try {
+                // Send POST request to /forget-password endpoint
+                const response = await fetch('/forget-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                // Handle different response codes
+                if (result === 0) {
+                    showAlert('Email not found, please sign up', 'error');
+                } else if (result === 1) {
+                    showAlert('Password reset link has been sent to your email.', 'success');
+                } else if (result === 2) {
+                    showAlert('Error Sending OTP. Try again later.', 'error');
+                } else {
+                    showAlert('An unexpected error occurred. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error during forgot password request:', error);
+                showAlert('Failed to process your request. Please try again.', 'error');
+            } finally {
+                // Hide loading animation
+                hideLoading();
+            }
+        });
         
         // Send OTP functionality
         document.getElementById('sendOtpBtn').addEventListener('click', async function() {
@@ -623,12 +840,6 @@
             }
         });
         
-        // Forgot password link
-        document.getElementById('forgotPassword').addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('Password reset link has been sent to your email.');
-        });
-        
         // Tag functionality
         function initTagInput(containerId, inputId) {
             const container = document.getElementById(containerId);
@@ -695,6 +906,21 @@
                 additionalFields.classList.remove('active');
             }
         });
+    </script>
+    <script>
+        !function (t, e) { var o, n, p, r; e.__SV || (window.posthog = e, e._i = [], e.init = function (i, s, a) { function g(t, e) { var o = e.split("."); 2 == o.length && (t = t[o[0]], e = o[1]), t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } } (p = t.createElement("script")).type = "text/javascript", p.crossOrigin = "anonymous", p.async = !0, p.src = s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js", (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(p, r); var u = e; for (void 0 !== a ? u = e[a] = [] : a = "posthog", u.people = u.people || [], u.toString = function (t) { var e = "posthog"; return "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e }, u.people.toString = function () { return u.toString(1) + ".people (stub)" }, o = "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "), n = 0; n < o.length; n++)g(u, o[n]); e._i.push([i, s, a]) }, e.__SV = 1) }(document, window.posthog || []);
+        posthog.init('phc_t9tkQZJiyi2ps9zUYm8TDsL6qXo4YmZx0Ot5rBlAlEd', {
+            api_host: 'https://us.i.posthog.com',
+            autocapture: false,
+            capture_pageview: false,
+            capture_pageleave: false,
+            capture_performance: {
+                web_vitals: false,
+            },
+            rageclick: false,
+        })
+        window.shareKey = 'rY3DRWD-rrQU59xaKzsn_A';
+        window.host = 'readdy.ai';
     </script>
 </body>
 </html>

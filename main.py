@@ -1,22 +1,28 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body, HTTPException, status, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.openapi.docs import get_swagger_ui_html
+import secrets
+
+from configs.access_configs import doc_username, doc_password, admin_password, admin_username
 
 from utils.adminPosts import insert_project, insert_task, push_notification_by_admin
 from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members, get_admin_notification
 from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act, update_admin_notification
 
-from utils.clientPost import add_new_client, push_notification_by_client
-from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages
+from utils.clientPost import add_new_client, push_notification_by_client, save_unified_chat_message
+from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history
 from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification
 
-from utils.general import create_message, get_users_list, create_message_for_admin
+from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password
+from utils.IST import ISTTime
 
 from schemas.newclientSchemas import NewUser
-from schemas.otpSchemas import OTPDetails
+from schemas.otpSchemas import OTPDetails, Email
 from schemas.loginSchemas import LoginSchema
 from schemas.adminProjectSchemas import Project
 from schemas.adminTasksSchemas import Task
@@ -35,7 +41,7 @@ templates_clients = Jinja2Templates(directory="templates/clients")
 templates_admin = Jinja2Templates(directory="templates/admin")
 
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None)
 
 app.add_middleware(SessionMiddleware, secret_key="qwertyuiopasdfghjkl@#$%RTYU")
 app.add_middleware(
@@ -45,6 +51,42 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+security = HTTPBasic()
+
+def get_current_user(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, doc_username)
+    correct_password = secrets.compare_digest(credentials.password, doc_password)
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
+def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = admin_username
+    correct_password = admin_password
+    if credentials.username != correct_username or credentials.password != correct_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
+
+@app.get("/docs", include_in_schema=False)
+def custom_swagger_ui(user: str = Depends(get_current_user)):
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="Secure API Docs")
+
+
+@app.api_route("/", methods=["HEAD"], operation_id="welcome_get")
+async def welcome_head():
+    return {"Message": "Ok"}
+
 
 # Store connected clients
 class ConnectionManager:
@@ -153,12 +195,143 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         print(f"WebSocket error for user {user_id}: {e}")
         manager.disconnect(user_id)
 
+# Unified Community Connection Manager
+class UnifiedCommunityConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+        self.user_info: Dict[str, Dict] = {}  # Store user info like username and type
+        
+    async def connect(self, websocket: WebSocket, user_id: str, username: str = None, user_type: str = "client"):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+        self.user_info[user_id] = {
+            "username": username or user_id,
+            "type": user_type
+        }
+        
+        # Notify all users that someone joined
+        await self.broadcast_user_joined(user_id, username)
+        # print(f"User {user_id} ({user_type}) joined community chat. Total connections: {len(self.active_connections)}")
+        
+    def disconnect(self, user_id: str):
+        if user_id in self.active_connections:
+            username = self.user_info[user_id].get("username", user_id)
+            user_type = self.user_info[user_id].get("type", "client")
+            del self.active_connections[user_id]
+            if user_id in self.user_info:
+                del self.user_info[user_id]
+            
+            # Notify all users that someone left
+            asyncio.create_task(self.broadcast_user_left(user_id, username))
+            # print(f"User {user_id} ({user_type}) left community chat. Total connections: {len(self.active_connections)}")
+    
+    async def send_personal_message(self, message: str, user_id: str):
+        if user_id in self.active_connections:
+            try:
+                await self.active_connections[user_id].send_text(message)
+            except Exception as e:
+                print(f"Error sending message to {user_id}: {e}")
+                self.disconnect(user_id)
+    
+    async def broadcast_message(self, message_data: dict):
+        disconnected_users = []
+        for user_id, connection in self.active_connections.items():
+            try:
+                await connection.send_text(json.dumps(message_data))
+            except Exception as e:
+                print(f"Error broadcasting to {user_id}: {e}")
+                disconnected_users.append(user_id)
+        
+        # Remove disconnected users
+        for user_id in disconnected_users:
+            self.disconnect(user_id)
+    
+    async def broadcast_user_joined(self, user_id: str, username: str = None):
+        message_data = {
+            "type": "user_joined",
+            "user_id": user_id,
+            "username": username or user_id
+        }
+        await self.broadcast_message(message_data)
+    
+    async def broadcast_user_left(self, user_id: str, username: str = None):
+        message_data = {
+            "type": "user_left",
+            "user_id": user_id,
+            "username": username or user_id
+        }
+        await self.broadcast_message(message_data)
+    
+    async def broadcast_chat_message(self, message_data: dict):
+        await self.broadcast_message({
+            "type": "chat_message",
+            "message": message_data
+        })
+    
+    def get_connected_users(self) -> List[str]:
+        return list(self.active_connections.keys())
+
+# Create unified community connection manager instance
+unified_community_manager = UnifiedCommunityConnectionManager()
+
+# Unified Community WebSocket endpoint for both clients and admins
+@app.websocket("/ws/community/{user_id}")
+async def unified_community_websocket_endpoint(websocket: WebSocket, user_id: str):
+    # Determine if it's an admin or client based on user_id or session
+    # For now, we'll check if user_id contains "admin" or use a different method
+    user_type = "admin" if "@" not in user_id.lower() else "client"
+    
+    # Get username from database or use user_id as fallback
+    username = "Admin" if user_type == "admin" else user_id
+    
+    await unified_community_manager.connect(websocket, user_id, username, user_type)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            
+            if message_data.get('type') == 'chat_message':
+                # Save message to database
+                message_content = message_data.get('message', '').strip()
+                if message_content:
+                    # Store message in database
+                    if username != "Admin":
+                        chat_data = {
+                            "user": user_id,
+                            "username": await get_username(collection_name=user_id),
+                            "message": message_content,
+                            "time": ISTTime(),
+                            "user_type": user_type
+                        }
+                    else:
+                        chat_data = {
+                            "user": user_id,
+                            "username": username,
+                            "message": message_content,
+                            "time": ISTTime(),
+                            "user_type": user_type
+                        }
+                    # Save to MongoDB
+                    await save_unified_chat_message(chat_data)
+                    
+                    # Broadcast to ALL users (both clients and admins)
+                    await unified_community_manager.broadcast_chat_message(chat_data)
+                    
+    except WebSocketDisconnect:
+        unified_community_manager.disconnect(user_id)
+    except Exception as e:
+        print(f"Unified Community WebSocket error for user {user_id}: {e}")
+        unified_community_manager.disconnect(user_id)
+
+
+
+
 @app.get("/login") # FOR Client PAGE.
 async def home(request:Request):
     return templates_clients.TemplateResponse("login.html", {"request":request})
 
 @app.get("/admin-dashboard") # FOR ADMIN PAGE.
-async def load_admin(request:Request):
+async def load_admin(request:Request, authenticated: bool = Depends(verify_credentials)):
     pd, total_projects = await get_projet_info()
     projects = await get_projects()
     recent_projects = projects[0:3]
@@ -215,7 +388,9 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
         return JSONResponse(content=0)  # Email already exists
 
     # Validate OTP
-    if "OTP"!= "OTP":  # Replace with real OTP validation
+    if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
+        print(data.otp)
+        print(request.session.get("otp"))
         return JSONResponse(content=1) 
 
     await add_new_client(client_add=data)
@@ -225,6 +400,7 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
 
 @app.post("/send-otp") # FOR Client PAGE.
 async def validate_otp(request: Request, data: OTPDetails = Body(...)):
+    request.session["otp"] = await send_otp(email=data.email)
     return 1
 
 
@@ -246,6 +422,14 @@ async def trendy_login(request: Request, data: LoginSchema = Body(...)):
                 return RedirectResponse(url="/dashboard", status_code=HTTP_303_SEE_OTHER)
         else:
             return 1
+    else:
+        return 0
+
+@app.post("/forget-password")
+async def forget_password(request:Request, data:Email):
+    if not await check_existing_user(collection_name=data.email):
+        val = await send_password(email= data.email)
+        return val
     else:
         return 0
 
@@ -399,11 +583,6 @@ async def updateProfile(request:Request, data:Updated):
 async def get_notification_user(request:Request, x:UselessClient):
     notifications = await get_client_notification(collection_name=request.session.get("email"))
     await update_client_notification(collection_name=request.session.get("email"))
-    # print(manager.get_connected_users())
-    # This would be called from your application logic
-    # notification = ["New project assigned to you", 0, "2023-12-07T10:30:00"]
-    # to_users = ["yv956@gmail.com"]
-    # await manager.send_notification(notification, to_users)
     return notifications
 
 
@@ -420,3 +599,59 @@ async def senndd():
     to_users = ["qwertyuiop"]
     await manager.send_notification(notification, to_users)
     return 0
+
+
+# HTTP endpoint to get unified community chats
+@app.post("/community")
+async def get_unified_community_chats(request: Request):
+    try:
+        # Get unified chat history from MongoDB
+        chats = await get_unified_chat_history()
+        return chats
+    except Exception as e:
+        print(f"Error getting unified community chats: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to load chats"})
+    
+
+# HTTP endpoint to send message (works for both clients and admins)
+@app.post("/send-message")
+async def send_unified_chat_message(request: Request):
+    try:
+        data = await request.json()
+        message_content = data.get('message', '').strip()
+        
+        if not message_content:
+            return JSONResponse(status_code=400, content={"error": "Message cannot be empty"})
+        
+        # Get user info from session or request
+        # For demo purposes, we'll use placeholders - replace with actual authentication
+        user_id = data.get('user_id', 'unknown_user')
+        # username = data.get('username', 'Unknown User')
+        # user_type = data.get('user_type', 'client')
+        
+        if "@" in user_id:
+            username = await get_username(collection_name= request.session.get("email"))
+            user_type = "client"
+        else:
+            username = "Admin"
+            user_type = "admin"
+        # Save message to database
+        chat_data = {
+            "user": user_id,
+            "username": username,
+            "message": message_content,
+            "time": ISTTime(),
+            "user_type": user_type
+        }
+        
+        await save_unified_chat_message(chat_data)
+        
+        # Broadcast to ALL connected users (both clients and admins)
+        await unified_community_manager.broadcast_chat_message(chat_data)
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        print(f"Error sending unified message: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to send message"})
+

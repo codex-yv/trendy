@@ -7,7 +7,134 @@
     <title>Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet" />
     <style>
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDIxapCSOBg7S-QT7q4A.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pb0EMOs.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pbYF8Os.ttf) format('truetype');
+        }
+        @font-face {
+            font-family: 'Rajdhani';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/rajdhani/v17/LDI2apCSOBg7S-QT7pa8FsOs.ttf) format('truetype');
+        }
+
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        .valorant-bg {
+            background: linear-gradient(135deg, #0f1419 0%, #1e2328 50%, #0f1419 100%);
+        }
+
+        .valorant-sidebar {
+            background: linear-gradient(180deg, #ff4655 0%, #bd3944 50%, #ff4655 100%);
+            box-shadow: 4px 0 20px rgba(255, 70, 85, 0.3);
+        }
+
+        .valorant-card {
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.9) 0%, rgba(15, 20, 25, 0.9) 100%);
+            border: 1px solid rgba(255, 70, 85, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 70, 85, 0.2);
+        }
+
+        .valorant-card:hover {
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 0 12px 40px rgba(0, 255, 255, 0.2), inset 0 1px 0 rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .glow-red {
+            box-shadow: 0 0 20px rgba(255, 70, 85, 0.5);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .glow-pink {
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.5);
+        }
+
+        .glow-orange {
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+        }
+
+        .nav-item {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .valorant-button {
+            background: linear-gradient(45deg, #ff4655, #bd3944);
+            border: 1px solid #ff4655;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .valorant-button:hover {
+            background: linear-gradient(45deg, #00ffff, #0099cc);
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .table-header {
+            background: linear-gradient(90deg, rgba(255, 70, 85, 0.1), rgba(0, 255, 255, 0.1));
+            border-bottom: 2px solid #ff4655;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff4655, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 70, 85, 0.5);
+        }
+
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -27,28 +154,28 @@
         }
         
         .status-ongoing {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: rgba(255, 70, 85, 0.2);
+            color: #ff4655;
         }
         
         .status-completed {
-            background-color: #d1fae5;
-            color: #065f46;
+            background-color: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
         }
         
         .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
         }
         
         .status-approved {
-            background-color: #d1fae5;
-            color: #065f46;
+            background-color: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
         }
         
         .status-rejected {
-            background-color: #fee2e2;
-            color: #991b1b;
+            background-color: rgba(255, 70, 85, 0.2);
+            color: #ff4655;
         }
         
         .profile-pic {
@@ -56,7 +183,7 @@
             height: 32px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #e5e7eb;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
         
         .active-tab {
@@ -70,7 +197,7 @@
         
         .card-hover:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
         }
         
         .stat-card {
@@ -82,8 +209,8 @@
         }
         
         .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #ff4655;
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -102,7 +229,7 @@
             position: absolute;
             top: -5px;
             right: -5px;
-            background-color: #ef4444;
+            background-color: #ff4655;
             color: white;
             border-radius: 50%;
             width: 18px;
@@ -115,7 +242,7 @@
         }
         
         .notification-item {
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px 0;
             transition: background-color 0.2s;
             display: flex;
@@ -123,7 +250,7 @@
         }
         
         .notification-item:hover {
-            background-color: #f9fafb;
+            background-color: rgba(255, 255, 255, 0.05);
         }
         
         .notification-item:last-child {
@@ -131,7 +258,7 @@
         }
         
         .notification-unread {
-            background-color: #f0f9ff;
+            background-color: rgba(0, 255, 255, 0.1);
         }
         
         .notification-icon-container {
@@ -146,13 +273,13 @@
         }
         
         .notification-icon-unread {
-            background-color: #3b82f6;
+            background: linear-gradient(45deg, #ff4655, #bd3944);
             color: white;
         }
         
         .notification-icon-read {
-            background-color: #d1d5db;
-            color: #6b7280;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .notification-content {
@@ -161,13 +288,14 @@
         
         .notification-message {
             margin-bottom: 5px;
+            color: white;
         }
         
         /* Member profile styles */
         .tech-stack-tag {
             display: inline-block;
-            background-color: #e0e7ff;
-            color: #3730a3;
+            background-color: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
             padding: 0.25rem 0.5rem;
             border-radius: 0.375rem;
             font-size: 0.75rem;
@@ -180,7 +308,7 @@
             align-items: center;
             margin-left: 15px;
             font-size: 0.8rem;
-            color: white;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .status-indicator {
@@ -191,15 +319,15 @@
         }
         
         .status-connected {
-            background-color: #10b981;
+            background-color: #00ffff;
         }
         
         .status-disconnected {
-            background-color: #ef4444;
+            background-color: #ff4655;
         }
         
         .status-connecting {
-            background-color: #f59e0b;
+            background-color: #ffa500;
         }
         
         /* Sidebar styles */
@@ -238,15 +366,249 @@
                 margin-left: 70px;
             }
         }
+        /* Community Chat Styles */
+        .community-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.9) 0%, rgba(15, 20, 25, 0.9) 100%);
+            border: 1px solid rgba(255, 70, 85, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 70, 85, 0.2);
+            overflow: hidden;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: rgba(15, 20, 25, 0.5);
+        }
+
+        .message-container {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message-container.own-message {
+            justify-content: flex-end;
+        }
+
+        .message-container.other-message {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .own-message .message-bubble {
+            background: linear-gradient(45deg, #ff4655, #bd3944);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .other-message .message-bubble {
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.9) 0%, rgba(15, 20, 25, 0.9) 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-header {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .own-message .message-header {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .other-message .message-header {
+            color: #00ffff;
+        }
+
+        .message-content {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .message-input-container {
+            display: flex;
+            padding: 15px 20px;
+            background: rgba(15, 20, 25, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+            background: rgba(30, 35, 40, 0.5);
+            color: white;
+        }
+
+        .message-input:focus {
+            border-color: #ff4655;
+        }
+
+        #sendMessageBtn {
+            border-radius: 25px;
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #ff4655, #bd3944);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        #sendMessageBtn:hover {
+            background: linear-gradient(45deg, #00ffff, #0099cc);
+        }
+
+        /* Empty state for chat */
+        .chat-empty {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 40px 20px;
+        }
+
+        .chat-empty i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .system-message {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .system-message-content {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 35, 40, 0.95) 0%, rgba(15, 20, 25, 0.95) 100%);
+            border: 1px solid rgba(255, 70, 85, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Form elements */
+        .form-input {
+            background: rgba(15, 20, 25, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .form-input:focus {
+            border-color: #ff4655;
+            box-shadow: 0 0 0 2px rgba(255, 70, 85, 0.2);
+        }
+
+        .form-select {
+            background: rgba(15, 20, 25, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .form-select:focus {
+            border-color: #ff4655;
+            box-shadow: 0 0 0 2px rgba(255, 70, 85, 0.2);
+        }
+
+        .form-textarea {
+            background: rgba(15, 20, 25, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .form-textarea:focus {
+            border-color: #ff4655;
+            box-shadow: 0 0 0 2px rgba(255, 70, 85, 0.2);
+        }
+
+        /* Table styles */
+        .table-header-valorant {
+            background: linear-gradient(90deg, rgba(255, 70, 85, 0.1), rgba(0, 255, 255, 0.1));
+            border-bottom: 2px solid #ff4655;
+        }
+
+        .table-cell {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Button variants */
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #ff4655;
+            color: #ff4655;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(45deg, #ff4655, #bd3944);
+            color: white;
+        }
     </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4655',
+                        secondary: '#00ffff'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    },
+                    fontFamily: {
+                        'rajdhani': ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body class="valorant-bg text-white font-rajdhani min-h-screen">
     <!-- Sidebar -->
-    <div class="sidebar fixed h-full bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-lg z-40">
-        <div class="p-4 flex items-center justify-between border-b border-blue-500">
+    <div class="sidebar fixed h-full valorant-sidebar text-white shadow-lg z-40">
+        <div class="p-4 flex items-center justify-between border-b border-white/20">
             <h1 class="text-xl font-bold sidebar-text">Admin Dashboard</h1>
-            <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-blue-500 transition-colors">
+            <button id="sidebarToggle" class="p-2 rounded-lg hover:bg-white/10 transition-colors">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -259,25 +621,29 @@
             </div>
 
             <nav class="space-y-2">
-                <button id="dashboardBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3 active-tab">
+                <button id="dashboardBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-3 active-tab">
                     <i class="fas fa-tachometer-alt w-5"></i>
                     <span class="sidebar-text">Dashboard</span>
                 </button>
-                <button id="approveSignUpsBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                <button id="approveSignUpsBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-3">
                     <i class="fas fa-user-check w-5"></i>
                     <span class="sidebar-text">Approve Sign Ups</span>
                 </button>
-                <button id="showProjectStatusBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                <button id="showProjectStatusBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-3">
                     <i class="fas fa-project-diagram w-5"></i>
                     <span class="sidebar-text">Show Project Status</span>
                 </button>
-                <button id="showTaskStatusBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                <button id="showTaskStatusBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-3">
                     <i class="fas fa-tasks w-5"></i>
                     <span class="sidebar-text">Show Task Status</span>
                 </button>
-                <button id="membersProfileBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-blue-500 transition-colors flex items-center space-x-3">
+                <button id="membersProfileBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-3">
                     <i class="fas fa-users w-5"></i>
                     <span class="sidebar-text">Member's Profile</span>
+                </button>
+                <button id="communityBtn" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/10 transition-colors flex items-center space-x-3">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="sidebar-text">Community</span>
                 </button>
             </nav>
         </div>
@@ -285,24 +651,24 @@
 
     <!-- Header -->
     <div class="main-content">
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="bg-black/20 backdrop-blur-sm border-b border-white/10 px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+                <h1 class="text-2xl font-bold text-secondary">Trendy</h1>
             </div>
             <div class="flex items-center space-x-3">
                 <!-- Notification Icon -->
                 <div class="relative">
-                    <button id="notificationBtn" class="p-2 rounded-full hover:bg-blue-500 transition-colors">
+                    <button id="notificationBtn" class="p-2 rounded-full hover:bg-white/10 transition-colors">
                         <i class="fas fa-bell text-xl"></i>
                         <span id="notificationBadge" class="notification-badge hidden">0</span>
                     </button>
                 </div>
                 <button onclick="openProjectModal()"
-                    class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
+                    class="valorant-button px-4 py-2 rounded-lg font-medium">
                     <i class="fas fa-plus mr-2"></i>Add Project
                 </button>
                 <button onclick="openTaskModal()"
-                    class="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition-colors font-medium">
+                    class="valorant-button px-4 py-2 rounded-lg font-medium">
                     <i class="fas fa-tasks mr-2"></i>Assign Task
                 </button>
             </div>
@@ -312,71 +678,71 @@
         <div class="p-6">
             <!-- Dashboard Section -->
             <div id="dashboardSection" class="mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
+                <h2 class="text-2xl font-bold text-secondary mb-6">Dashboard Overview</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                    <div class="valorant-card p-6 border-l-4 border-primary">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Total Projects</p>
-                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalProjects">0</h3>
+                                <p class="text-sm font-medium text-gray-300">Total Projects</p>
+                                <div class="stat-number mt-2" id="totalProjects">0</div>
                             </div>
-                            <div class="bg-blue-100 p-3 rounded-full">
-                                <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                            <div class="bg-primary/20 p-3 rounded-full glow-red">
+                                <i class="fas fa-project-diagram text-primary text-xl"></i>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <span class="text-sm text-green-600 font-medium">
+                            <span class="text-sm text-secondary font-medium">
                                 <i class="fas fa-arrow-up mr-1"></i>5.2% from last month
                             </span>
                         </div>
                     </div>
                     
-                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                    <div class="valorant-card p-6 border-l-4 border-secondary">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Completed Projects</p>
-                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedProjects">0</h3>
+                                <p class="text-sm font-medium text-gray-300">Completed Projects</p>
+                                <div class="stat-number mt-2" id="completedProjects">0</div>
                             </div>
-                            <div class="bg-green-100 p-3 rounded-full">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            <div class="bg-secondary/20 p-3 rounded-full glow-cyan">
+                                <i class="fas fa-check-circle text-secondary text-xl"></i>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <span class="text-sm text-green-600 font-medium">
+                            <span class="text-sm text-secondary font-medium">
                                 <i class="fas fa-arrow-up mr-1"></i>12.4% from last month
                             </span>
                         </div>
                     </div>
                     
-                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                    <div class="valorant-card p-6 border-l-4 border-pink-500">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Total Tasks</p>
-                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="totalTasks">0</h3>
+                                <p class="text-sm font-medium text-gray-300">Total Tasks</p>
+                                <div class="stat-number mt-2" id="totalTasks">0</div>
                             </div>
-                            <div class="bg-purple-100 p-3 rounded-full">
-                                <i class="fas fa-tasks text-purple-600 text-xl"></i>
+                            <div class="bg-pink-500/20 p-3 rounded-full glow-pink">
+                                <i class="fas fa-tasks text-pink-400 text-xl"></i>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <span class="text-sm text-green-600 font-medium">
+                            <span class="text-sm text-secondary font-medium">
                                 <i class="fas fa-arrow-up mr-1"></i>8.7% from last month
                             </span>
                         </div>
                     </div>
                     
-                    <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+                    <div class="valorant-card p-6 border-l-4 border-orange-500">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Completed Tasks</p>
-                                <h3 class="text-3xl font-bold text-gray-800 mt-2" id="completedTasks">0</h3>
+                                <p class="text-sm font-medium text-gray-300">Completed Tasks</p>
+                                <div class="stat-number mt-2" id="completedTasks">0</div>
                             </div>
-                            <div class="bg-yellow-100 p-3 rounded-full">
-                                <i class="fas fa-clipboard-check text-yellow-600 text-xl"></i>
+                            <div class="bg-orange-500/20 p-3 rounded-full glow-orange">
+                                <i class="fas fa-clipboard-check text-orange-400 text-xl"></i>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <span class="text-sm text-green-600 font-medium">
+                            <span class="text-sm text-secondary font-medium">
                                 <i class="fas fa-arrow-up mr-1"></i>3.1% from last month
                             </span>
                         </div>
@@ -385,15 +751,15 @@
                 
                 <!-- Recent Activity Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Projects</h3>
+                    <div class="valorant-card p-6">
+                        <h3 class="text-lg font-bold text-secondary mb-4">Recent Projects</h3>
                         <div id="recentProjects" class="space-y-4">
                             <!-- Recent projects will be populated from template -->
                         </div>
                     </div>
                     
-                    <div class="bg-white rounded-xl shadow-md p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Tasks</h3>
+                    <div class="valorant-card p-6">
+                        <h3 class="text-lg font-bold text-secondary mb-4">Recent Tasks</h3>
                         <div id="recentTasks" class="space-y-4">
                             <!-- Recent tasks will be populated from template -->
                         </div>
@@ -402,29 +768,29 @@
             </div>
 
             <!-- Sign Up Requests Section -->
-            <div id="signUpRequestsSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div id="signUpRequestsSection" class="valorant-card p-6 mb-6 hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Sign Up Requests</h2>
-                    <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                    <h2 class="text-xl font-bold text-secondary">Sign Up Requests</h2>
+                    <span class="bg-primary/20 text-primary text-sm font-medium px-3 py-1 rounded-full">
                         <span id="pendingRequestsCount">0</span> Pending Requests
                     </span>
                 </div>
                 <div id="signUpRequestsLoading" class="text-center py-8 hidden">
                     <div class="loading-spinner mx-auto mb-2"></div>
-                    <p class="text-gray-600">Loading sign up requests...</p>
+                    <p class="text-gray-300">Loading sign up requests...</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gray-50">
+                        <thead class="table-header-valorant">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Full Name</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Phone Number</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Role</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="signUpRequestsList" class="bg-white divide-y divide-gray-200">
+                        <tbody id="signUpRequestsList" class="divide-y divide-gray-700">
                             <!-- Sign up requests will be populated here -->
                         </tbody>
                     </table>
@@ -432,18 +798,18 @@
             </div>
 
             <!-- Project Status Section -->
-            <div id="projectStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div id="projectStatusSection" class="valorant-card p-6 mb-6 hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Project Status</h2>
+                    <h2 class="text-xl font-bold text-secondary">Project Status</h2>
                     <div class="flex space-x-2">
-                        <button id="allProjectsBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
-                        <button id="ongoingProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
-                        <button id="completedProjectsBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+                        <button id="allProjectsBtn" class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">All</button>
+                        <button id="ongoingProjectsBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Ongoing</button>
+                        <button id="completedProjectsBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Completed</button>
                     </div>
                 </div>
                 <div id="projectStatusLoading" class="text-center py-8 hidden">
                     <div class="loading-spinner mx-auto mb-2"></div>
-                    <p class="text-gray-600">Loading projects...</p>
+                    <p class="text-gray-300">Loading projects...</p>
                 </div>
                 <div id="projectStatusList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Project status cards will be populated here -->
@@ -451,54 +817,76 @@
             </div>
 
             <!-- Task Status Section -->
-            <div id="taskStatusSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div id="taskStatusSection" class="valorant-card p-6 mb-6 hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Task Status</h2>
+                    <h2 class="text-xl font-bold text-secondary">Task Status</h2>
                     <div class="flex space-x-2">
-                        <button id="allTasksBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
-                        <button id="ongoingTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Ongoing</button>
-                        <button id="completedTasksBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Completed</button>
+                        <button id="allTasksBtn" class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">All</button>
+                        <button id="ongoingTasksBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Ongoing</button>
+                        <button id="completedTasksBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Completed</button>
                     </div>
                 </div>
                 <div id="taskStatusLoading" class="text-center py-8 hidden">
                     <div class="loading-spinner mx-auto mb-2"></div>
-                    <p class="text-gray-600">Loading tasks...</p>
+                    <p class="text-gray-300">Loading tasks...</p>
                 </div>
                 <div id="taskStatusList" class="space-y-4">
                     <!-- Task status cards will be populated here -->
                 </div>
             </div>
-
+            
             <!-- Member's Profile Section -->
-            <div id="membersProfileSection" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <div id="membersProfileSection" class="valorant-card p-6 mb-6 hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Member's Profile</h2>
+                    <h2 class="text-xl font-bold text-secondary">Member's Profile</h2>
                     <div class="flex space-x-2">
-                        <button id="allMembersBtn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">All</button>
-                        <button id="devTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Dev Team</button>
-                        <button id="designTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Design Team</button>
-                        <button id="marketingTeamBtn" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">Marketing Team</button>
+                        <button id="allMembersBtn" class="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">All</button>
+                        <button id="devTeamBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Dev Team</button>
+                        <button id="designTeamBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Design Team</button>
+                        <button id="marketingTeamBtn" class="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm font-medium">Marketing Team</button>
                     </div>
                 </div>
                 <div id="membersProfileLoading" class="text-center py-8 hidden">
                     <div class="loading-spinner mx-auto mb-2"></div>
-                    <p class="text-gray-600">Loading members...</p>
+                    <p class="text-gray-300">Loading members...</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-gray-50">
+                        <thead class="table-header-valorant">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Full Name</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Team</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Role</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="membersList" class="bg-white divide-y divide-gray-200">
+                        <tbody id="membersList" class="divide-y divide-gray-700">
                             <!-- Members will be populated here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <!-- Community Section -->
+            <div id="communitySection" class="valorant-card p-6 mb-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-secondary">Community Chat</h2>
+                    <button class="btn btn-outline" id="refreshCommunity">Refresh</button>
+                </div>
+                
+                <div class="loading-spinner" id="communityLoading" class="text-center py-8 hidden">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-300">Loading community chat...</p>
+                </div>
+                
+                <div class="community-container" id="communityContainer">
+                    <div class="chat-area" id="chatArea">
+                        <!-- Messages will be displayed here -->
+                    </div>
+                    <div class="message-input-container">
+                        <input type="text" id="messageInput" placeholder="Type your message here..." class="message-input">
+                        <button class="valorant-button" id="sendMessageBtn">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -506,43 +894,43 @@
 
     <!-- Member Details Modal -->
     <div id="memberDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
-            <h3 id="memberDetailsTitle" class="text-xl font-bold text-gray-800">Member Details</h3>
+        <div class="modal-content rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="memberDetailsTitle" class="text-xl font-bold text-secondary">Member Details</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h4 class="font-semibold text-gray-700 mb-2">Personal Information</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Personal Information</h4>
                     <div class="space-y-2">
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Full Name:</span>
-                            <p id="detailFullName" class="font-medium"></p>
+                            <span class="text-sm font-medium text-gray-400">Full Name:</span>
+                            <p id="detailFullName" class="font-medium text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Email:</span>
-                            <p id="detailEmail"></p>
+                            <span class="text-sm font-medium text-gray-400">Email:</span>
+                            <p id="detailEmail" class="text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Phone:</span>
-                            <p id="detailPhone"></p>
+                            <span class="text-sm font-medium text-gray-400">Phone:</span>
+                            <p id="detailPhone" class="text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Last Active:</span>
-                            <p id="detailLastActive"></p>
+                            <span class="text-sm font-medium text-gray-400">Last Active:</span>
+                            <p id="detailLastActive" class="text-white"></p>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-700 mb-2">Work Information</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Work Information</h4>
                     <div class="space-y-2">
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Team:</span>
-                            <p id="detailTeam" class="font-medium"></p>
+                            <span class="text-sm font-medium text-gray-400">Team:</span>
+                            <p id="detailTeam" class="font-medium text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Role:</span>
-                            <p id="detailRole"></p>
+                            <span class="text-sm font-medium text-gray-400">Role:</span>
+                            <p id="detailRole" class="text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Tech Stack:</span>
+                            <span class="text-sm font-medium text-gray-400">Tech Stack:</span>
                             <div id="detailTechStack" class="flex flex-wrap mt-1"></div>
                         </div>
                     </div>
@@ -550,37 +938,37 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h4 class="font-semibold text-gray-700 mb-2">Assigned Projects</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Assigned Projects</h4>
                     <ul id="detailAssignedProjects" class="space-y-1">
                         <!-- Assigned projects will be populated here -->
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-700 mb-2">Assigned Tasks</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Assigned Tasks</h4>
                     <ul id="detailAssignedTasks" class="space-y-1">
                         <!-- Assigned tasks will be populated here -->
                     </ul>
                 </div>
             </div>
             <div>
-                <h4 class="font-semibold text-gray-700 mb-2">Projects as Manager</h4>
+                <h4 class="font-semibold text-gray-300 mb-2">Projects as Manager</h4>
                 <ul id="detailManagerProjects" class="space-y-1">
                     <!-- Manager projects will be populated here -->
                 </ul>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
-                <button onclick="closeMemberDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-gray-900 py-2">
+                <button onclick="closeMemberDetailsModal()" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800 transition-colors">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Notification Modal -->
     <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
+        <div class="modal-content rounded-lg w-11/12 md:w-1/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
             <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-800">Notifications</h3>
+                <h3 class="text-xl font-bold text-secondary">Notifications</h3>
                 <div class="flex space-x-2">
-                    <button onclick="closeNotificationModal()" class="text-gray-500 hover:text-gray-700">
+                    <button onclick="closeNotificationModal()" class="text-gray-400 hover:text-white">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -589,50 +977,50 @@
                 <!-- Notifications will be populated here -->
             </div>
             <div id="noNotifications" class="text-center py-8 hidden">
-                <i class="fas fa-bell-slash text-gray-300 text-4xl mb-4"></i>
-                <p class="text-gray-500">No notifications</p>
+                <i class="fas fa-bell-slash text-gray-500 text-4xl mb-4"></i>
+                <p class="text-gray-400">No notifications</p>
             </div>
         </div>
     </div>
 
     <!-- Project Details Modal -->
     <div id="projectDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
-            <h3 id="projectDetailsTitle" class="text-xl font-bold text-gray-800">Project Details</h3>
+        <div class="modal-content rounded-lg w-11/12 md:w-2/3 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="projectDetailsTitle" class="text-xl font-bold text-secondary">Project Details</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h4 class="font-semibold text-gray-700 mb-2">Project Information</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Project Information</h4>
                     <div class="space-y-2">
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Project Name:</span>
-                            <p id="detailProjectName" class="font-medium"></p>
+                            <span class="text-sm font-medium text-gray-400">Project Name:</span>
+                            <p id="detailProjectName" class="font-medium text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Initiated Date:</span>
-                            <p id="detailInitiatedDate"></p>
+                            <span class="text-sm font-medium text-gray-400">Initiated Date:</span>
+                            <p id="detailInitiatedDate" class="text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Due Date:</span>
-                            <p id="detailDueDate"></p>
+                            <span class="text-sm font-medium text-gray-400">Due Date:</span>
+                            <p id="detailDueDate" class="text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Team:</span>
-                            <p id="detailTeam"></p>
+                            <span class="text-sm font-medium text-gray-400">Team:</span>
+                            <p id="detailTeam" class="text-white"></p>
                         </div>
                         <div>
-                            <span class="text-sm font-medium text-gray-600">Status:</span>
+                            <span class="text-sm font-medium text-gray-400">Status:</span>
                             <span id="detailStatus" class="status-tag"></span>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-gray-700 mb-2">Team Members</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Team Members</h4>
                     <div class="mb-4">
-                        <span class="text-sm font-medium text-gray-600">Project Manager:</span>
-                        <p id="detailProjectManager" class="font-medium"></p>
+                        <span class="text-sm font-medium text-gray-400">Project Manager:</span>
+                        <p id="detailProjectManager" class="font-medium text-white"></p>
                     </div>
                     <div>
-                        <span class="text-sm font-medium text-gray-600">Assigned Members:</span>
+                        <span class="text-sm font-medium text-gray-400">Assigned Members:</span>
                         <ul id="detailAssignedMembers" class="mt-1 space-y-1">
                             <!-- Assigned members will be populated here -->
                         </ul>
@@ -640,67 +1028,67 @@
                 </div>
             </div>
             <div>
-                <h4 class="font-semibold text-gray-700 mb-2">Components</h4>
+                <h4 class="font-semibold text-gray-300 mb-2">Components</h4>
                 <div id="detailComponents" class="space-y-3">
                     <!-- Components will be populated here -->
                 </div>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
-                <button onclick="closeProjectDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-gray-900 py-2">
+                <button onclick="closeProjectDetailsModal()" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800 transition-colors">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Task Details Modal -->
     <div id="taskDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
-            <h3 id="taskDetailsTitle" class="text-xl font-bold text-gray-800">Task Details</h3>
+        <div class="modal-content rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="taskDetailsTitle" class="text-xl font-bold text-secondary">Task Details</h3>
             <div class="space-y-4">
                 <div>
-                    <span class="text-sm font-medium text-gray-600">Task Name:</span>
-                    <p id="detailTaskName" class="font-medium text-lg"></p>
+                    <span class="text-sm font-medium text-gray-400">Task Name:</span>
+                    <p id="detailTaskName" class="font-medium text-lg text-white"></p>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-gray-600">Description:</span>
-                    <p id="detailTaskDescription" class="mt-1 text-gray-700 bg-gray-50 p-3 rounded"></p>
+                    <span class="text-sm font-medium text-gray-400">Description:</span>
+                    <p id="detailTaskDescription" class="mt-1 text-white bg-gray-800 p-3 rounded"></p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <span class="text-sm font-medium text-gray-600">Initiated Date:</span>
-                        <p id="detailTaskInitiatedDate"></p>
+                        <span class="text-sm font-medium text-gray-400">Initiated Date:</span>
+                        <p id="detailTaskInitiatedDate" class="text-white"></p>
                     </div>
                     <div>
-                        <span class="text-sm font-medium text-gray-600">Due Date:</span>
-                        <p id="detailTaskDueDate"></p>
+                        <span class="text-sm font-medium text-gray-400">Due Date:</span>
+                        <p id="detailTaskDueDate" class="text-white"></p>
                     </div>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-gray-600">Status:</span>
+                    <span class="text-sm font-medium text-gray-400">Status:</span>
                     <span id="detailTaskStatus" class="status-tag"></span>
                 </div>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
-                <button onclick="closeTaskDetailsModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Close</button>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-gray-900 py-2">
+                <button onclick="closeTaskDetailsModal()" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800 transition-colors">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Project Modal -->
     <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
-            <h3 id="projectModalTitle" class="text-xl font-bold text-gray-800">Add New Project</h3>
+        <div class="modal-content rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="projectModalTitle" class="text-xl font-bold text-secondary">Add New Project</h3>
             <input type="hidden" id="editProjectIndex">
             <div>
-                <label class="block text-gray-700 mb-1">Project Name</label>
-                <input type="text" id="projectName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Project Name</label>
+                <input type="text" id="projectName" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Due Date</label>
-                <input type="date" id="projectDueDate" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Due Date</label>
+                <input type="date" id="projectDueDate" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Team</label>
-                <select id="projectTeam" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Team</label>
+                <select id="projectTeam" class="form-select w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
                     <option value="">Select Team</option>
                     <option>Dev Team</option>
                     <option>Design Team</option>
@@ -708,86 +1096,86 @@
                 </select>
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Assign Members</label>
-                <div id="projectMembersLoading" class="text-blue-600 mb-2 hidden">
+                <label class="block text-gray-300 mb-1">Assign Members</label>
+                <div id="projectMembersLoading" class="text-primary mb-2 hidden">
                     <div class="loading-spinner"></div>Loading users...
                 </div>
-                <select id="projectMembers" multiple onchange="updateAssigned('project')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hidden">
+                <select id="projectMembers" multiple onchange="updateAssigned('project')" class="form-select w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary hidden">
                     <!-- Users will be populated from API -->
                 </select>
                 <div id="projectAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Assign Project Manager</label>
-                <select id="projectManager" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Assign Project Manager</label>
+                <select id="projectManager" class="form-select w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
                     <option value="">Select Manager</option>
                     <!-- Users will be populated from API -->
                 </select>
             </div>
             <div>
-                <button onclick="openComponentModal()" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition-colors">
+                <button onclick="openComponentModal()" class="valorant-button px-3 py-2 rounded hover:bg-primary transition-colors">
                     <i class="fas fa-plus mr-2"></i>Add Components
                 </button>
                 <div id="componentsList" class="mt-3 space-y-2"></div>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
-                <button onclick="closeProjectModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Cancel</button>
-                <button id="saveProjectBtn" onclick="addProject()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">Add Project</button>
-                <button id="updateProjectBtn" onclick="updateProject()" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors hidden">Update Project</button>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-gray-900 py-2">
+                <button onclick="closeProjectModal()" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800 transition-colors">Cancel</button>
+                <button id="saveProjectBtn" onclick="addProject()" class="valorant-button px-4 py-2 rounded">Add Project</button>
+                <button id="updateProjectBtn" onclick="updateProject()" class="valorant-button px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700 transition-colors hidden">Update Project</button>
             </div>
         </div>
     </div>
 
     <!-- Task Modal -->
     <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
-            <h3 id="taskModalTitle" class="text-xl font-bold text-gray-800">Assign Task</h3>
+        <div class="modal-content rounded-lg w-11/12 md:w-1/2 max-h-[80vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 id="taskModalTitle" class="text-xl font-bold text-secondary">Assign Task</h3>
             <input type="hidden" id="editTaskIndex">
             <div>
-                <label class="block text-gray-700 mb-1">Task Name</label>
-                <input type="text" id="taskName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Task Name</label>
+                <input type="text" id="taskName" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Task Description</label>
-                <textarea id="taskDescription" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <label class="block text-gray-300 mb-1">Task Description</label>
+                <textarea id="taskDescription" class="form-textarea w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary"></textarea>
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Due Date</label>
-                <input type="date" id="taskDueDate" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Due Date</label>
+                <input type="date" id="taskDueDate" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Assign Members</label>
-                <div id="taskMembersLoading" class="text-blue-600 mb-2 hidden">
+                <label class="block text-gray-300 mb-1">Assign Members</label>
+                <div id="taskMembersLoading" class="text-primary mb-2 hidden">
                     <div class="loading-spinner"></div>Loading users...
                 </div>
-                <select id="taskMembers" multiple onchange="updateAssigned('task')" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hidden">
+                <select id="taskMembers" multiple onchange="updateAssigned('task')" class="form-select w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary hidden">
                     <!-- Users will be populated from API -->
                 </select>
                 <div id="taskAssignedDisplay" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
-            <div class="flex justify-end gap-3 sticky bottom-0 bg-white py-2">
-                <button onclick="closeTaskModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Cancel</button>
-                <button id="saveTaskBtn" onclick="addTask()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">Add Task</button>
-                <button id="updateTaskBtn" onclick="updateTask()" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors hidden">Update Task</button>
+            <div class="flex justify-end gap-3 sticky bottom-0 bg-gray-900 py-2">
+                <button onclick="closeTaskModal()" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800 transition-colors">Cancel</button>
+                <button id="saveTaskBtn" onclick="addTask()" class="valorant-button px-4 py-2 rounded">Add Task</button>
+                <button id="updateTaskBtn" onclick="updateTask()" class="valorant-button px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700 transition-colors hidden">Update Task</button>
             </div>
         </div>
     </div>
 
     <!-- Component Modal -->
     <div id="componentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-11/12 md:w-1/3 max-h-[70vh] p-6 space-y-4 overflow-y-auto no-scrollbar shadow-xl">
-            <h3 class="text-lg font-bold text-gray-800">Add Component</h3>
+        <div class="modal-content rounded-lg w-11/12 md:w-1/3 max-h-[70vh] p-6 space-y-4 overflow-y-auto no-scrollbar">
+            <h3 class="text-lg font-bold text-secondary">Add Component</h3>
             <div>
-                <label class="block text-gray-700 mb-1">Component</label>
-                <input type="text" id="componentName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Component</label>
+                <input type="text" id="componentName" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
             <div>
-                <label class="block text-gray-700 mb-1">Feature</label>
-                <input type="text" id="featureName" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-gray-300 mb-1">Feature</label>
+                <input type="text" id="featureName" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
             </div>
             <div class="flex justify-end gap-3">
-                <button onclick="closeComponentModal()" class="px-4 py-2 border rounded hover:bg-gray-50 transition-colors">Cancel</button>
-                <button onclick="addComponent()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">Add</button>
+                <button onclick="closeComponentModal()" class="px-4 py-2 border border-gray-600 rounded hover:bg-gray-800 transition-colors">Cancel</button>
+                <button onclick="addComponent()" class="valorant-button px-4 py-2 rounded">Add</button>
             </div>
         </div>
     </div>
@@ -946,7 +1334,7 @@
             // Create a simple toast notification
             const toast = document.createElement('div');
             toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white font-medium z-50 ${
-                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                type === 'success' ? 'bg-secondary' : 'bg-primary'
             }`;
             toast.textContent = message;
             document.body.appendChild(toast);
@@ -1046,7 +1434,7 @@
                         <i class="fas ${icon}"></i>
                     </div>
                     <div class="notification-content">
-                        <div class="text-sm text-gray-800">${notification.message}</div>
+                        <div class="text-sm text-white">${notification.message}</div>
                     </div>
                 `;
                 
@@ -1141,7 +1529,7 @@
             if (filteredMembers.length === 0) {
                 list.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">
                             No members found
                         </td>
                     </tr>
@@ -1151,43 +1539,43 @@
             
             filteredMembers.forEach(member => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = 'hover:bg-white/5';
                 
                 // Determine team display name and color
                 let teamDisplay = member.team;
-                let teamColorClass = 'bg-gray-100 text-gray-800';
+                let teamColorClass = 'bg-white/10 text-gray-300';
                 
                 if (member.team === 'Dev') {
                     teamDisplay = 'Dev Team';
-                    teamColorClass = 'bg-blue-100 text-blue-800';
+                    teamColorClass = 'bg-primary/20 text-primary';
                 } else if (member.team === 'Design') {
                     teamDisplay = 'Design Team';
-                    teamColorClass = 'bg-purple-100 text-purple-800';
+                    teamColorClass = 'bg-purple-500/20 text-purple-400';
                 } else if (member.team === 'Marketing') {
                     teamDisplay = 'Marketing Team';
-                    teamColorClass = 'bg-green-100 text-green-800';
+                    teamColorClass = 'bg-secondary/20 text-secondary';
                 }
                 
                 // Determine role color
-                let roleColorClass = 'bg-gray-100 text-gray-800';
+                let roleColorClass = 'bg-white/10 text-gray-300';
                 if (member.role === 'Manager') {
-                    roleColorClass = 'bg-yellow-100 text-yellow-800';
+                    roleColorClass = 'bg-yellow-500/20 text-yellow-400';
                 } else if (member.role === 'Employee') {
-                    roleColorClass = 'bg-indigo-100 text-indigo-800';
+                    roleColorClass = 'bg-secondary/20 text-secondary';
                 } else if (member.role === 'Intern') {
-                    roleColorClass = 'bg-gray-100 text-gray-800';
+                    roleColorClass = 'bg-white/10 text-gray-300';
                 }
                 
                 row.innerHTML = `
                     <td class="px-4 py-3 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${member.fullName}</div>
+                                <div class="text-sm font-medium text-white">${member.fullName}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${member.email}</div>
+                        <div class="text-sm text-white">${member.email}</div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${teamColorClass}">
@@ -1200,7 +1588,7 @@
                         </span>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        <button onclick="openMemberDetailsModal(${member.id})" class="text-blue-600 hover:text-blue-900">View Details</button>
+                        <button onclick="openMemberDetailsModal(${member.id})" class="text-secondary hover:text-primary">View Details</button>
                     </td>
                 `;
                 
@@ -1237,7 +1625,7 @@
                     techStackContainer.appendChild(span);
                 });
             } else {
-                techStackContainer.innerHTML = '<span class="text-gray-500 text-sm">No tech stack specified</span>';
+                techStackContainer.innerHTML = '<span class="text-gray-400 text-sm">No tech stack specified</span>';
             }
             
             // Assigned Projects
@@ -1246,13 +1634,13 @@
             if (member.assignedProjects && member.assignedProjects.length > 0) {
                 member.assignedProjects.forEach(project => {
                     const li = document.createElement('li');
-                    li.className = 'text-sm text-gray-700';
+                    li.className = 'text-sm text-white';
                     li.textContent = project;
                     assignedProjectsList.appendChild(li);
                 });
             } else {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-gray-500 italic';
+                li.className = 'text-sm text-gray-400 italic';
                 li.textContent = 'No projects assigned';
                 assignedProjectsList.appendChild(li);
             }
@@ -1263,13 +1651,13 @@
             if (member.assignedTasks && member.assignedTasks.length > 0) {
                 member.assignedTasks.forEach(task => {
                     const li = document.createElement('li');
-                    li.className = 'text-sm text-gray-700';
+                    li.className = 'text-sm text-white';
                     li.textContent = task;
                     assignedTasksList.appendChild(li);
                 });
             } else {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-gray-500 italic';
+                li.className = 'text-sm text-gray-400 italic';
                 li.textContent = 'No tasks assigned';
                 assignedTasksList.appendChild(li);
             }
@@ -1280,13 +1668,13 @@
             if (member.managerProjects && member.managerProjects.length > 0) {
                 member.managerProjects.forEach(project => {
                     const li = document.createElement('li');
-                    li.className = 'text-sm text-gray-700';
+                    li.className = 'text-sm text-white';
                     li.textContent = project;
                     managerProjectsList.appendChild(li);
                 });
             } else {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-gray-500 italic';
+                li.className = 'text-sm text-gray-400 italic';
                 li.textContent = 'No projects managed';
                 managerProjectsList.appendChild(li);
             }
@@ -1403,18 +1791,18 @@
             const recentProjects = templateData.rp || [];
             
             if (recentProjects.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent projects</p>';
+                container.innerHTML = '<p class="text-gray-400 text-center py-4">No recent projects</p>';
                 return;
             }
             
             recentProjects.forEach(project => {
                 const projectEl = document.createElement('div');
-                projectEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                projectEl.className = 'flex justify-between items-center p-3 border border-gray-700 rounded-lg';
                 
                 projectEl.innerHTML = `
                     <div>
-                        <h4 class="font-medium text-gray-800">${project.project_name}</h4>
-                        <p class="text-sm text-gray-600">${project.team} • Started: ${project.initiated_date}</p>
+                        <h4 class="font-medium text-white">${project.project_name}</h4>
+                        <p class="text-sm text-gray-400">${project.team} • Started: ${project.initiated_date}</p>
                     </div>
                     <span class="status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}">
                         ${project.Status === 0 ? 'ongoing' : 'completed'}
@@ -1433,18 +1821,18 @@
             const recentTasks = templateData.rt || [];
             
             if (recentTasks.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent tasks</p>';
+                container.innerHTML = '<p class="text-gray-400 text-center py-4">No recent tasks</p>';
                 return;
             }
             
             recentTasks.forEach(task => {
                 const taskEl = document.createElement('div');
-                taskEl.className = 'flex justify-between items-center p-3 border border-gray-200 rounded-lg';
+                taskEl.className = 'flex justify-between items-center p-3 border border-gray-700 rounded-lg';
                 
                 taskEl.innerHTML = `
                     <div>
-                        <h4 class="font-medium text-gray-800">${task.task_name}</h4>
-                        <p class="text-sm text-gray-600">Due: ${task.due_date}</p>
+                        <h4 class="font-medium text-white">${task.task_name}</h4>
+                        <p class="text-sm text-gray-400">Due: ${task.due_date}</p>
                     </div>
                     <span class="status-tag ${task.Status === 0 ? 'status-ongoing' : 'status-completed'}">
                         ${task.Status === 0 ? 'ongoing' : 'completed'}
@@ -1467,7 +1855,7 @@
             if (signUpRequests.length === 0) {
                 list.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">
                             No sign up requests found
                         </td>
                     </tr>
@@ -1477,15 +1865,15 @@
             
             signUpRequests.forEach(request => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = 'hover:bg-white/5';
                 
                 // Determine action buttons based on action value
                 let actionButtons = '';
                 if (request.action === -1) {
                     // Pending - show both Approve and Reject buttons
                     actionButtons = `
-                        <button onclick="approveUser('${request.email}')" class="text-green-600 hover:text-green-900 mr-3 font-medium">Approve</button>
-                        <button onclick="rejectUser('${request.email}')" class="text-red-600 hover:text-red-900 font-medium">Reject</button>
+                        <button onclick="approveUser('${request.email}')" class="text-secondary hover:text-primary mr-3 font-medium">Approve</button>
+                        <button onclick="rejectUser('${request.email}')" class="text-primary hover:text-secondary font-medium">Reject</button>
                     `;
                 } else if (request.action === 1) {
                     // Approved - show approved status
@@ -1499,21 +1887,21 @@
                     <td class="px-4 py-3 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${request.fullname}</div>
+                                <div class="text-sm font-medium text-white">${request.fullname}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${request.email}</div>
+                        <div class="text-sm text-white">${request.email}</div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${request.phone_number}</div>
+                        <div class="text-sm text-white">${request.phone_number}</div>
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${request.role === 'manager' ? 'bg-purple-100 text-purple-800' : 
-                              request.role === 'intern' ? 'bg-blue-100 text-blue-800' : 
-                              'bg-green-100 text-green-800'}">
+                            ${request.role === 'manager' ? 'bg-purple-500/20 text-purple-400' : 
+                              request.role === 'intern' ? 'bg-secondary/20 text-secondary' : 
+                              'bg-primary/20 text-primary'}">
                             ${request.role}
                         </span>
                     </td>
@@ -1646,7 +2034,7 @@
             assignedMembersList.innerHTML = '';
             project.assigned_member.forEach(member => {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-gray-700';
+                li.className = 'text-sm text-white';
                 li.textContent = member[1];
                 assignedMembersList.appendChild(li);
             });
@@ -1655,10 +2043,10 @@
             componentsContainer.innerHTML = '';
             Object.entries(project.components).forEach(([heading, details]) => {
                 const componentDiv = document.createElement('div');
-                componentDiv.className = 'border p-3 rounded';
+                componentDiv.className = 'border border-gray-700 p-3 rounded';
                 componentDiv.innerHTML = `
-                    <h5 class="font-semibold text-gray-800">${heading}</h5>
-                    <p class="text-sm text-gray-600 mt-1">${details}</p>
+                    <h5 class="font-semibold text-white">${heading}</h5>
+                    <p class="text-sm text-gray-400 mt-1">${details}</p>
                 `;
                 componentsContainer.appendChild(componentDiv);
             });
@@ -1867,74 +2255,74 @@
         });
 
         function setActiveProjectFilter(filter) {
-            document.getElementById('allProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('ongoingProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('completedProjectsBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('allProjectsBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('ongoingProjectsBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('completedProjectsBtn').classList.remove('bg-primary/20', 'text-primary');
             
-            document.getElementById('allProjectsBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('ongoingProjectsBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('completedProjectsBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('allProjectsBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('ongoingProjectsBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('completedProjectsBtn').classList.add('bg-white/10', 'text-gray-300');
             
             if (filter === 'all') {
-                document.getElementById('allProjectsBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('allProjectsBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('allProjectsBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('allProjectsBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'ongoing') {
-                document.getElementById('ongoingProjectsBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('ongoingProjectsBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('ongoingProjectsBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('ongoingProjectsBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'completed') {
-                document.getElementById('completedProjectsBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('completedProjectsBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('completedProjectsBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('completedProjectsBtn').classList.add('bg-primary/20', 'text-primary');
             }
             
             window.projectFilter = filter;
         }
 
         function setActiveTaskFilter(filter) {
-            document.getElementById('allTasksBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('ongoingTasksBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('completedTasksBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('allTasksBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('ongoingTasksBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('completedTasksBtn').classList.remove('bg-primary/20', 'text-primary');
             
-            document.getElementById('allTasksBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('ongoingTasksBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('completedTasksBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('allTasksBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('ongoingTasksBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('completedTasksBtn').classList.add('bg-white/10', 'text-gray-300');
             
             if (filter === 'all') {
-                document.getElementById('allTasksBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('allTasksBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('allTasksBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('allTasksBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'ongoing') {
-                document.getElementById('ongoingTasksBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('ongoingTasksBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('ongoingTasksBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('ongoingTasksBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'completed') {
-                document.getElementById('completedTasksBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('completedTasksBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('completedTasksBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('completedTasksBtn').classList.add('bg-primary/20', 'text-primary');
             }
             
             window.taskFilter = filter;
         }
 
         function setActiveMemberFilter(filter) {
-            document.getElementById('allMembersBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('devTeamBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('designTeamBtn').classList.remove('bg-blue-100', 'text-blue-700');
-            document.getElementById('marketingTeamBtn').classList.remove('bg-blue-100', 'text-blue-700');
+            document.getElementById('allMembersBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('devTeamBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('designTeamBtn').classList.remove('bg-primary/20', 'text-primary');
+            document.getElementById('marketingTeamBtn').classList.remove('bg-primary/20', 'text-primary');
             
-            document.getElementById('allMembersBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('devTeamBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('designTeamBtn').classList.add('bg-gray-100', 'text-gray-700');
-            document.getElementById('marketingTeamBtn').classList.add('bg-gray-100', 'text-gray-700');
+            document.getElementById('allMembersBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('devTeamBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('designTeamBtn').classList.add('bg-white/10', 'text-gray-300');
+            document.getElementById('marketingTeamBtn').classList.add('bg-white/10', 'text-gray-300');
             
             if (filter === 'all') {
-                document.getElementById('allMembersBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('allMembersBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('allMembersBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('allMembersBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'Dev Team') {
-                document.getElementById('devTeamBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('devTeamBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('devTeamBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('devTeamBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'Design Team') {
-                document.getElementById('designTeamBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('designTeamBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('designTeamBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('designTeamBtn').classList.add('bg-primary/20', 'text-primary');
             } else if (filter === 'Marketing Team') {
-                document.getElementById('marketingTeamBtn').classList.remove('bg-gray-100', 'text-gray-700');
-                document.getElementById('marketingTeamBtn').classList.add('bg-blue-100', 'text-blue-700');
+                document.getElementById('marketingTeamBtn').classList.remove('bg-white/10', 'text-gray-300');
+                document.getElementById('marketingTeamBtn').classList.add('bg-primary/20', 'text-primary');
             }
             
             window.memberFilter = filter;
@@ -1946,10 +2334,11 @@
             document.getElementById('projectStatusSection').classList.add('hidden');
             document.getElementById('taskStatusSection').classList.add('hidden');
             document.getElementById('membersProfileSection').classList.add('hidden');
+            document.getElementById('communitySection').classList.add('hidden');
             
             document.getElementById(sectionId).classList.remove('hidden');
             
-            document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn, #membersProfileBtn').forEach(btn => {
+            document.querySelectorAll('#dashboardBtn, #approveSignUpsBtn, #showProjectStatusBtn, #showTaskStatusBtn, #membersProfileBtn, #communityBtn').forEach(btn => {
                 btn.classList.remove('active-tab');
             });
             
@@ -1963,6 +2352,8 @@
                 document.getElementById('showTaskStatusBtn').classList.add('active-tab');
             } else if (sectionId === 'membersProfileSection') {
                 document.getElementById('membersProfileBtn').classList.add('active-tab');
+            } else if (sectionId === 'communitySection') {
+                document.getElementById('communityBtn').classList.add('active-tab');
             }
         }
 
@@ -1980,16 +2371,16 @@
             
             filteredProjects.forEach((project, index) => {
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
+                card.className = 'valorant-card p-5 card-hover';
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
-                        <h3 class="font-bold text-gray-800">${project.project_name}</h3>
+                        <h3 class="font-bold text-white">${project.project_name}</h3>
                         <span class="status-tag ${project.Status === 0 ? 'status-ongoing' : 'status-completed'}">
                             ${project.Status === 0 ? 'ongoing' : 'completed'}
                         </span>
                     </div>
-                    <div class="text-sm text-gray-600 space-y-1">
+                    <div class="text-sm text-gray-300 space-y-1">
                         <div class="flex justify-between">
                             <span>Initiated Date:</span>
                             <span class="font-medium">${project.initiated_date}</span>
@@ -2004,7 +2395,7 @@
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button onclick="openProjectDetailsModal(${index})" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                        <button onclick="openProjectDetailsModal(${index})" class="text-secondary hover:text-primary text-sm font-medium">View Details</button>
                     </div>
                 `;
                 
@@ -2026,16 +2417,16 @@
             
             filteredTasks.forEach((task, index) => {
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-lg shadow-md p-5 card-hover border border-gray-100';
+                card.className = 'valorant-card p-5 card-hover';
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
-                        <h3 class="font-bold text-gray-800">${task.task_name}</h3>
+                        <h3 class="font-bold text-white">${task.task_name}</h3>
                         <span class="status-tag ${task.Status === 0 ? 'status-ongoing' : 'status-completed'}">
                             ${task.Status === 0 ? 'ongoing' : 'completed'}
                         </span>
                     </div>
-                    <div class="text-sm text-gray-600 space-y-2 mb-4">
+                    <div class="text-sm text-gray-300 space-y-2 mb-4">
                         <div class="flex justify-between">
                             <span>Initiated Date:</span>
                             <span class="font-medium">${task.initiated_date}</span>
@@ -2046,17 +2437,17 @@
                         </div>
                     </div>
                     <div>
-                        <div class="text-sm text-gray-600 mb-2">Assigned To:</div>
+                        <div class="text-sm text-gray-300 mb-2">Assigned To:</div>
                         <div class="flex flex-wrap gap-2">
                             ${task.assigned_members.map(member => `
-                                <span class="bg-gray-200 px-2 py-1 rounded text-sm">
+                                <span class="bg-white/10 px-2 py-1 rounded text-sm">
                                     ${member[1]}
                                 </span>
                             `).join('')}
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button onclick="openTaskDetailsModal(${index})" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
+                        <button onclick="openTaskDetailsModal(${index})" class="text-secondary hover:text-primary text-sm font-medium">View Details</button>
                     </div>
                 `;
                 
@@ -2187,7 +2578,7 @@
             assigned[type].forEach(email => {
                 const username = type === 'project' ? projectUsersDict[email] : taskUsersDict[email];
                 const span = document.createElement("span");
-                span.className = "bg-gray-200 px-2 py-1 rounded text-sm";
+                span.className = "bg-white/10 px-2 py-1 rounded text-sm";
                 span.innerText = username || email;
                 display.appendChild(span);
             });
@@ -2214,13 +2605,13 @@
 
             components.forEach(c => {
                 const div = document.createElement("div");
-                div.className = "border p-2 rounded";
+                div.className = "border border-gray-700 p-2 rounded";
                 div.innerHTML = `
                     <div class="flex justify-between">
-                    <span class="font-semibold">${c.name}</span>
-                    <button onclick="this.parentElement.nextElementSibling.classList.toggle('hidden')" class="text-blue-600">▼</button>
+                    <span class="font-semibold text-white">${c.name}</span>
+                    <button onclick="this.parentElement.nextElementSibling.classList.toggle('hidden')" class="text-secondary">▼</button>
                     </div>
-                    <div class="hidden mt-2 text-sm text-gray-700">${c.feature}</div>
+                    <div class="hidden mt-2 text-sm text-gray-300">${c.feature}</div>
                 `;
                 list.appendChild(div);
             });
@@ -2399,8 +2790,277 @@
             // Show dashboard by default
             showSection('dashboardSection');
         });
-    </script>
+        // Community WebSocket variables
+        let communitySocket = null;
+        let currentAdminId = document.getElementById('id_for_admin').textContent.trim();
 
+        // Add Community button to sidebar navigation
+        document.getElementById("communityBtn").addEventListener("click", function(e){
+            e.preventDefault();
+            showSection('communitySection');
+            loadCommunityChat();
+            initializeCommunityWebSocket();
+        });
+
+        // Refresh community button
+        document.getElementById("refreshCommunity").addEventListener("click", function(e){
+            e.preventDefault();
+            loadCommunityChat();
+        });
+
+        // Send message button functionality
+        document.getElementById("sendMessageBtn").addEventListener("click", sendMessage);
+
+        // Send message on Enter key
+        document.getElementById("messageInput").addEventListener("keypress", function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Update the endpoint for loading community chats in admin
+        async function loadCommunityChat() {
+            const chatArea = document.getElementById('chatArea');
+            const loadingSpinner = document.getElementById('communityLoading');
+            
+            // Show loading spinner
+            chatArea.innerHTML = '';
+            loadingSpinner.classList.remove('hidden');
+            
+            try {
+                // Use the unified endpoint
+                const response = await fetch('/community', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ x: 'any string value' })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const chats = await response.json();
+                console.log('Received unified community chats:', chats);
+                
+                // Hide loading spinner
+                loadingSpinner.classList.add('hidden');
+                
+                // Render chats
+                if (chats && chats.length > 0) {
+                    renderChatMessages(chats);
+                } else {
+                    chatArea.innerHTML = `
+                        <div class="chat-empty">
+                            <i class="fas fa-comments"></i>
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error loading community chat:', error);
+                loadingSpinner.classList.add('hidden');
+                chatArea.innerHTML = `
+                    <div class="chat-empty">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error loading messages. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Render chat messages
+        function renderChatMessages(chats) {
+            const chatArea = document.getElementById('chatArea');
+            
+            chatArea.innerHTML = chats.map(chat => {
+                const isOwnMessage = chat.user === currentAdminId;
+                const messageClass = isOwnMessage ? 'own-message' : 'other-message';
+                
+                return `
+                    <div class="message-container ${messageClass}">
+                        <div class="message-bubble">
+                            <div class="message-header">${chat.username || 'Unknown User'}</div>
+                            <div class="message-content">${chat.message}</div>
+                            <div class="message-time">${chat.time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Scroll to bottom
+            scrollToBottom();
+        }
+
+        // Format time for display
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            
+            try {
+                const date = new Date(timeString);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return timeString;
+            }
+        }
+
+        // Scroll chat to bottom
+        function scrollToBottom() {
+            const chatArea = document.getElementById('chatArea');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // Update the WebSocket URL to use the unified endpoint
+        function initializeCommunityWebSocket() {
+            if (!currentAdminId) {
+                console.error('Admin ID not found for Community WebSocket connection');
+                return;
+            }
+            
+            try {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/community/${currentAdminId}`;
+                
+                communitySocket = new WebSocket(wsUrl);
+                
+                communitySocket.onopen = function(event) {
+                    console.log('Unified Community WebSocket connected successfully for admin');
+                };
+                
+                communitySocket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    console.log('Unified Community WebSocket message received:', data);
+                    
+                    if (data.type === 'chat_message') {
+                        handleNewChatMessage(data.message);
+                    } else if (data.type === 'user_joined') {
+                        showSystemMessage(`${data.username} joined the chat`);
+                    } else if (data.type === 'user_left') {
+                        showSystemMessage(`${data.username} left the chat`);
+                    }
+                };
+                
+                communitySocket.onclose = function(event) {
+                    console.log('Community WebSocket disconnected:', event);
+                };
+                
+                communitySocket.onerror = function(error) {
+                    console.error('Community WebSocket error:', error);
+                };
+                
+            } catch (error) {
+                console.error('Error initializing Community WebSocket:', error);
+            }
+        }
+
+        // Handle new chat message from WebSocket
+        function handleNewChatMessage(messageData) {
+            // Add the new message to the chat area
+            const chatArea = document.getElementById('chatArea');
+            
+            // Remove empty state if it exists
+            const emptyState = chatArea.querySelector('.chat-empty');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const isOwnMessage = messageData.user === currentAdminId;
+            const messageClass = isOwnMessage ? 'own-message' : 'other-message';
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message-container ${messageClass}`;
+            messageElement.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-header">${messageData.username || 'Unknown User'}</div>
+                    <div class="message-content">${messageData.message}</div>
+                    <div class="message-time">${messageData.time}</div>
+                </div>
+            `;
+            
+            chatArea.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        // Show system message
+        function showSystemMessage(message) {
+            const chatArea = document.getElementById('chatArea');
+            
+            // Remove empty state if it exists
+            const emptyState = chatArea.querySelector('.chat-empty');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const systemElement = document.createElement('div');
+            systemElement.className = 'system-message';
+            systemElement.innerHTML = `
+                <div class="system-message-content">
+                    ${message}
+                </div>
+            `;
+            
+            chatArea.appendChild(systemElement);
+            scrollToBottom();
+        }
+
+        // Update sendMessage function for admin
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            if (communitySocket && communitySocket.readyState === WebSocket.OPEN) {
+                // Send via WebSocket with admin info
+                communitySocket.send(JSON.stringify({
+                    type: 'chat_message',
+                    message: message,
+                    user_id: currentAdminId,
+                    username: "Admin", // Admin identifier
+                    user_type: "admin"
+                }));
+                
+                // Clear input
+                messageInput.value = '';
+            } else {
+                // Fallback: Send via HTTP POST with admin info
+                try {
+                    const response = await fetch('/send-message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            message: message,
+                            user_id: currentAdminId,
+                            username: "Admin",
+                            user_type: "admin"
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        messageInput.value = '';
+                    } else {
+                        alert('Error sending message. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('Error sending message. Please try again.');
+                }
+            }
+        }
+
+        // Close community WebSocket when leaving the section
+        function closeCommunityWebSocket() {
+            if (communitySocket) {
+                communitySocket.close();
+                communitySocket = null;
+            }
+        }
+    </script>
+ 
 </body>
 
 </html>
