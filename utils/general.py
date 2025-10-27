@@ -1,10 +1,10 @@
 from utils.IST import ISTdate, ISTTime
-from utils.clientGets import get_client_password
+from utils.clientGets import get_client_password, get_username
 import random
 from configs.otp_configs import sender_email, sender_key
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-
+import asyncio
 
 async def create_message(message:list[str, str]):
     
@@ -134,9 +134,6 @@ async def send_password(email: str):
         </body>
         </html>
         """
-
-
-
             )
 
     try:
@@ -146,3 +143,201 @@ async def send_password(email: str):
     except Exception as e:
         print(f"Error sending email: {e}")
         return 2
+    
+
+async def send_group_email_for_projects(emails: list, project_name: str):
+    sg = SendGridAPIClient(sender_key)  # Reuse one client for all
+
+    async def send_single_email(email: str):
+        try:
+            username = await get_username(collection_name=email)
+            message = Mail(
+                from_email=sender_email,
+                to_emails=email,
+                subject="You have been assigned for a new project.",
+                html_content=f"""
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
+                    <div style="max-width:500px; margin:auto; background:#ffffff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                        <h2 style="color:#333; text-align:center;">📢 New Project Assigned</h2>
+                        <p style="color:#444; font-size:15px;">Hi {username},</p>
+                        <p style="color:#444; font-size:15px;">
+                            Great news! You’ve been <b>assigned to a new project</b> under the <b>Trendy Member's Portal</b>.
+                        </p>
+                        <div style="background:#f1f1f1; padding:15px; border-radius:6px; margin:20px 0;">
+                            <p style="margin:0; color:#333; font-size:15px;">
+                                🗂️ <b>Project Name:</b> {project_name}<br>
+                                👤 <b>Assigned By:</b> ADMIN<br>
+                                📅 <b>Assigned On:</b> {ISTdate()}
+                            </p>
+                        </div>
+                        <p style="color:#444; font-size:15px;">
+                            Please log in to your <b>Trendy Member’s Portal</b> to view the complete details.
+                        </p>
+                        <p style="color:#444; font-size:15px; margin-top:30px;">
+                            Best regards,<br>
+                            <b>Trendy Team</b>
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """
+            )
+
+            # Send email in background thread
+            await asyncio.to_thread(sg.send, message)
+        except Exception as e:
+            print(f"Error sending email to {email}: {e}")
+
+    # Run all sends concurrently
+    await asyncio.gather(*(send_single_email(email) for email in emails))
+
+
+async def send_email_for_task(emails: str, task:object):
+    sg = SendGridAPIClient(sender_key)  # Reuse one client for all
+
+    async def send_single_email(email: str):
+        try:
+            username = await get_username(collection_name=email)
+            message = Mail(
+                from_email=sender_email,
+                to_emails=email,
+                subject="You have been assigned for a new task.",
+                html_content=f"""
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
+                    <div style="max-width:500px; margin:auto; background:#ffffff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                        <h2 style="color:#333; text-align:center;">📝 New Task Assigned</h2>
+                        <p style="color:#444; font-size:15px;">Hi {username},</p>
+                        <p style="color:#444; font-size:15px;">
+                            You’ve been <b>assigned a new task</b> in the <b>Trendy Member's Portal</b>. Here are the details:
+                        </p>
+                        <div style="background:#f1f1f1; padding:15px; border-radius:6px; margin:20px 0;">
+                            <p style="margin:0; color:#333; font-size:15px;">
+                                ✅ <b>Task Title:</b> {task.task_name}<br>
+                                📋 <b>Assigned By:</b> ADMIN<br>
+                                ⏰ <b>Due Date:</b> {task.due_date}
+                            </p>
+                        </div>
+                        <p style="color:#444; font-size:15px;">
+                            Please log in to your <b>Trendy Member’s Portal</b> to check the full task details and get started.
+                        </p>
+                        <p style="color:#444; font-size:15px; margin-top:30px;">
+                            Best regards,<br>
+                            <b>Trendy Team</b>
+                        </p>
+                        <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+                        <p style="font-size:12px; color:#888; text-align:center;">
+                            This is an automated notification from Trendy Member’s Portal. Please do not reply to this email.
+                        </p>
+                    </div>
+                </body>
+                </html>
+                """
+            )
+
+            # Send email in background thread
+            await asyncio.to_thread(sg.send, message)
+        except Exception as e:
+            print(f"Error sending email to {email}: {e}")
+
+    # Run all sends concurrently
+    await asyncio.gather(*(send_single_email(email) for email in emails))
+
+
+async def send_request_result(data:object):
+    username = await get_username(collection_name=data.email)
+    if data.action == 1:
+        subjectd="Your request to join the Trendy Member's Portal has been approved."
+        html_contentd = f"""
+        <!DOCTYPE html>
+        <html>
+
+        <body style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
+            <div
+                style="max-width:500px; margin:auto; background:#ffffff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                <h2 style="color:#333; text-align:center;">🎉 Welcome to Trendy Member's Portal!</h2>
+                <p style="color:#444; font-size:15px;">Hi there,</p>
+                <p style="color:#444; font-size:15px;">
+                    Great news! 🎊 Your <b>request to join the Trendy Member's Portal</b> has been <b>approved</b>.
+                </p>
+                <p style="color:#444; font-size:15px;">
+                    Dear {username} you can now log in to your account using the credentials that you shared earlier with us and start exploring all the
+                    features available for members.
+                </p>
+                <div style="text-align:center; margin-top:25px;">
+                    <a href="https://trendy-nmx8.onrender.com/login"
+                        style="background-color:#e91e63; color:#fff; text-decoration:none; padding:10px 25px; border-radius:6px; font-weight:bold; display:inline-block;">
+                        Go to Portal
+                    </a>
+                </div>
+                <p style="color:#444; font-size:15px; margin-top:30px;">
+                    We're excited to have you on board! If you have any questions, feel free to reach out to our support team
+                    anytime.
+                </p>
+                <p style="color:#444; font-size:15px; margin-top:20px;">
+                    Best regards,<br>
+                    <b>Trendy Team</b>
+                </p>
+                <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+                <p style="font-size:12px; color:#888; text-align:center;">
+                    This is an automated confirmation email from Trendy Member’s Portal. Please do not reply.
+                </p>
+            </div>
+        </body>
+
+        </html>
+        """
+    else:
+        subjectd="Your request to join the Trendy Member's Portal has been rejected.",
+        html_contentd = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color:#f9f9f9; padding:20px;">
+            <div style="max-width:500px; margin:auto; background:#ffffff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                <h2 style="color:#d32f2f; text-align:center;">❌ Request Rejected</h2>
+                <p style="color:#444; font-size:15px;">Hi there,</p>
+                <p style="color:#444; font-size:15px;">
+                    Dear {username} we regret to inform you that your <b>request to join the Trendy Member's Portal</b> has been <b>rejected</b> at this time.
+                </p>
+                <p style="color:#444; font-size:15px;">
+                    This may be due to incomplete details, eligibility criteria, or other verification requirements not being met.
+                </p>
+                <p style="color:#444; font-size:15px;">
+                    You can review your submitted details and <b>reapply</b> if you believe this was a mistake or once you’ve updated your information.
+                </p>
+                <div style="text-align:center; margin-top:25px;">
+                    <a href="https://trendy-nmx8.onrender.com/login" style="background-color:#d32f2f; color:#fff; text-decoration:none; padding:10px 25px; border-radius:6px; font-weight:bold; display:inline-block;">
+                        Reapply
+                    </a>
+                </div>
+                <p style="color:#444; font-size:15px; margin-top:30px;">
+                    If you need assistance or more information regarding this decision, feel free to contact our support team.
+                </p>
+                <p style="color:#444; font-size:15px; margin-top:20px;">
+                    Regards,<br>
+                    <b>Trendy Team</b>
+                </p>
+                <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+                <p style="font-size:12px; color:#888; text-align:center;">
+                    This is an automated notification from Trendy Member’s Portal. Please do not reply to this email.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+
+    message = Mail(
+        from_email=sender_email,  # must be verified in SendGrid
+        to_emails=data.email,
+        subject=subjectd,
+        html_content =html_contentd)
+    
+    try:
+        sg = SendGridAPIClient(sender_key)
+        await asyncio.to_thread(sg.send, message)
+    except Exception as e:
+        print(f"Error sending email: {e}")
+    

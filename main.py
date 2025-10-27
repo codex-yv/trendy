@@ -18,8 +18,8 @@ from utils.clientPost import add_new_client, push_notification_by_client, save_u
 from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history
 from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification
 
-from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password
-from utils.IST import ISTTime
+from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password, send_group_email_for_projects, send_email_for_task, send_request_result
+from utils.IST import ISTTime, ISTdate
 
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails, Email
@@ -389,11 +389,18 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
 
     # Validate OTP
     if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
-        print(data.otp)
-        print(request.session.get("otp"))
         return JSONResponse(content=1) 
 
     await add_new_client(client_add=data)
+
+    rmessage = f" A new user '{(data.fullName).title()}' has send a signup request with email '{data.email}' on {ISTdate()} at {ISTTime()}."
+
+    await push_notification_by_client(message=rmessage)
+
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    to_users = ["qwertyuiop"]
+    await manager.send_notification(notification, to_users)
+
     return RedirectResponse(url="/success", status_code=303)
 
 
@@ -447,18 +454,20 @@ async def admin_add_projects(request: Request, project: Project):
     notification = [rmessage, 0, "2023-12-07T10:30:00"]
     to_users = await get_users_list(data = project.assigned_members)
     await manager.send_notification(notification, to_users)
+    await send_group_email_for_projects(emails = to_users, project_name=project.project_name)
 
 @app.post("/add-task") # FOR ADMIN PAGE.
 async def admin_add_tasks(request: Request, task: Task):
     Inserted_id = await insert_task(task=task)
     await update_task_member(collecation_name=task.assigned_members, pid=Inserted_id)
-    
+
     rmessage = await create_message(message=[task.task_name, "t"])
 
     await push_notification_by_admin(collections=task.assigned_members, message=rmessage)
     notification = [rmessage, 0, "2023-12-07T10:30:00"]
     to_users = await get_users_list(data = task.assigned_members)
     await manager.send_notification(notification, to_users)
+    await send_email_for_task(emails=to_users, task=task)
 
 @app.post("/load-add-project") # FOR ADMIN PAGE.
 async def load_add_projects(data:Useless):
@@ -490,6 +499,7 @@ async def show_signup_request(data:Useless):
 async def admin_action(data:AdminAction):
 
     await update_user_action(email=data.email, action=data.action)
+    await send_request_result(data=data)
 
 
 @app.post("/client-projects")
@@ -592,13 +602,6 @@ async def get_notification_user(request:Request, x:UselessClient):
     await update_admin_notification()
     # print(manager.get_connected_users())
     return notifications
-
-@app.post("/send-notification")
-async def senndd(): 
-    notification = ["New project assigned to you New project assigned to you", 0, "2023-12-07T10:30:00"]
-    to_users = ["qwertyuiop"]
-    await manager.send_notification(notification, to_users)
-    return 0
 
 
 # HTTP endpoint to get unified community chats

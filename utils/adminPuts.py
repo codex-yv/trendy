@@ -6,7 +6,7 @@ from utils.adminGets import get_admin_notification
 async def update_user_action(email:str, action:int):
     db = client["Clients"]
     collection = db[email]
-
+    # action {-1:Pending, 0:Rejected, 1:Approved}
     await collection.update_one(
             {"email": email},
             {"$set": {"action":action}}
