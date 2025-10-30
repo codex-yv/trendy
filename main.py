@@ -16,7 +16,7 @@ from utils.adminPuts import update_user_action, update_project_status_act, updat
 
 from utils.clientPost import add_new_client, push_notification_by_client, save_unified_chat_message
 from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history
-from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification
+from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification, update_user_last_active
 
 from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password, send_group_email_for_projects, send_email_for_task, send_request_result
 from utils.IST import ISTTime, ISTdate
@@ -101,6 +101,7 @@ class ConnectionManager:
         
         # Send current connected users to all clients (optional)
         await self.broadcast_connected_users()
+        asyncio.create_task(update_user_last_active(collection_name=user_id, status=True))
         
     def disconnect(self, user_id: str):
         if user_id in self.active_connections:
@@ -108,6 +109,7 @@ class ConnectionManager:
             # print(f"User {user_id} disconnected. Total connections: {len(self.active_connections)}")
             # Notify remaining users about connection change
             asyncio.create_task(self.broadcast_connected_users())
+            asyncio.create_task(update_user_last_active(collection_name=user_id, status=False))
     
     async def send_personal_message(self, message: str, user_id: str):
         if user_id in self.active_connections:
