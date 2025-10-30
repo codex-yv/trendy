@@ -126,7 +126,7 @@ async def get_all_members():
             
             all_skills = skills+tnp
 
-            member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":"unknown", "techStack":all_skills, "assignedProjects":[], "assignedTask":[]}
+            member_detail = {"name":member_data[0]['fullname'], "team":member_data[0]['team'], "role":member_data[0]['role'], "phone":member_data[0]['phone'], "lastActive":member_data[0]["status"], "techStack":all_skills, "assignedProjects":[], "assignedTask":[]}
 
             all_projects = member_data[0]['assigned_projects']
             for project in all_projects:

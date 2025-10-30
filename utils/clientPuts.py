@@ -1,7 +1,7 @@
 from configs.trendyDB import client
 from bson import ObjectId
 from utils.clientGets import get_client_notification
-
+from utils.IST import ISTdate, ISTTime
 
 async def update_assign_member(collecation_name, pid):
     db = client["Clients"]
@@ -96,6 +96,29 @@ async def update_client_notification(collection_name:str):
     )
 
         
+async def update_user_last_active(collection_name:str, status:bool):
+
+    # /checking if the logged in user is an admin or not
+    if collection_name == "qwertyuiop": # /if admin
+        db = client["Admins"]
+        collection = db["Base"]
+        field = {"unique":"qwertyuiop"}
+    else: # /if not admin
+        db = client["Clients"]
+        collection = db[collection_name]
+        field = {"email":collection_name}
+
+    if status:
+        await collection.update_one(
+            field,
+            {"$set":{"status":"ACTIVE"}}
+        )
+    else:
+        last_seen = f"Last Seen on {ISTdate()} at {ISTTime()}"
+        await collection.update_one(
+            field,
+            {"$set":{"status":last_seen}}
+        )
 
 
 
