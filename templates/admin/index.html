@@ -2034,8 +2034,26 @@
             assignedMembersList.innerHTML = '';
             project.assigned_member.forEach(member => {
                 const li = document.createElement('li');
-                li.className = 'text-sm text-white';
-                li.textContent = member[1];
+                li.className = 'text-sm'; // Keep base class
+
+                try {
+                    li.textContent = member[1];
+
+                    // Check for color conditions
+                    if (member[2] === 0) {
+                        li.style.color = 'red';
+                        li.title = `${member[1]} has not completed the project yet`;
+                    } else {
+                        li.style.color = 'green';
+                        li.title = `${member[1]} has completed the project`;
+                    }
+                } catch (error) {
+                    // If index error or any other occurs
+                    li.style.color = 'white';
+                    li.textContent = member[1] || 'Unknown Member';
+                    li.title = 'Status unavailable';
+                }
+
                 assignedMembersList.appendChild(li);
             });
             

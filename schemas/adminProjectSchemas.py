@@ -5,6 +5,6 @@ class Project(BaseModel):
     project_name: str
     due_date: str
     team: str
-    assigned_members: List[List[str]]
-    project_manager: List[List[str]]
+    assigned_members: List[List] # / assigned_members = [[email, name, status]]
+    project_manager: List[List]
     components: Dict[str, str]

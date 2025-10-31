@@ -340,4 +340,16 @@ async def send_request_result(data:object):
         await asyncio.to_thread(sg.send, message)
     except Exception as e:
         print(f"Error sending email: {e}")
+
+
+async def is_completed_project(members:list[list]):
+    for member in members:
+        try:
+            if member[2] !=1:
+                return 0
+            else:
+                continue
+        except IndexError:
+            return 0
+    return 1
     

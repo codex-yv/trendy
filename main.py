@@ -511,11 +511,11 @@ async def show_client_projects(request: Request, x:UselessClient):
 
 @app.post("/project-checkbox")
 async def update_project_status(request: Request,data: UpdateProjets):
-
-    await update_project_status_act(pid=data.project_id, status=data.status)
+    username = request.session.get("email")
+    await update_project_status_act(pid = data.project_id, status = data.status, username = username)
     await update_project_status_bid(project_id=data.project_id, status=data.status, collection_name=request.session.get("email"))
 
-    fullname = await get_username(collection_name=request.session.get("email"))
+    fullname = await get_username(collection_name = username)
     project_name = await get_project_by_id(project_id=data.project_id)
 
     rmessage = await create_message_for_admin(fullname=fullname, project_taskname=project_name, status=data.status, sym='p')
