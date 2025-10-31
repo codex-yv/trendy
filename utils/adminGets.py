@@ -32,7 +32,8 @@ async def get_projects():
                 "team":doc['team'], "Status":doc['status'], "assigned_member": doc['assigned_members'], "project_manager":doc['project_manager'], "components":doc['components']}
 
         project_list.append(project)
-    
+
+        # print(doc['assigned_members']) ---> [['ytgamings802212@gmail.com', 'Abhinav Singh - Design', 1], ['yourajverma960@gmail.com', 'Youraj Verma - Dev', 1]]
     return project_list[::-1]
 
 

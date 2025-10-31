@@ -1,16 +1,21 @@
 from configs.trendyDB import client
 from utils.IST import ISTdate
 
-async def insert_project(project):
+async def insert_project(project:object): # /see project schemas in adminProjectSchemas.py
     db = client['Activity']
     collection = db['Projects']
     date = f"{ISTdate()}"
+    new_assigned_members = []
+    for member in project.assigned_members:
+        member.append(0)
+        new_assigned_members.append(member)
+
     format_data = {
         "project_name":project.project_name,
         "initiated_date":date,
         "due_date":project.due_date,
         "team":project.team,
-        "assigned_members":project.assigned_members,
+        "assigned_members":new_assigned_members,
         "project_manager":project.project_manager,
         "components":project.components,
         "status":0
