@@ -29,12 +29,18 @@ async def insert_task(task):
     db = client['Activity']
     collection = db['Tasks']
     date = f"{ISTdate()}"
+    new_assigned_members = []
+
+    for member in task.assigned_members:
+        member.append(0)
+        new_assigned_members.append(member)
+
     format_data = {
         "task_name": task.task_name,
         "desc": task.desc,
         "initiated_date":date,
         "due_date": task.due_date,
-        "assigned_members": task.assigned_members,
+        "assigned_members": new_assigned_members,
         "status":0
     }
 

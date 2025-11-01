@@ -573,6 +573,21 @@
             background: linear-gradient(45deg, #ff4655, #bd3944);
             color: white;
         }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: brightness(0) saturate(100%) invert(47%) sepia(92%) saturate(744%) hue-rotate(160deg);
+            cursor: pointer;
+        }
+
+        /* Optional: change on hover/focus */
+        input[type="date"]:hover::-webkit-calendar-picker-indicator,
+        input[type="date"]:focus::-webkit-calendar-picker-indicator {
+            filter: brightness(0) saturate(100%) invert(47%) sepia(92%) saturate(744%) hue-rotate(160deg);
+        }
+
+        /* Firefox (doesn't support custom icon color directly, but you can hide and replace it) */
+        input[type="date"] {
+            color-scheme: dark;
+        }
     </style>
     <script>
         tailwind.config = {
@@ -1141,7 +1156,7 @@
             </div>
             <div>
                 <label class="block text-gray-300 mb-1">Due Date</label>
-                <input type="date" id="taskDueDate" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary">
+                <input type="date" id="taskDueDate" class="form-input w-full p-2 rounded focus:ring-2 focus:ring-primary focus:border-primary text-gray-100 bg-gray-800">
             </div>
             <div>
                 <label class="block text-gray-300 mb-1">Assign Members</label>
@@ -2457,11 +2472,27 @@
                     <div>
                         <div class="text-sm text-gray-300 mb-2">Assigned To:</div>
                         <div class="flex flex-wrap gap-2">
-                            ${task.assigned_members.map(member => `
-                                <span class="bg-white/10 px-2 py-1 rounded text-sm">
-                                    ${member[1]}
-                                </span>
-                            `).join('')}
+                            ${task.assigned_members.map(member => {
+                                const name = member?.[1] || 'Unknown';
+                                const status = member?.[2];
+
+                                let color = 'text-white';
+                                let tooltip = 'Not updated yet';
+
+                                if (status === 0) {
+                                    color = 'text-red-500';
+                                    tooltip = `${name} has not completed the task yet`;
+                                } else if (status !== undefined) {
+                                    color = 'text-green-500';
+                                    tooltip = `${name} has completed the task`;
+                                }
+
+                                return `
+                                    <span class="bg-white/10 px-2 py-1 rounded text-sm ${color}" title="${tooltip}">
+                                        ${name}
+                                    </span>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                     <div class="mt-4 flex justify-end">

@@ -542,10 +542,11 @@ async def show_client_task(request: Request, x:UselessClient):
 @app.post("/task-checkbox")
 async def update_task_status(request: Request, data:UpdateTask):
 
-    await update_task_status_act(pid = data.task_id, status=data.status)
-    await update_task_status_bid(task_id = data.task_id, status = data.status, collection_name= request.session.get("email"))
+    username = request.session.get("email")
+    await update_task_status_act(pid = data.task_id, status=data.status, username=username)
+    await update_task_status_bid(task_id = data.task_id, status = data.status, collection_name= username)
 
-    fullname = await get_username(collection_name=request.session.get("email"))
+    fullname = await get_username(collection_name=username)
     taskname = await get_task_by_id(task_id=data.task_id)
 
     rmessage = await create_message_for_admin(fullname=fullname, project_taskname=taskname, status=data.status, sym='t')

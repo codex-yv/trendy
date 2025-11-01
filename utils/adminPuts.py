@@ -41,13 +41,31 @@ async def update_project_status_act(pid, status:int, username:str):
                       "assigned_members":updated_assigned_members}}
         )
     
-async def update_task_status_act(pid, status:int):
+async def update_task_status_act(pid, status:int, username:str):
     db = client["Activity"]
     collection = db["Tasks"]
     obj_id = ObjectId(pid)
+
+    assigned_members = await collection.find_one(
+        {"_id":obj_id},
+        {"assigned_members":1, "_id":0}
+    ) # /getting assigned members of a given task.
+
+    updated_assigned_members = [] # it will contain the updated list of members who has marked the project as completed (1) and those who are still doing it(0).
+
+    for member in assigned_members.get("assigned_members"):
+        if member[0] == username:
+            try:
+                member[2] = status
+            except IndexError:
+                member.append(status)
+        updated_assigned_members.append(member)
+
+    task_status = await is_completed_project(members=updated_assigned_members) # when all members has completed the task it will return 1 else 0.
     await collection.update_one(
             {"_id": obj_id},
-            {"$set": {"status":status}}
+            {"$set": {"status":task_status,
+                      "assigned_members":updated_assigned_members}}
         )
     
 async def update_admin_notification():
