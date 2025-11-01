@@ -390,7 +390,10 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
         return JSONResponse(content=0)  # Email already exists
 
     # Validate OTP
-    if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
+    try:
+        if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
+            return JSONResponse(content=1) 
+    except ValueError:
         return JSONResponse(content=1) 
 
     await add_new_client(client_add=data)
