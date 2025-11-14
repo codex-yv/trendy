@@ -2,6 +2,11 @@ from configs.trendyDB import client
 from security.decryptPass import decryptt
 from bson import ObjectId
 
+async def get_all_clients():
+    db = client["Clients"]
+    all_users = await db.list_collection_names()
+    return all_users
+
 async def check_existing_user(collection_name):
     db = client["Clients"]
     collections = await db.list_collection_names()

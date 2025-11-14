@@ -86,3 +86,49 @@ async def update_admin_notification():
         {"unique":"qwertyuiop"},
         {"$set":{"notify":new_notification}}
     )
+
+async def delete_project_by_id(project_id:str):
+    db = client["Activity"]
+    collection = db["Projects"]
+    db2 = client["Clients"]
+    project_data = await collection.find_one({"_id":ObjectId(project_id)})
+    assigned_data = project_data.get("assigned_members")
+    project_title = project_data.get("project_name")
+    for member in assigned_data:
+        collection2 = db2[member[0]]
+        assigned_projects = (await collection2.find({},{"_id":0}).to_list(None))[0]["assigned_projects"]
+        new_assigned_members = []
+        for project in assigned_projects:
+            if project_id not in project:
+                new_assigned_members.append(project)
+
+        await collection2.update_one(
+                    {"email":member[0]},
+                    {"$set":{"assigned_projects":new_assigned_members}}
+                )
+    
+    await collection.delete_one({"_id":ObjectId(project_id)})
+    return assigned_data, project_title
+
+async def delete_task_by_id(task_id:str):
+    db = client["Activity"]
+    collection = db["Tasks"]
+    db2 = client["Clients"]
+    task_data = await collection.find_one({"_id":ObjectId(task_id)})
+    assigned_data = task_data.get("assigned_members")
+    task_title = task_data.get("task_name")
+    for member in assigned_data:
+        collection2 = db2[member[0]]
+        assigned_task = (await collection2.find({},{"_id":0}).to_list(None))[0]["assigned_task"]
+        new_assigned_members = []
+        for task in assigned_task:
+            if task_id not in task:
+                new_assigned_members.append(task)
+
+        await collection2.update_one(
+                    {"email":member[0]},
+                    {"$set":{"assigned_task":new_assigned_members}}
+                )
+    
+    await collection.delete_one({"_id":ObjectId(task_id)})
+    return assigned_data, task_title

@@ -12,14 +12,17 @@ from configs.access_configs import doc_username, doc_password, admin_password, a
 
 from utils.adminPosts import insert_project, insert_task, push_notification_by_admin
 from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members, get_admin_notification
-from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act, update_admin_notification
+from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act, update_admin_notification, delete_project_by_id, delete_task_by_id
 
 from utils.clientPost import add_new_client, push_notification_by_client, save_unified_chat_message
-from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history
+from utils.clientGets import check_existing_user, check_password, get_username, get_user_action, get_user_projects, get_user_tasks, get_client_profile, get_client_notification, get_project_by_id, get_task_by_id, get_total_unread_messages, get_unified_chat_history, get_all_clients
 from utils.clientPuts import update_assign_member, update_task_member, update_project_manager, update_project_status_bid, update_task_status_bid, update_user_profile, update_client_notification, update_user_last_active
 
 from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password, send_group_email_for_projects, send_email_for_task, send_request_result
 from utils.IST import ISTTime, ISTdate
+from utils.devgets import get_total_users, push_notification_by_dev
+
+from configs.devConfig import dev
 
 from schemas.newclientSchemas import NewUser
 from schemas.otpSchemas import OTPDetails, Email
@@ -31,7 +34,7 @@ from schemas.adminActionSchemas import AdminAction
 from schemas.updatePjtSchemas import UpdateProjets
 from schemas.updateTskSchema import UpdateTask
 from schemas.profileSchemas import Updated
-
+from schemas.DevSchemas import DevMessage
 from datetime import datetime
 from typing import Dict, List
 import json
@@ -381,6 +384,14 @@ async def sign_up_success(request: Request):
     return templates_clients.TemplateResponse("success.html", {"request": request})
 
 
+@app.get("/dev/{dev_id}")
+async def getTrendyInfo(dev_id:str):
+    if dev_id == dev:
+        total_users = await get_total_users()
+        return {"total users":total_users}
+    else:
+        return {"Message":dev_id}
+
 @app.post("/create-acc") # FOR Client PAGE.
 async def add_new_user(request: Request, data: NewUser = Body(...)):
     request.session["email"] = data.email
@@ -490,10 +501,31 @@ async def show_projects(data:Useless):
     val = await get_projects()
     return val
 
+@app.post("/delete-project") # For admin Page
+async def delete_project(data:Useless):
+    members, project_title = await delete_project_by_id(project_id=data.x)
+    rmessage = f"The project {project_title.title()} which was assigned to you, is deleted by the admin on {ISTdate()} at {ISTTime()}."
+    asgn_members = await get_users_list(data=members)
+    await push_notification_by_admin(collections=members, message=rmessage)
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    await manager.send_notification(notification, asgn_members)
+    # print(data.x)
+    return True
 @app.post("/show-task-status") # FOR ADMIN PAGE.
 async def show_task(data:Useless):
     val = await get_tasks()
     return val
+
+@app.post("/delete-task") # for admin page
+async def delete_task(data:Useless):
+    members, task_title = await delete_task_by_id(task_id=data.x)
+    rmessage = f"The task {task_title.title()} which was assigned to you, is deleted by the admin on {ISTdate()} at {ISTTime()}."
+    asgn_members = await get_users_list(data=members)
+    await push_notification_by_admin(collections=members, message=rmessage)
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    await manager.send_notification(notification, asgn_members)
+    # print(data.x)
+    return True
 
 @app.post("/approve-signups") # FOR ADMIN PAGE.
 async def show_signup_request(data:Useless):
@@ -664,3 +696,16 @@ async def send_unified_chat_message(request: Request):
         print(f"Error sending unified message: {e}")
         return JSONResponse(status_code=500, content={"error": "Failed to send message"})
 
+@app.post("/super-sender")
+async def send_developer_notification_to_all(request:Request, message:DevMessage):
+    members = await get_all_clients()
+    information = f" on {ISTdate()} at {ISTTime()}"
+    rmessage = message.message + information
+    
+    await push_notification_by_dev(collections=members, message=rmessage)
+
+    notification = [rmessage, 0, "2023-12-07T10:30:00"]
+    to_users = ["qwertyuiop"] + members
+    await manager.send_notification(notification, to_users)
+
+    return {"message":"Success"}

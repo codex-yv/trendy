@@ -28,7 +28,7 @@ async def get_projects():
     project_list = []
 
     for doc in docs:
-        project = {"project_name":doc['project_name'], "initiated_date":doc['initiated_date'], "due_date":doc['due_date'], 
+        project = {"project_id":str(doc["_id"]),"project_name":doc['project_name'], "initiated_date":doc['initiated_date'], "due_date":doc['due_date'], 
                 "team":doc['team'], "Status":doc['status'], "assigned_member": doc['assigned_members'], "project_manager":doc['project_manager'], "components":doc['components']}
 
         project_list.append(project)
@@ -46,7 +46,7 @@ async def get_tasks():
     task_list = []
 
     for doc in docs:
-        tasks = {"task_name":doc['task_name'], "initiated_date":doc['initiated_date'], "due_date":doc['due_date'], 
+        tasks = {"task_id":str(doc['_id']),"task_name":doc['task_name'], "initiated_date":doc['initiated_date'], "due_date":doc['due_date'], 
                 "Status":doc['status'], "assigned_members": doc['assigned_members'], "desc":doc['desc']}
 
         task_list.append(tasks)
