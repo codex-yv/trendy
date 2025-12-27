@@ -59,3 +59,18 @@ async def push_notification_by_admin(collections:list[list[str]], message:str):
             {"email":collection_name[0]},
             {"$push": {"notify": aMessage}}
         )
+
+
+async def first_admin_login():
+    db = client["Admins"]
+    
+    collections = await db.list_collection_names()
+    if not collections:
+        collection = db["Base"]
+        admin_format = {
+            "unique":"qwertyuiop",
+            "notify":[],
+            "status":""
+        }
+        await collection.insert_one(admin_format)
+

@@ -10,7 +10,7 @@ import secrets
 
 from configs.access_configs import doc_username, doc_password, admin_password, admin_username
 
-from utils.adminPosts import insert_project, insert_task, push_notification_by_admin
+from utils.adminPosts import insert_project, insert_task, push_notification_by_admin, first_admin_login
 from utils.adminGets import get_users, get_projects, get_tasks, get_projet_info, get_task_info, get_users_for_approve, get_all_members, get_admin_notification
 from utils.adminPuts import update_user_action, update_project_status_act, update_task_status_act, update_admin_notification, delete_project_by_id, delete_task_by_id
 
@@ -344,7 +344,7 @@ async def load_admin(request:Request, authenticated: bool = Depends(verify_crede
     td, total_tasks = await get_task_info()
     tasks = await get_tasks()
     recent_tasks = tasks[0:3]
-
+    await first_admin_login()
     return templates_admin.TemplateResponse("index.html", {"request":request, "tp":total_projects, "pd":pd, "tt":total_tasks, "td":td, "rp":recent_projects, "rt":recent_tasks})
 
 @app.get("/rejected")

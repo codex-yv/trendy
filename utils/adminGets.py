@@ -163,7 +163,7 @@ async def get_admin_notification():
 
     try:
         notifications = docs[0]["notify"]
-    except KeyError:
+    except (KeyError, IndexError):
         notifications = []
     
     return notifications[::-1]
