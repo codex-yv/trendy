@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form, Body, HTTPException, status, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_303_SEE_OTHER
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +46,8 @@ templates_admin = Jinja2Templates(directory="templates/admin")
 
 
 app = FastAPI(docs_url=None, redoc_url=None)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(SessionMiddleware, secret_key="qwertyuiopasdfghjkl@#$%RTYU")
 app.add_middleware(
@@ -648,6 +651,7 @@ async def get_unified_community_chats(request: Request):
     try:
         # Get unified chat history from MongoDB
         chats = await get_unified_chat_history()
+        print(chats)
         return chats
     except Exception as e:
         print(f"Error getting unified community chats: {e}")

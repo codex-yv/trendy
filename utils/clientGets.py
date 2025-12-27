@@ -232,7 +232,7 @@ async def get_unified_chat_history(limit: int = 100):
     db = client["History"]
     collection = db["chat"]
 
-    chats = await collection.find().sort("time", 1).limit(limit).to_list(length=limit)
+    chats = await collection.find().limit(limit).to_list(length=limit)
 
     if chats:
         return [{"user": chat["user"], "message": chat["message"], "time": chat["time"], "username": chat["username"]} for chat in chats]
