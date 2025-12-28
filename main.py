@@ -651,7 +651,6 @@ async def get_unified_community_chats(request: Request):
     try:
         # Get unified chat history from MongoDB
         chats = await get_unified_chat_history()
-        print(chats)
         return chats
     except Exception as e:
         print(f"Error getting unified community chats: {e}")
