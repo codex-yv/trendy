@@ -22,6 +22,7 @@ from utils.clientPuts import update_assign_member, update_task_member, update_pr
 from utils.general import create_message, get_users_list, create_message_for_admin, send_otp, send_password, send_group_email_for_projects, send_email_for_task, send_request_result
 from utils.IST import ISTTime, ISTdate
 from utils.devgets import get_total_users, push_notification_by_dev
+from utils.settings import Settings
 
 from configs.devConfig import dev
 
@@ -57,7 +58,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+settings = Settings()
 security = HTTPBasic()
 
 def get_current_user(credentials: HTTPBasicCredentials = Depends(security)):
@@ -404,11 +405,13 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
         return JSONResponse(content=0)  # Email already exists
 
     # Validate OTP
-    try:
-        if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
+    to_validate = await settings.email_verification_enabled()
+    if to_validate:
+        try:
+            if int(data.otp)!= int(request.session.get("otp")):  # Replace with real OTP validation
+                return JSONResponse(content=1) 
+        except ValueError:
             return JSONResponse(content=1) 
-    except ValueError:
-        return JSONResponse(content=1) 
 
     await add_new_client(client_add=data)
 
@@ -426,7 +429,9 @@ async def add_new_user(request: Request, data: NewUser = Body(...)):
 
 @app.post("/send-otp") # FOR Client PAGE.
 async def validate_otp(request: Request, data: OTPDetails = Body(...)):
-    request.session["otp"] = await send_otp(email=data.email)
+    to_validate = await settings.email_verification_enabled()
+    if to_validate:
+        request.session["otp"] = await send_otp(email=data.email)
     return 1
 
 
@@ -473,7 +478,9 @@ async def admin_add_projects(request: Request, project: Project):
     notification = [rmessage, 0, "2023-12-07T10:30:00"]
     to_users = await get_users_list(data = project.assigned_members)
     await manager.send_notification(notification, to_users)
-    await send_group_email_for_projects(emails = to_users, project_name=project.project_name)
+    notify_for_project = await settings.projects_notifications_enabled()
+    if notify_for_project:
+        await send_group_email_for_projects(emails = to_users, project_name=project.project_name)
 
 @app.post("/add-task") # FOR ADMIN PAGE.
 async def admin_add_tasks(request: Request, task: Task):
@@ -486,7 +493,9 @@ async def admin_add_tasks(request: Request, task: Task):
     notification = [rmessage, 0, "2023-12-07T10:30:00"]
     to_users = await get_users_list(data = task.assigned_members)
     await manager.send_notification(notification, to_users)
-    await send_email_for_task(emails=to_users, task=task)
+    notify_for_task = await settings.tasks_notifications_enabled()
+    if notify_for_task:
+        await send_email_for_task(emails=to_users, task=task)
 
 @app.post("/load-add-project") # FOR ADMIN PAGE.
 async def load_add_projects(data:Useless):
@@ -539,7 +548,9 @@ async def show_signup_request(data:Useless):
 async def admin_action(data:AdminAction):
 
     await update_user_action(email=data.email, action=data.action)
-    await send_request_result(data=data)
+    notify_approval = await settings.approvals_notifications_enabled()
+    if notify_approval:
+        await send_request_result(data=data)
 
 
 @app.post("/client-projects")

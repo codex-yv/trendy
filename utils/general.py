@@ -50,7 +50,7 @@ async def generate_otp():
 
 async def send_otp(email: str):
     otp = await generate_otp()
-
+    print("SENDING")
     message = Mail(
         from_email=sender_email,  # must be verified in SendGrid
         to_emails=email,
