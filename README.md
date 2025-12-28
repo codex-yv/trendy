@@ -1,5 +1,12 @@
 # 🚀 BeeHive - Open Source Collaboration Platform
-
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![SendGrid](https://img.shields.io/badge/SendGrid-Email-0099FF?style=for-the-badge&logo=sendgrid&logoColor=white)
+![Jinja2](https://img.shields.io/badge/Jinja2-Templates-B41717?style=for-the-badge&logo=jinja&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-Markup-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-Styling-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ## 💡 Project Overview
 
 BeeHive is a web-based collaboration and team management system designed to help startups, freelancers, hackathon teams, and coding groups work efficiently under a single, unified platform. Built using HTML, CSS, JavaScript, and Python, the system focuses on **clarity, collaboration, and momentum** — three essential elements every growing team needs.
@@ -78,12 +85,22 @@ The goal of BeeHive is to create a simple yet powerful collaboration tool that:
 - **Thrives on community contributions** and shared innovation
 
 ## 📦 Getting Started
+### Configuration
+**Open `settings.json` file to configure the operations.** <br>
+***Keys and their meaning***
+- **sendgrid** -> to controll emailed notifications via sendgrid
+    - `email_verification` : to verify email and otp during sign-up
+    - `projects` : to notify user that he hass been assigned project
+    - `tasks` : to notify user that he has been assigned task
+    - `approvals` : to notify user that he has been approved by the admin
+
+ **NOTE :** *The sendgrid configuration can be helpful to you when you don't have sendgrid API.Update the key's value to false for each one and no sendgrid API required. Just create a sendgrid variable in `.env` folder and pass an empty string.*
 ### Setup
 
 - **Step-1**: Clone the repository
 - **Step-2**: Navigate to project directory
 - **Step-3**: Create a .env file
-- **Step-4**: Add the following variables to the .env file
+- **Step-4**: Add the following variables to the `.env` file
 
 ```
 MONGO_URI = "mongodb://localhost:27017"
@@ -137,7 +154,5 @@ We welcome contributions from the community! Here's how you can help:
 - 🎨 UI Improvements - Enhance the user experience
 - 📚 Documentation - Improve guides and documentation
 - 🔧 Performance Optimizations - Make the platform faster
-
-**Built with ❤️ by the open source community**
 
 **Star this repository if you find it helpful!**
