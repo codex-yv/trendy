@@ -50,7 +50,7 @@ app = FastAPI(docs_url=None, redoc_url=None)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-app.add_middleware(SessionMiddleware, secret_key="qwertyuiopasdfghjkl@#$%RTYU")
+app.add_middleware(SessionMiddleware, secret_key="qwertyuiopasdfghjkl@#$%RTYU") # fetch from env, it's just for demo
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
